@@ -8,6 +8,12 @@ public class ErrorResponse {
     private final String code;
     private final String message;
 
+    /**
+     * Create an ErrorResponse from the given ErrorCode.
+     *
+     * @param errorCode the ErrorCode to extract the code and message from
+     * @return an ErrorResponse containing the code and message from the provided ErrorCode
+     */
     public static ErrorResponse of(ErrorCode errorCode) {
         return new ErrorResponse(
             errorCode.getCode(),
