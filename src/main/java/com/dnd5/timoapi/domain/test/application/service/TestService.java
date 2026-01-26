@@ -30,7 +30,7 @@ public class TestService {
 
     @Transactional(readOnly = true)
     public TestListResponse findAll() {
-        List<Test> tests = testRepository.findAll().stream()
+        List<Test> tests = testRepository.findAllByDeletedAtIsNull().stream()
                 .map(TestEntity::toModel)
                 .toList();
         return TestListResponse.from(tests);
@@ -53,7 +53,7 @@ public class TestService {
     }
 
     private TestEntity getTestEntity(Long testId) {
-        return testRepository.findById(testId)
+        return testRepository.findByIdAndDeletedAtIsNull(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
     }
 }
