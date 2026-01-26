@@ -1,7 +1,9 @@
 package com.dnd5.timoapi.global.exception;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public class ErrorResponse {
 
