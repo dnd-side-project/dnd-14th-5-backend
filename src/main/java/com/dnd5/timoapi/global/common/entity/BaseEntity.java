@@ -2,6 +2,7 @@ package com.dnd5.timoapi.global.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,6 +26,7 @@ public abstract class BaseEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Setter
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 }

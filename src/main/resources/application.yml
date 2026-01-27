@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: timo-backend-api
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/timo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${RELATION_DATABASE_USERNAME}
+    password: ${RELATION_DATABASE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
