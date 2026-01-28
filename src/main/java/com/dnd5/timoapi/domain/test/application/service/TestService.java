@@ -7,7 +7,7 @@ import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.TestCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
-import com.dnd5.timoapi.domain.test.presentation.response.TestListResponse;
+import com.dnd5.timoapi.domain.test.presentation.response.TestResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,11 +29,11 @@ public class TestService {
     }
 
     @Transactional(readOnly = true)
-    public TestListResponse findAll() {
-        List<Test> tests = testRepository.findAllByDeletedAtIsNull().stream()
+    public List<TestResponse> findAll() {
+        return testRepository.findAllByDeletedAtIsNull().stream()
                 .map(TestEntity::toModel)
+                .map(TestResponse::from)
                 .toList();
-        return TestListResponse.from(tests);
     }
 
     @Transactional(readOnly = true)
