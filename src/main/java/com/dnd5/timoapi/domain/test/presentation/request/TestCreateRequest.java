@@ -3,9 +3,10 @@ package com.dnd5.timoapi.domain.test.presentation.request;
 import com.dnd5.timoapi.domain.test.domain.model.Test;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record TestCreateRequest(
-        @NotBlank
+        @NotNull
         TestType type,
         @NotBlank
         String name,
