@@ -25,6 +25,7 @@ public class AdminTestController {
     }
 
     @PatchMapping("/{testId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable Long testId, @Valid @RequestBody TestUpdateRequest request) {
         testService.update(testId, request);
     }
