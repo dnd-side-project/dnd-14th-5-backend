@@ -1,9 +1,12 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
 import com.dnd5.timoapi.domain.test.domain.model.Test;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,7 +21,8 @@ import lombok.NoArgsConstructor;
 public class TestEntity extends BaseEntity {
 
     @Column(nullable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private TestType type;
 
     @Column(nullable = false)
     private String name;
@@ -34,7 +38,7 @@ public class TestEntity extends BaseEntity {
         return new Test(getId(), getType(), getName(), getDescription(), getCreatedAt());
     }
 
-    public void update(String type, String name, String description) {
+    public void update(TestType type, String name, String description) {
         if (type != null) this.type = type;
         if (name != null) this.name = name;
         if (description != null) this.description = description;
