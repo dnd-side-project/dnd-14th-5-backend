@@ -2,6 +2,11 @@ spring:
   application:
     name: timo-backend-api
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   datasource:
     url: jdbc:mysql://localhost:3306/timo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${RELATION_DATABASE_USERNAME}
@@ -16,8 +21,18 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
     open-in-view: false
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
 
 logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: 1800000
+  refresh-expiration: 604800000
