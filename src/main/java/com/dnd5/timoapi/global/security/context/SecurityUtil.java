@@ -3,7 +3,7 @@ package com.dnd5.timoapi.global.security.context;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class SecurityContext {
+public class SecurityUtil {
 
     public static Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
