@@ -2,6 +2,7 @@ package com.dnd5.timoapi.global.security.handler;
 
 import tools.jackson.databind.ObjectMapper;
 import com.dnd5.timoapi.global.exception.ErrorResponse;
+import com.dnd5.timoapi.global.security.exception.SecurityErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        ErrorResponse errorResponse = new ErrorResponse("ACCESS_DENIED", "접근 권한이 없습니다.");
+        ErrorResponse errorResponse = ErrorResponse.of(SecurityErrorCode.ACCESS_DENIED);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
