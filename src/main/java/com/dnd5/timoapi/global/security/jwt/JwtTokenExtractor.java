@@ -1,5 +1,7 @@
 package com.dnd5.timoapi.global.security.jwt;
 
+import com.dnd5.timoapi.domain.auth.exception.AuthErrorCode;
+import com.dnd5.timoapi.global.exception.BusinessException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,39 +16,29 @@ public class JwtTokenExtractor {
 
     private final JwtProperties jwtProperties;
 
-    public Long getUserId(String token) {
-        Claims claims = parseClaims(token);
-        return Long.parseLong(claims.getSubject());
-    }
-
-    public String getEmail(String token) {
-        Claims claims = parseClaims(token);
-        return claims.get("email", String.class);
-    }
-
-    public String getRole(String token) {
-        Claims claims = parseClaims(token);
-        return claims.get("role", String.class);
-    }
-
-    public boolean validateToken(String token) {
+    public Claims parseClaims(String token) {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(jwtProperties.getSecretKey())
                     .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException | ExpiredJwtException |
-                 UnsupportedJwtException | IllegalArgumentException e) {
-            return false;
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new BusinessException(AuthErrorCode.EXPIRED_TOKEN);
+        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 
-    private Claims parseClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(jwtProperties.getSecretKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    public Long getUserId(Claims claims) {
+        return Long.parseLong(claims.getSubject());
+    }
+
+    public String getEmail(Claims claims) {
+        return claims.get("email", String.class);
+    }
+
+    public String getRole(Claims claims) {
+        return claims.get("role", String.class);
     }
 }

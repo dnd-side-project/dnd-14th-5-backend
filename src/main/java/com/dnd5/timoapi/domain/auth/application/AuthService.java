@@ -2,13 +2,14 @@ package com.dnd5.timoapi.domain.auth.application;
 
 import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
 import com.dnd5.timoapi.domain.auth.exception.AuthErrorCode;
+import io.jsonwebtoken.Claims;
 import com.dnd5.timoapi.domain.auth.presentation.response.TokenResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.model.enums.OAuthProvider;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
-import com.dnd5.timoapi.global.security.context.SecurityContext;
+import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import com.dnd5.timoapi.global.security.jwt.JwtTokenExtractor;
 import com.dnd5.timoapi.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +32,8 @@ public class AuthService {
     }
 
     public TokenResponse reissue(String refreshToken) {
-        if (!jwtTokenExtractor.validateToken(refreshToken)) {
-            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
-        }
-
-        Long userId = jwtTokenExtractor.getUserId(refreshToken);
+        Claims claims = jwtTokenExtractor.parseClaims(refreshToken);
+        Long userId = jwtTokenExtractor.getUserId(claims);
         String storedToken = refreshTokenRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
@@ -50,7 +48,7 @@ public class AuthService {
     }
 
     public void logout() {
-        Long userId = SecurityContext.getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         refreshTokenRepository.deleteByUserId(userId);
     }
 

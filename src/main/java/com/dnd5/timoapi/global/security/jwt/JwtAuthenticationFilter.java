@@ -1,5 +1,7 @@
 package com.dnd5.timoapi.global.security.jwt;
 
+import com.dnd5.timoapi.global.exception.BusinessException;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,13 +31,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token) && jwtTokenExtractor.validateToken(token)) {
-            Long userId = jwtTokenExtractor.getUserId(token);
-            String role = jwtTokenExtractor.getRole(token);
-            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (StringUtils.hasText(token)) {
+            try {
+                Claims claims = jwtTokenExtractor.parseClaims(token);
+                Long userId = jwtTokenExtractor.getUserId(claims);
+                String role = jwtTokenExtractor.getRole(claims);
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (BusinessException ignored) {
+            }
         }
 
         filterChain.doFilter(request, response);
