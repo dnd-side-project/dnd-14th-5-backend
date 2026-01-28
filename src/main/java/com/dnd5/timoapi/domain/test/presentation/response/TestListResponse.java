@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.test.presentation.response;
 
 import com.dnd5.timoapi.domain.test.domain.model.Test;
 
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public record TestListResponse(
 
     public record TestResponse(
             Long id,
-            String type,
+            TestType type,
             String name,
             String description,
             LocalDateTime createdAt

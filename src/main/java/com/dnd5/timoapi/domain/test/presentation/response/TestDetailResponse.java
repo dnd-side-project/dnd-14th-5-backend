@@ -2,11 +2,12 @@ package com.dnd5.timoapi.domain.test.presentation.response;
 
 import com.dnd5.timoapi.domain.test.domain.model.Test;
 
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import java.time.LocalDateTime;
 
 public record TestDetailResponse(
         Long id,
-        String type,
+        TestType type,
         String name,
         String description,
         LocalDateTime createdAt
