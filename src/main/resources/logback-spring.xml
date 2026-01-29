@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- 콘솔 출력 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 일반 로그 (INFO 이상) -->
+  <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+    <destination>localhost:5001</destination>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"service":"soj-api"}</customFields>
+    </encoder>
+  </appender>
+
+  <!-- 에러 로그 (ERROR 이상) -->
+  <appender name="LOGSTASH_ERROR" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+    <destination>localhost:5001</destination>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"service":"soj-api","logType":"ERROR"}</customFields>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="LOGSTASH"/>
+    <appender-ref ref="LOGSTASH_ERROR"/>
+  </root>
+</configuration>
