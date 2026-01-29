@@ -16,15 +16,12 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @Component
 public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(ApiLoggingFilter.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Pattern SUBMISSION_URI =
-            Pattern.compile("/problems/\\d+/submissions");
 
     @Override
     protected void doFilterInternal(
@@ -52,14 +49,6 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             logData.put("statusCode", wrappedResponse.getStatus());
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
-
-            if ("POST".equals(request.getMethod())
-                    && SUBMISSION_URI.matcher(request.getRequestURI()).matches()) {
-                logData.put(
-                        "requestBody",
-                        new String(wrappedRequest.getContentAsByteArray())
-                );
-            }
 
             String jsonLog;
             try {
