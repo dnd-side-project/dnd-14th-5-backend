@@ -4,14 +4,14 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
     elasticsearch:
       uris: http://${ELASTICSEARCH_HOST:localhost}:${ELASTICSEARCH_PORT:9200}
 
   datasource:
-    url: jdbc:mysql://localhost:3308/timo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:${RELATION_DATABASE_PORT}/timo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${RELATION_DATABASE_USERNAME}
     password: ${RELATION_DATABASE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
