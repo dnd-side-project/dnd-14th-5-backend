@@ -17,6 +17,9 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
     public FeedbackResult execute(ZtpiCategory category, String userReflection) {
         String prompt = buildPrompt(category, userReflection);
         String response = geminiClient.generateContent(prompt);
+        if (response == null || response.isBlank()) {
+            return new FeedbackResult(0, "");
+        }
         return parseResponse(response);
     }
 
