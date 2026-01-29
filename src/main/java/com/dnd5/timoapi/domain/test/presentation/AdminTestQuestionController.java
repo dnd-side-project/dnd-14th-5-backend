@@ -20,13 +20,11 @@ public class AdminTestQuestionController {
 
     @PostMapping("/{testId}/questions")
     @ResponseStatus(HttpStatus.CREATED)
-    public TestQuestionResponse create(
+    public void create(
             @Positive @PathVariable Long testId,
             @Valid @RequestBody TestQuestionCreateRequest request
     ) {
-        return TestQuestionResponse.from(
-                testQuestionService.create(testId, request)
-        );
+        testQuestionService.create(testId, request);
     }
 
     @PatchMapping("/{testId}/questions/{questionId}")

@@ -26,7 +26,7 @@ public class TestQuestionService {
     private final TestRepository testRepository;
     private final TestQuestionRepository testQuestionRepository;
 
-    public TestQuestion create(Long testId, TestQuestionCreateRequest request) {
+    public void create(Long testId, TestQuestionCreateRequest request) {
         TestEntity entity = testRepository.findById(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
@@ -38,7 +38,7 @@ public class TestQuestionService {
                 request.isReversed()
         );
 
-        return testQuestionRepository.save(testEntity).toModel();
+        testQuestionRepository.save(testEntity);
     }
 
     @Transactional(readOnly = true)
