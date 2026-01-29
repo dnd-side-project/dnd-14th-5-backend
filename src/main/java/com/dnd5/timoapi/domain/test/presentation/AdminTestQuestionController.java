@@ -2,7 +2,7 @@ package com.dnd5.timoapi.domain.test.presentation;
 
 import com.dnd5.timoapi.domain.test.application.service.TestQuestionService;
 import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionCreateRequest;
-import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionResponse;
+import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionUpdateRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class AdminTestQuestionController {
     public void update(
             @Positive @PathVariable Long testId,
             @Positive @PathVariable Long questionId,
-            @Valid @RequestBody TestQuestionCreateRequest request
+            @Valid @RequestBody TestQuestionUpdateRequest request
     ) {
         testQuestionService.update(questionId, testId, request);
     }

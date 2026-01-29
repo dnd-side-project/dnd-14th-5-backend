@@ -2,15 +2,16 @@ package com.dnd5.timoapi.domain.test.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
-import com.dnd5.timoapi.domain.test.domain.model.TestQuestion;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
+import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionCreateRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class TestQuestionService {
         return TestQuestionDetailResponse.from(testQuestionEntity.toModel());
     }
 
-    public void update(Long questionId, Long testId, TestQuestionCreateRequest request) {
+    public void update(Long questionId, Long testId, @Valid TestQuestionUpdateRequest request) {
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findByIdAndTestIdAndDeletedAtIsNull(questionId, testId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
         testQuestionEntity.update(
