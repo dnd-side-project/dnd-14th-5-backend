@@ -40,6 +40,11 @@ public class ReflectionService {
 
     public void create(ReflectionCreateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
+
+        if (reflectionRepository.findByDateAndUserId(LocalDate.now(), userId).isPresent()) {
+            throw new BusinessException(ReflectionErrorCode.TODAY_REFLECTION_ALREADY_EXISTS);
+        }
+
         ReflectionQuestionEntity questionEntity = findTodayQuestionEntity(userId);
 
         Reflection reflectionModel = new Reflection(
