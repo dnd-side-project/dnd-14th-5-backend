@@ -11,7 +11,7 @@
   <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
     <destination>localhost:5001</destination>
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"soj-api"}</customFields>
+      <customFields>{"service":"timo-backend-api"}</customFields>
     </encoder>
   </appender>
 
