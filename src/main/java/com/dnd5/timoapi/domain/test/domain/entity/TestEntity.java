@@ -35,16 +35,8 @@ public class TestEntity extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(
-            mappedBy = "test",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private List<TestQuestionEntity> testQuestions;
-
     public static TestEntity from(Test model) {
-        return new TestEntity(model.type(), model.name(), model.description(), null);
+        return new TestEntity(model.type(), model.name(), model.description());
     }
 
     public Test toModel() {
