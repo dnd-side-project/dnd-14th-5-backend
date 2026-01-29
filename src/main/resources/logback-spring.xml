@@ -22,7 +22,7 @@
       <level>ERROR</level>
     </filter>
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"soj-api","logType":"ERROR"}</customFields>
+      <customFields>{"service":"timo-backend-api","logType":"ERROR"}</customFields>
     </encoder>
   </appender>
 
