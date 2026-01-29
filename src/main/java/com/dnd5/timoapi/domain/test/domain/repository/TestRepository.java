@@ -10,4 +10,5 @@ public interface TestRepository extends JpaRepository<TestEntity, Long> {
 
     List<TestEntity> findAllByDeletedAtIsNull();
     Optional<TestEntity> findByIdAndDeletedAtIsNull(Long id);
+
 }
