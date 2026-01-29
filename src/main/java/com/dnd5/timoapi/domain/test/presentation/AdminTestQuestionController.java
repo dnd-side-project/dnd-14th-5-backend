@@ -45,6 +45,6 @@ public class AdminTestQuestionController {
             @Positive @PathVariable Long testId,
             @Positive @PathVariable Long questionId
     ) {
-        testQuestionService.delete(questionId);
+        testQuestionService.delete(questionId, testId);
     }
 }

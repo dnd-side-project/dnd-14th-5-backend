@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.model.TestQuestion;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
+import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionResponse;
@@ -65,7 +66,9 @@ public class TestQuestionService {
         );
     }
 
-    public void delete(Long questionId) {
+    public void delete(Long questionId, Long testId) {
+        TestEntity testEntity = testRepository.findById(testId)
+                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
         testQuestionEntity.setDeletedAt(LocalDateTime.now());
