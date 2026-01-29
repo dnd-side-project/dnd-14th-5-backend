@@ -27,18 +27,18 @@ public class TestQuestionService {
     private final TestQuestionRepository testQuestionRepository;
 
     public TestQuestion create(Long testId, TestQuestionCreateRequest request) {
-        TestEntity test = testRepository.findById(testId)
-                .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+        TestEntity entity = testRepository.findById(testId)
+                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
-        TestQuestionEntity entity = TestQuestionEntity.of(
-                test,
+        TestQuestionEntity testEntity = TestQuestionEntity.of(
+                entity,
                 request.category(),
                 request.content(),
                 request.sequence(),
                 request.isReversed()
         );
 
-        return testQuestionRepository.save(entity).toModel();
+        return testQuestionRepository.save(testEntity).toModel();
     }
 
     @Transactional(readOnly = true)
