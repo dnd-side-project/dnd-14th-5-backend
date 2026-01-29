@@ -36,7 +36,7 @@ public class AdminTestQuestionController {
             @Positive @PathVariable Long questionId,
             @Valid @RequestBody TestQuestionCreateRequest request
     ) {
-        testQuestionService.update(questionId, request);
+        testQuestionService.update(questionId, testId, request);
     }
 
     @DeleteMapping("/{testId}/questions/{questionId}")

@@ -54,8 +54,8 @@ public class TestQuestionService {
         return TestQuestionDetailResponse.from(testQuestionEntity.toModel());
     }
 
-    public void update(Long questionId, TestQuestionCreateRequest request) {
-        TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(questionId)
+    public void update(Long questionId, Long testId, TestQuestionCreateRequest request) {
+        TestQuestionEntity testQuestionEntity = testQuestionRepository.findByIdAndTestIdAndDeletedAtIsNull(questionId, testId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
         testQuestionEntity.update(
                 request.category(),
