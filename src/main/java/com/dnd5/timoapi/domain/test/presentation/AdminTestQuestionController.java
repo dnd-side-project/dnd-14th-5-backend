@@ -11,14 +11,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/tests")
+@RequestMapping("/admin/tests/{testId}/questions")
 @RequiredArgsConstructor
 @Validated
 public class AdminTestQuestionController {
 
     private final TestQuestionService testQuestionService;
 
-    @PostMapping("/{testId}/questions")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(
             @Positive @PathVariable Long testId,
@@ -27,7 +27,7 @@ public class AdminTestQuestionController {
         testQuestionService.create(testId, request);
     }
 
-    @PatchMapping("/{testId}/questions/{questionId}")
+    @PatchMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
             @Positive @PathVariable Long testId,
@@ -37,7 +37,7 @@ public class AdminTestQuestionController {
         testQuestionService.update(questionId, testId, request);
     }
 
-    @DeleteMapping("/{testId}/questions/{questionId}")
+    @DeleteMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @Positive @PathVariable Long testId,
