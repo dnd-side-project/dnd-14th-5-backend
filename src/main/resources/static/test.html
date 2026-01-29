@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflection API Test</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
+        section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        h2 { margin: 0 0 10px 0; font-size: 1.1em; }
+        h3 { margin: 20px 0 10px 0; color: #666; }
+        button { padding: 8px 16px; cursor: pointer; margin-right: 8px; }
+        input, textarea, select { padding: 8px; margin: 5px 5px 5px 0; }
+        textarea { width: 300px; height: 60px; }
+        .result { margin-top: 10px; padding: 10px; background: #f5f5f5; white-space: pre-wrap; max-height: 200px; overflow-y: auto; font-size: 0.9em; }
+        .loading { color: #666; }
+        .row { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Reflection API Test</h1>
+
+    <h3>회고 질문 (Admin)</h3>
+
+    <section>
+        <h2>질문 생성</h2>
+        <div class="row">
+            <select id="qCategory">
+                <option>PAST_NEGATIVE</option>
+                <option>PAST_POSITIVE</option>
+                <option>PRESENT_HEDONISTIC</option>
+                <option>PRESENT_FATALISTIC</option>
+                <option>FUTURE</option>
+            </select>
+            <input type="text" id="qCreatedBy" value="admin" placeholder="createdBy" style="width:80px">
+        </div>
+        <textarea id="qContent" placeholder="질문 내용"></textarea>
+        <button onclick="createQuestion()">생성</button>
+        <div id="createQuestionResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>질문 전체 조회</h2>
+        <button onclick="getQuestions()">조회</button>
+        <div id="questionsResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>질문 수정</h2>
+        <div class="row">
+            <input type="number" id="updateQId" value="1" placeholder="ID" style="width:60px">
+            <input type="text" id="updateQContent" placeholder="수정할 내용">
+        </div>
+        <button onclick="updateQuestion()">수정</button>
+        <div id="updateQuestionResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>질문 삭제</h2>
+        <input type="number" id="deleteQId" value="1" placeholder="ID" style="width:60px">
+        <button onclick="deleteQuestion()">삭제</button>
+        <div id="deleteQuestionResult" class="result"></div>
+    </section>
+
+    <h3>회고</h3>
+
+    <section>
+        <h2>오늘의 질문</h2>
+        <button onclick="getTodayQuestion()">조회</button>
+        <div id="todayQuestionResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>회고 생성</h2>
+        <textarea id="reflectionContent" placeholder="회고 내용"></textarea>
+        <button onclick="createReflection()">생성</button>
+        <div id="createReflectionResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>오늘의 회고</h2>
+        <button onclick="getTodayReflection()">조회</button>
+        <div id="todayReflectionResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>내 회고 전체 조회</h2>
+        <button onclick="getReflections()">조회</button>
+        <div id="reflectionsResult" class="result"></div>
+    </section>
+
+    <section>
+        <h2>회고 상세 조회</h2>
+        <input type="number" id="detailReflectionId" value="1" placeholder="ID">
+        <button onclick="getReflectionDetail()">조회</button>
+        <div id="detailResult" class="result"></div>
+    </section>
+
+    <h3>피드백 (Gemini)</h3>
+
+    <section>
+        <h2>피드백 생성</h2>
+        <input type="number" id="feedbackReflectionId" value="1" placeholder="Reflection ID">
+        <button onclick="generateFeedback()">생성</button>
+        <div id="feedbackResult" class="result"></div>
+    </section>
+
+    <script>
+        async function api(url, method = 'GET', resultDivId, body = null) {
+            const resultDiv = document.getElementById(resultDivId);
+            resultDiv.innerHTML = '<span class="loading">Loading...</span>';
+            try {
+                const opts = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) opts.body = JSON.stringify(body);
+                const response = await fetch(url, opts);
+                if (response.status === 204) { resultDiv.innerHTML = 'Success (No Content)'; return; }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        function createQuestion() {
+            api('/admin/questions', 'POST', 'createQuestionResult', {
+                category: document.getElementById('qCategory').value,
+                content: document.getElementById('qContent').value,
+                createdBy: document.getElementById('qCreatedBy').value
+            });
+        }
+        function getQuestions() { api('/admin/questions?page=0&size=20', 'GET', 'questionsResult'); }
+        function updateQuestion() {
+            const id = document.getElementById('updateQId').value;
+            api(`/admin/questions/${id}`, 'PATCH', 'updateQuestionResult', {
+                content: document.getElementById('updateQContent').value
+            });
+        }
+        function deleteQuestion() {
+            const id = document.getElementById('deleteQId').value;
+            api(`/admin/questions/${id}`, 'DELETE', 'deleteQuestionResult');
+        }
+        function getTodayQuestion() { api('/reflections/today/question', 'GET', 'todayQuestionResult'); }
+        function createReflection() {
+            api('/reflections', 'POST', 'createReflectionResult', {
+                content: document.getElementById('reflectionContent').value
+            });
+        }
+        function getTodayReflection() { api('/reflections/today', 'GET', 'todayReflectionResult'); }
+        function getReflections() { api('/reflections/me?page=0&size=10', 'GET', 'reflectionsResult'); }
+        function getReflectionDetail() {
+            api(`/reflections/${document.getElementById('detailReflectionId').value}`, 'GET', 'detailResult');
+        }
+        function generateFeedback() {
+            api(`/reflections/${document.getElementById('feedbackReflectionId').value}/feedback`, 'POST', 'feedbackResult');
+        }
+    </script>
+</body>
+</html>
