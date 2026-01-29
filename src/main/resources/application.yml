@@ -21,6 +21,11 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
     open-in-view: false
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
 
 logging:
   level:
@@ -33,7 +38,7 @@ gemini:
   base-url: https://aiplatform.googleapis.com/v1
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
 jwt:
   secret: ${JWT_SECRET}
