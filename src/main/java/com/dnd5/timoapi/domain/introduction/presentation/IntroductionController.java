@@ -18,8 +18,8 @@ public class IntroductionController {
 
     private final IntroductionService introductionService;
 
-    @GetMapping("/{introductionId}")
-    public IntroductionResponse findById(@Positive @PathVariable Long introductionId) {
-        return introductionService.findById(introductionId);
+    @GetMapping("/{version}")
+    public IntroductionResponse findByVersion(@Positive @PathVariable int version) {
+        return introductionService.findByVersion(version);
     }
 }

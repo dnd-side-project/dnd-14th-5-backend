@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface IntroductionRepository extends JpaRepository<IntroductionEntity, Long> {
     List<IntroductionEntity> findAllByDeletedAtIsNull();
-    Optional<IntroductionEntity> findByIdAndDeletedAtIsNull(Long id);
+    Optional<IntroductionEntity> findByVersionAndDeletedAtIsNull(int version);
 }

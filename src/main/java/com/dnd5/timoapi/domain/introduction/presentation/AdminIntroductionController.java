@@ -40,18 +40,18 @@ public class AdminIntroductionController {
         return introductionService.findAll();
     }
 
-    @PatchMapping("/{introductionId}")
+    @PatchMapping("/{version}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
-            @Positive @PathVariable Long introductionId,
+            @Positive @PathVariable int version,
             @Valid @RequestBody IntroductionUpdateRequest request
     ) {
-        introductionService.update(introductionId, request);
+        introductionService.update(version, request);
     }
 
-    @DeleteMapping("/{introductionId}")
+    @DeleteMapping("/{version}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@Positive @PathVariable Long introductionId) {
-        introductionService.delete(introductionId);
+    public void delete(@Positive @PathVariable int version) {
+        introductionService.delete(version);
     }
 }

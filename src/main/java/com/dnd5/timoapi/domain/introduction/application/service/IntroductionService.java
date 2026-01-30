@@ -34,22 +34,22 @@ public class IntroductionService {
     }
 
     @Transactional(readOnly = true)
-    public IntroductionResponse findById(Long introductionId) {
-        return IntroductionResponse.from(getEntity(introductionId).toModel());
+    public IntroductionResponse findByVersion(int version) {
+        return IntroductionResponse.from(getEntity(version).toModel());
     }
 
-    public void update(Long introductionId, IntroductionUpdateRequest request) {
-        IntroductionEntity entity = getEntity(introductionId);
+    public void update(int version, IntroductionUpdateRequest request) {
+        IntroductionEntity entity = getEntity(version);
         entity.update(request.version(), request.content());
     }
 
-    public void delete(Long introductionId) {
-        IntroductionEntity entity = getEntity(introductionId);
+    public void delete(int version) {
+        IntroductionEntity entity = getEntity(version);
         entity.setDeletedAt(LocalDateTime.now());
     }
 
-    private IntroductionEntity getEntity(Long introductionId) {
-        return introductionRepository.findByIdAndDeletedAtIsNull(introductionId)
+    private IntroductionEntity getEntity(int version) {
+        return introductionRepository.findByVersionAndDeletedAtIsNull(version)
                 .orElseThrow(() -> new BusinessException(IntroductionErrorCode.INTRODUCTION_NOT_FOUND));
     }
 }

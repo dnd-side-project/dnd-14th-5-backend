@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "service_introductions")
 public class IntroductionEntity extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private int version;
 
     @Column(columnDefinition = "TEXT")
