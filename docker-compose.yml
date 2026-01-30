@@ -1,6 +1,58 @@
 # docker-compose.yml
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: timo-api
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      RELATION_DATABASE_HOST: mysql
+      RELATION_DATABASE_PORT: 3306
+      RELATION_DATABASE_USERNAME: ${RELATION_DATABASE_USERNAME:-timo}
+      RELATION_DATABASE_PASSWORD: ${RELATION_DATABASE_PASSWORD:-timo1234}
+      RELATION_DATABASE_DATABASE: ${RELATION_DATABASE_DATABASE:-timo}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ELASTICSEARCH_HOST: timo-elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      LOGSTASH_HOST: timo-logstash
+      LOGSTASH_PORT: 5000
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      NOTIFICATION_ENABLED: ${NOTIFICATION_ENABLED:-true}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      timo-elasticsearch:
+        condition: service_healthy
+      timo-logstash:
+        condition: service_started
+    networks:
+      - elk-network
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start-period: 60s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
   mysql:
     image: mysql:8.0
     container_name: timo-mysql
@@ -16,6 +68,8 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - default
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -29,6 +83,8 @@ services:
       - "${REDIS_PORT:-6378}:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - default
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
