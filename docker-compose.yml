@@ -2,9 +2,7 @@
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE:-your-dockerhub-id/timo-api:latest}
     container_name: timo-api
     ports:
       - "${APP_PORT:-8080}:8080"
