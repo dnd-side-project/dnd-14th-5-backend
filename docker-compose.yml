@@ -119,6 +119,9 @@ services:
       - "9600:9600"   # Monitoring API
     environment:
       - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST:-timo-elasticsearch}
+      - ELASTICSEARCH_PORT=${ELASTICSEARCH_PORT:-9200}
+      - LOGSTASH_TCP_PORT=${LOGSTASH_TCP_PORT:-5000}
     networks:
       - elk-network
     depends_on:

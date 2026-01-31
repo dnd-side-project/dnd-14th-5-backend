@@ -2,6 +2,7 @@
 <configuration>
   <springProperty scope="context" name="LOGSTASH_HOST" source="logstash.host" defaultValue="localhost"/>
   <springProperty scope="context" name="LOGSTASH_PORT" source="logstash.port" defaultValue="5001"/>
+  <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="timo-backend-api"/>
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
@@ -12,7 +13,7 @@
   <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
     <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"timo-backend-api"}</customFields>
+      <customFields>{"service":"${APP_NAME}"}</customFields>
     </encoder>
     <reconnectionDelay>10 seconds</reconnectionDelay>
   </appender>
@@ -23,7 +24,7 @@
       <level>ERROR</level>
     </filter>
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"timo-backend-api","logType":"ERROR"}</customFields>
+      <customFields>{"service":"${APP_NAME}","logType":"ERROR"}</customFields>
     </encoder>
     <reconnectionDelay>10 seconds</reconnectionDelay>
   </appender>
