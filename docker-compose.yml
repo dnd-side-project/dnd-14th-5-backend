@@ -1,0 +1,153 @@
+# docker-compose.yml
+
+services:
+  app:
+    image: ${DOCKER_IMAGE:-your-dockerhub-id/timo-api:latest}
+    container_name: timo-api
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      RELATION_DATABASE_HOST: mysql
+      RELATION_DATABASE_PORT: 3306
+      RELATION_DATABASE_USERNAME: ${RELATION_DATABASE_USERNAME:-timo}
+      RELATION_DATABASE_PASSWORD: ${RELATION_DATABASE_PASSWORD:-timo1234}
+      RELATION_DATABASE_DATABASE: ${RELATION_DATABASE_DATABASE:-timo}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ELASTICSEARCH_HOST: timo-elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      LOGSTASH_HOST: timo-logstash
+      LOGSTASH_PORT: 5000
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      NOTIFICATION_ENABLED: ${NOTIFICATION_ENABLED:-true}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      timo-elasticsearch:
+        condition: service_healthy
+      timo-logstash:
+        condition: service_started
+    networks:
+      - elk-network
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start-period: 60s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  mysql:
+    image: mysql:8.0
+    container_name: timo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${RELATION_DATABASE_PASSWORD:-timo1234}
+      MYSQL_DATABASE: ${RELATION_DATABASE_DATABASE:-timo}
+      MYSQL_USER: ${RELATION_DATABASE_USERNAME:-timo}
+      MYSQL_PASSWORD: ${RELATION_DATABASE_PASSWORD:-timo1234}
+    ports:
+      - "${RELATION_DATABASE_PORT:-3308}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: timo-redis
+    ports:
+      - "${REDIS_PORT:-6378}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  timo-elasticsearch:
+    image: elasticsearch:9.2.0
+    container_name: timo-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - elk-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  timo-logstash:
+    image: docker.elastic.co/logstash/logstash:9.2.0
+    container_name: timo-logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5044:5044"   # Beats input
+      - "5001:5000"   # TCP input
+      - "9600:9600"   # Monitoring API
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST:-timo-elasticsearch}
+      - ELASTICSEARCH_PORT=${ELASTICSEARCH_PORT:-9200}
+      - LOGSTASH_TCP_PORT=${LOGSTASH_TCP_PORT:-5000}
+    networks:
+      - elk-network
+    depends_on:
+      timo-elasticsearch:
+        condition: service_healthy
+
+  timo-kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.0
+    container_name: timo-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://timo-elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - XPACK_SECURITY_ENABLED=false
+    ports:
+      - "5601:5601"
+    networks:
+      - elk-network
+    depends_on:
+      timo-elasticsearch:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  redis_data:
+  es_data:
+
+networks:
+  elk-network:
+    driver: bridge
