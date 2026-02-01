@@ -59,6 +59,9 @@ dependencies {
 
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Test
+    testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

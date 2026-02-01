@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+logging:
+  level:
+    root: WARN
+
+jwt:
+  secret: test-jwt-secret-key-must-be-at-least-32-characters-long
+  access-expiration: 1800000
+  refresh-expiration: 604800000
+
+gemini:
+  api-key: test-key
+  model: gemini-2.5-flash-lite
+  base-url: https://aiplatform.googleapis.com/v1
+
+cors:
+  allowed-origins: http://localhost:3000
+
+notification:
+  enabled: false
+  discord:
+    webhook-url:
+
+logstash:
+  host: localhost
+  port: 5000
