@@ -2,7 +2,7 @@ package com.dnd5.timoapi.domain.test.domain.model;
 
 import java.time.LocalDateTime;
 
-public record TestRecord(
+public record UserTestRecord(
         Long id,
         Long userId,
         Long testId,
@@ -10,12 +10,12 @@ public record TestRecord(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static TestRecord create(
+    public static UserTestRecord create(
             Long userId,
             Long testId,
             String status
     ) {
-        return new TestRecord(
+        return new UserTestRecord(
                 null,
                 userId,
                 testId,
