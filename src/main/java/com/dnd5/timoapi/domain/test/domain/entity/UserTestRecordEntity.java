@@ -1,14 +1,10 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
-import com.dnd5.timoapi.domain.test.domain.model.TestQuestion;
 import com.dnd5.timoapi.domain.test.domain.model.TestRecord;
-import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -23,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "user_test_records")
-public class TestRecordEntity extends BaseEntity {
+public class UserTestRecordEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -36,12 +32,12 @@ public class TestRecordEntity extends BaseEntity {
     @Column(nullable = false)
     private String status;
 
-    public static TestRecordEntity of(
+    public static UserTestRecordEntity of(
             UserEntity user,
             TestEntity test,
             String status
     ) {
-        return new TestRecordEntity(user, test, status);
+        return new UserTestRecordEntity(user, test, status);
     }
 
     public TestRecord toModel() {

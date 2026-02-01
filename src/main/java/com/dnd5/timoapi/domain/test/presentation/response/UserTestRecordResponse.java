@@ -3,15 +3,15 @@ package com.dnd5.timoapi.domain.test.presentation.response;
 import com.dnd5.timoapi.domain.test.domain.model.TestRecord;
 import java.time.LocalDateTime;
 
-public record TestRecordResponse(
+public record UserTestRecordResponse(
         Long id,
         Long userId,
         Long testId,
         String status,
         LocalDateTime createdAt
 ) {
-    public static TestRecordResponse from(TestRecord model) {
-        return new TestRecordResponse(
+    public static UserTestRecordResponse from(TestRecord model) {
+        return new UserTestRecordResponse(
                 model.id(),
                 model.userId(),
                 model.testId(),
