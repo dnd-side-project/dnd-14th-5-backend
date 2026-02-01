@@ -6,6 +6,7 @@ import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
+import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordResponse;
@@ -42,6 +43,11 @@ public class UserTestRecordService {
         return UserTestRecordCreateResponse.from(savedEntity.toModel());
     }
 
+    public void complete(Long testRecordId) {
+        UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
+        userTestRecordEntity.complete();
+    }
+
     @Transactional(readOnly = true)
     public List<UserTestRecordResponse> findAll(Long userId) {
 
@@ -53,6 +59,11 @@ public class UserTestRecordService {
                 .map(UserTestRecordResponse::from)
                 .toList();
 
+    }
+
+    private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
+        return userTestRecordRepository.findById(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
     }
 
 }

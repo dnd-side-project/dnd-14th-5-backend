@@ -63,7 +63,8 @@ public class UserTestRecordEntity extends BaseEntity {
         );
     }
 
-    public void update(String status) {
-        this.status = status;
+    public void complete() {
+        this.status = "COMPLETE";
     }
+
 }
