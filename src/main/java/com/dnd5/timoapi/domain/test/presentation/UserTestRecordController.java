@@ -1,5 +1,7 @@
 package com.dnd5.timoapi.domain.test.presentation;
 
+import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUserId;
+
 import com.dnd5.timoapi.domain.test.application.service.UserTestRecordService;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
@@ -9,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -48,10 +51,8 @@ public class UserTestRecordController {
 
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserTestRecordResponse> findAll(
-            @Positive @RequestParam Long userId
-    ) {
-        return userTestRecordService.findAll(userId);
+    public List<UserTestRecordResponse> findAll() {
+        return userTestRecordService.findAll(getCurrentUserId());
     }
 
     @GetMapping("/{testRecordId}")
