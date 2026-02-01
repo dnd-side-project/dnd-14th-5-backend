@@ -1,5 +1,7 @@
 package com.dnd5.timoapi.domain.test.application.service;
 
+import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUserId;
+
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
@@ -16,6 +18,7 @@ import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +33,7 @@ public class UserTestRecordService {
     private final UserTestRecordRepository userTestRecordRepository;
 
     public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(request.userId())
+        UserEntity userEntity = userRepository.findById(Objects.requireNonNull(getCurrentUserId()))
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         TestEntity testEntity = testRepository.findById(request.testId())
