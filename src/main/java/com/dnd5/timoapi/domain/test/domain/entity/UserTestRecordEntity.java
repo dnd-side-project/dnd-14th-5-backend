@@ -1,6 +1,6 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
-import com.dnd5.timoapi.domain.test.domain.model.TestRecord;
+import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -40,8 +40,8 @@ public class UserTestRecordEntity extends BaseEntity {
         return new UserTestRecordEntity(user, test, status);
     }
 
-    public TestRecord toModel() {
-        return new TestRecord(
+    public UserTestRecord toModel() {
+        return new UserTestRecord(
                 getId(),
                 user.getId(),
                 test.getId(),
