@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.test.presentation;
 import com.dnd5.timoapi.domain.test.application.service.UserTestRecordService;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
+import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -46,9 +47,20 @@ public class UserTestRecordController {
     }
 
     @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
     public List<UserTestRecordResponse> findAll(
             @Positive @RequestParam Long userId
     ) {
         return userTestRecordService.findAll(userId);
     }
+
+    @GetMapping("/{testRecordId}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserTestRecordDetailResponse findById(
+            @Positive @PathVariable Long testRecordId
+    ) {
+        return userTestRecordService.findById(testRecordId);
+    }
+
+
 }

@@ -9,6 +9,7 @@ import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
+import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -59,6 +60,11 @@ public class UserTestRecordService {
                 .map(UserTestRecordResponse::from)
                 .toList();
 
+    }
+
+    public UserTestRecordDetailResponse findById(Long testRecordId) {
+        UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
+        return UserTestRecordDetailResponse.from(userTestRecordEntity.toModel());
     }
 
     private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
