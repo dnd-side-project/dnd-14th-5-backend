@@ -32,6 +32,18 @@ public class UserTestRecordEntity extends BaseEntity {
     @Column(nullable = false)
     private String status;
 
+    public static UserTestRecordEntity from(
+            UserEntity user,
+            TestEntity test,
+            UserTestRecord model
+    ) {
+        return new UserTestRecordEntity(
+                user,
+                test,
+                model.status()
+        );
+    }
+
     public static UserTestRecordEntity of(
             UserEntity user,
             TestEntity test,

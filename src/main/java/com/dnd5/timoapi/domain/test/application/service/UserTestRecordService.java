@@ -1,8 +1,13 @@
 package com.dnd5.timoapi.domain.test.application.service;
 
+import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
+import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
+import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
+import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -21,6 +26,21 @@ public class UserTestRecordService {
     private final UserRepository userRepository;
     private final TestRepository testRepository;
     private final UserTestRecordRepository userTestRecordRepository;
+
+    public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
+        UserEntity userEntity = userRepository.findById(request.userId())
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        TestEntity testEntity = testRepository.findById(request.testId())
+                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
+
+        UserTestRecord model = request.toModel();
+
+        UserTestRecordEntity savedEntity =
+                userTestRecordRepository.save(UserTestRecordEntity.from(userEntity, testEntity, model));
+
+        return UserTestRecordCreateResponse.from(savedEntity.toModel());
+    }
 
     @Transactional(readOnly = true)
     public List<UserTestRecordResponse> findAll(Long userId) {
