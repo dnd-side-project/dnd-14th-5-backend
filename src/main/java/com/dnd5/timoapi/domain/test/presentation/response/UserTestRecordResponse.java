@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 public record UserTestRecordResponse(
         Long id,
-        Long userId,
         Long testId,
         String status,
         LocalDateTime createdAt
@@ -13,7 +12,6 @@ public record UserTestRecordResponse(
     public static UserTestRecordResponse from(UserTestRecord model) {
         return new UserTestRecordResponse(
                 model.id(),
-                model.userId(),
                 model.testId(),
                 model.status(),
                 model.createdAt()
