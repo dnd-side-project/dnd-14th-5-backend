@@ -20,11 +20,10 @@ public class UserTestRecordController {
 
     private final UserTestRecordService userTestRecordService;
 
-    @GetMapping
+    @GetMapping("/me")
     public List<UserTestRecordResponse> findAll(
-            @Positive @PathVariable Long userId,
-            @Positive @PathVariable Long testId
+            @Positive @PathVariable Long userId
     ) {
-        return userTestRecordService.findAll(userId, testId);
+        return userTestRecordService.findAll(userId);
     }
 }
