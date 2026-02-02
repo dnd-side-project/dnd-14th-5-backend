@@ -39,10 +39,11 @@ public class UserTestResponseController {
     @PatchMapping("/{responseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
+            @Positive @PathVariable Long testRecordId,
             @Positive @PathVariable Long responseId,
             @Valid @RequestBody UserTestResponseUpdateRequest request
     ) {
-        userTestResponseService.update(responseId, request);
+        userTestResponseService.update(testRecordId, responseId, request);
     }
 
 }

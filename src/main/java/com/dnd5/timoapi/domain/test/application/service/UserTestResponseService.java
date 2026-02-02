@@ -42,7 +42,10 @@ public class UserTestResponseService {
 
     }
 
-    public void update(Long responseId, @Valid UserTestResponseUpdateRequest request) {
+    public void update(Long testRecordId, Long responseId, @Valid UserTestResponseUpdateRequest request) {
+        UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
         UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
 
         userTestResponseEntity.update(request.score());
