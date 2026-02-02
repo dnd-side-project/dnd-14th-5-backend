@@ -10,7 +10,6 @@ import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
-import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
 import com.dnd5.timoapi.global.exception.BusinessException;
