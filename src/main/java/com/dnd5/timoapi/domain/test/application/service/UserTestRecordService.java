@@ -63,8 +63,6 @@ public class UserTestRecordService {
         if (userId == null) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         return userTestRecordRepository.findByUserId(userId).stream()
                 .map(UserTestRecordEntity::toModel)
