@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -30,7 +31,7 @@ public class UserTestRecordEntity extends BaseEntity {
     private TestEntity test;
 
     @Column(nullable = false)
-    private String status;
+    private TestRecordStatus status;
 
     public static UserTestRecordEntity from(
             UserEntity user,
@@ -56,7 +57,7 @@ public class UserTestRecordEntity extends BaseEntity {
     }
 
     public void complete() {
-        this.status = "COMPLETED";
+        this.status = TestRecordStatus.COMPLETED;
     }
 
 }
