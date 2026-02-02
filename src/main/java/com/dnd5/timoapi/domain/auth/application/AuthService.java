@@ -24,7 +24,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenExtractor jwtTokenExtractor;
 
-    public TokenResponse login(String email, OAuthProvider provider) {
+    public TokenResponse login(String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 

@@ -8,8 +8,6 @@ import jakarta.validation.constraints.NotNull;
 public record LoginRequest(
         @NotBlank
         @Email
-        String email,
-        @NotNull
-        OAuthProvider provider
+        String email
 ) {
 }
