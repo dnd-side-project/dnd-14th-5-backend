@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.test.domain.entity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -55,6 +56,10 @@ public class UserTestResponseEntity extends BaseEntity {
                 getCreatedAt(),
                 getUpdatedAt()
         );
+    }
+
+    public void update(int score) {
+        this.answerScore = score;
     }
 
 }

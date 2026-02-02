@@ -10,8 +10,11 @@ import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
+import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
+import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,12 @@ public class UserTestResponseService {
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, model));
 
+    }
+
+    public void update(Long responseId, @Valid UserTestResponseUpdateRequest request) {
+        UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
+
+        userTestResponseEntity.update(request.score());
     }
 
     private UserTestResponseEntity getUserTestResponseEntity(Long testResponseId) {
