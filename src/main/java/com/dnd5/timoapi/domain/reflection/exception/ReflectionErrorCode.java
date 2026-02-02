@@ -17,6 +17,7 @@ public enum ReflectionErrorCode implements ErrorCode {
     REFLECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "회고를 찾을 수 없습니다."),
     REFLECTION_FEEDBACK_ALREADY_EXISTS(HttpStatus.CONFLICT, "회고에 대한 피드백이 이미 존재합니다."),
     REFLECTION_FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백을 찾을 수 없습니다."),
+    REFLECTION_FEEDBACK_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백 프롬프트를 찾을 수 없습니다."),
     ;
 
     private final HttpStatus status;
