@@ -73,6 +73,7 @@ public class UserTestRecordService {
 
     }
 
+    @Transactional(readOnly = true)
     public UserTestRecordDetailResponse findById(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
         return UserTestRecordDetailResponse.from(userTestRecordEntity.toModel());
