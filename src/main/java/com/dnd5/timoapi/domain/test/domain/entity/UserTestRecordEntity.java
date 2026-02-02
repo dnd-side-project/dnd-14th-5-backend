@@ -44,14 +44,6 @@ public class UserTestRecordEntity extends BaseEntity {
         );
     }
 
-    public static UserTestRecordEntity of(
-            UserEntity user,
-            TestEntity test,
-            String status
-    ) {
-        return new UserTestRecordEntity(user, test, status);
-    }
-
     public UserTestRecord toModel() {
         return new UserTestRecord(
                 getId(),
