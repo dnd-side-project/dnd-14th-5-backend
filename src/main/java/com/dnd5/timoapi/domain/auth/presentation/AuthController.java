@@ -20,7 +20,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request.email(), request.provider());
+        return authService.login(request.email());
     }
 
     @PostMapping("/reissue")
