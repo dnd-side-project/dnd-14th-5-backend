@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 public record UserTestResponseCreateRequest(
         @Positive @NotNull
         Long questionId,
-        @Positive @NotNull
+        @Positive
         int score
 ) {
     public UserTestResponse toModel(@Positive @NotNull Long testRecordId) {
