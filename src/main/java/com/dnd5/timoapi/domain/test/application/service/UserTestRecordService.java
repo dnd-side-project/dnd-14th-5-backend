@@ -18,7 +18,6 @@ import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,12 @@ public class UserTestRecordService {
     private final UserTestRecordRepository userTestRecordRepository;
 
     public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(Objects.requireNonNull(getCurrentUserId()))
+        Long userId = getCurrentUserId();
+
+        if (userId == null) {
+             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         TestEntity testEntity = testRepository.findById(request.testId())
@@ -54,10 +58,12 @@ public class UserTestRecordService {
 
     @Transactional(readOnly = true)
     public List<UserTestRecordResponse> findAll() {
-
         Long userId = getCurrentUserId();
 
-        UserEntity userEntity = userRepository.findById(Objects.requireNonNull(userId))
+        if (userId == null) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         return userTestRecordRepository.findByUserId(userId).stream()
