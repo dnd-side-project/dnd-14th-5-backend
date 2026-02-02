@@ -63,5 +63,4 @@ public class UserTestRecordController {
         return userTestRecordService.findById(testRecordId);
     }
 
-
 }
