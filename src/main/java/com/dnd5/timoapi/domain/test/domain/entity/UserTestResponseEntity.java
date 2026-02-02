@@ -34,12 +34,12 @@ public class UserTestResponseEntity extends BaseEntity {
     public static UserTestResponseEntity from(
             UserTestRecordEntity userTestRecord,
             TestQuestionEntity testQuestion,
-            UserTestResponse model
+            int answerScore
     ) {
         return new UserTestResponseEntity(
                 userTestRecord,
                 testQuestion,
-                model.answerScore()
+                answerScore
         );
     }
 

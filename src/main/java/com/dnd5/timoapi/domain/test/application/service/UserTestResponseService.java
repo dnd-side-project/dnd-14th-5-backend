@@ -35,9 +35,7 @@ public class UserTestResponseService {
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
 
-        UserTestResponse model = request.toModel(testRecordId);
-
-        userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, model));
+        userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
 
     }
 
