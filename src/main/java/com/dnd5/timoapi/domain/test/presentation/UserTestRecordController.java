@@ -52,7 +52,7 @@ public class UserTestRecordController {
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     public List<UserTestRecordResponse> findAll() {
-        return userTestRecordService.findAll(getCurrentUserId());
+        return userTestRecordService.findAll();
     }
 
     @GetMapping("/{testRecordId}")

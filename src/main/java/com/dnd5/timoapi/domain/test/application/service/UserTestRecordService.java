@@ -53,9 +53,11 @@ public class UserTestRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserTestRecordResponse> findAll(Long userId) {
+    public List<UserTestRecordResponse> findAll() {
 
-        UserEntity userEntity = userRepository.findById(userId)
+        Long userId = getCurrentUserId();
+
+        UserEntity userEntity = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         return userTestRecordRepository.findByUserId(userId).stream()
