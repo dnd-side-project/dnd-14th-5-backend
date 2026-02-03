@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,5 +54,11 @@ public class AdminReflectionFeedbackPromptController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable int version, @Valid @RequestBody ReflectionFeedbackPromptUpdateRequest request) {
         reflectionFeedbackPromptService.update(version, request);
+    }
+
+    @DeleteMapping("/{version}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@Positive @PathVariable int version) {
+        reflectionFeedbackPromptService.delete(version);
     }
 }
