@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionFeedbackPrompt;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackPromptRepository;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbackPromptCreateRequest;
+import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbackPromptUpdateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptResponse;
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
@@ -12,6 +13,8 @@ import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +48,14 @@ public class ReflectionFeedbackPromptService {
         return ReflectionFeedbackPromptDetailResponse.from(reflectionFeedbackPromptEntity.toModel());
     }
 
+    public void update(int version, ReflectionFeedbackPromptUpdateRequest request) {
+        ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity = getReflectionFeedbackPromptEntity(version);
+        reflectionFeedbackPromptEntity.update(request.content());
+    }
+
     private ReflectionFeedbackPromptEntity getReflectionFeedbackPromptEntity(int version) {
         return reflectionFeedbackPromptRepository.findByVersion(version)
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));
     }
+
 }
