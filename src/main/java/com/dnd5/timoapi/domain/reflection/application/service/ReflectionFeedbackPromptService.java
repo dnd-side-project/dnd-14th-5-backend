@@ -53,6 +53,12 @@ public class ReflectionFeedbackPromptService {
         reflectionFeedbackPromptEntity.update(request.content());
     }
 
+
+    public void delete(int version) {
+        ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity = getReflectionFeedbackPromptEntity(version);
+        reflectionFeedbackPromptRepository.deleteByVersion(reflectionFeedbackPromptEntity.getVersion());
+    }
+
     private ReflectionFeedbackPromptEntity getReflectionFeedbackPromptEntity(int version) {
         return reflectionFeedbackPromptRepository.findByVersion(version)
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));

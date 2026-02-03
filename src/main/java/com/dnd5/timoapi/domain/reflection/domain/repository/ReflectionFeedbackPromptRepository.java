@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReflectionFeedbackPromptRepository extends
         JpaRepository<ReflectionFeedbackPromptEntity, Long> {
-
     Optional<ReflectionFeedbackPromptEntity> findByVersion(int version);
+    void deleteByVersion(int version);
 }
