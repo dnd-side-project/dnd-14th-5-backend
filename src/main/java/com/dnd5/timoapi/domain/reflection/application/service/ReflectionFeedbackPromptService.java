@@ -24,8 +24,8 @@ public class ReflectionFeedbackPromptService {
     private final ReflectionFeedbackPromptRepository reflectionFeedbackPromptRepository;
 
     public void create(ReflectionFeedbackPromptCreateRequest request) {
-        ReflectionFeedbackPrompt ReflectionFeedbackPrompt = request.toModel();
-        reflectionFeedbackPromptRepository.save(ReflectionFeedbackPromptEntity.from(ReflectionFeedbackPrompt));
+        ReflectionFeedbackPrompt reflectionFeedbackPrompt = request.toModel();
+        reflectionFeedbackPromptRepository.save(ReflectionFeedbackPromptEntity.from(reflectionFeedbackPrompt));
     }
 
     @Transactional(readOnly = true)
