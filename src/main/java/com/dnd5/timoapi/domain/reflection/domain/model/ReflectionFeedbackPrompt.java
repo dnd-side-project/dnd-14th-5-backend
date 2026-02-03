@@ -8,5 +8,7 @@ public record ReflectionFeedbackPrompt(
         String content,
         LocalDateTime createdAt
 ) {
-
+    public static ReflectionFeedbackPrompt create(int version, String content) {
+        return new ReflectionFeedbackPrompt(null, version, content, null);
+    }
 }
