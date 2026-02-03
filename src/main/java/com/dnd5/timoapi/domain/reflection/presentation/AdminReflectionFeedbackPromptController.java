@@ -1,12 +1,10 @@
 package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionFeedbackPromptService;
-import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionFeedbackPrompt;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbackPromptCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbackPromptUpdateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptResponse;
-import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
