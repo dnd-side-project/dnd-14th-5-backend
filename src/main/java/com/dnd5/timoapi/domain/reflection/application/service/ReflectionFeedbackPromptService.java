@@ -56,7 +56,7 @@ public class ReflectionFeedbackPromptService {
 
     public void delete(int version) {
         ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity = getReflectionFeedbackPromptEntity(version);
-        reflectionFeedbackPromptRepository.deleteByVersion(reflectionFeedbackPromptEntity.getVersion());
+        reflectionFeedbackPromptRepository.delete(reflectionFeedbackPromptEntity);
     }
 
     private ReflectionFeedbackPromptEntity getReflectionFeedbackPromptEntity(int version) {
