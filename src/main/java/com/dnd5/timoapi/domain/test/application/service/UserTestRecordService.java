@@ -5,8 +5,10 @@ import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUs
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
+import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
@@ -29,6 +31,8 @@ public class UserTestRecordService {
 
     private final UserRepository userRepository;
     private final TestRepository testRepository;
+    private final TestQuestionRepository testQuestionRepository;
+    private final UserTestResponseRepository userTestResponseRepository;
     private final UserTestRecordRepository userTestRecordRepository;
 
     public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
@@ -53,6 +57,27 @@ public class UserTestRecordService {
 
     public void complete(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
+
+        if (userTestRecordEntity.isCompleted()) {
+            throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
+        }
+
+        int questionCount =
+                testQuestionRepository.countByTestId(
+                        userTestRecordEntity.getTest().getId()
+                );
+
+        int responseCount =
+                userTestResponseRepository.countByUserTestRecordId(
+                        testRecordId
+                );
+
+        if (responseCount < questionCount) {
+            throw new BusinessException(
+                    UserTestRecordErrorCode.NOT_ALL_QUESTIONS_ANSWERED
+            );
+        }
+
         userTestRecordEntity.complete();
     }
 
@@ -74,7 +99,14 @@ public class UserTestRecordService {
     @Transactional(readOnly = true)
     public UserTestRecordDetailResponse findById(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
-        return UserTestRecordDetailResponse.from(userTestRecordEntity.toModel());
+        int progress =
+                userTestResponseRepository
+                        .countByUserTestRecordId(testRecordId);
+
+        return UserTestRecordDetailResponse.of(
+                userTestRecordEntity.toModel(),
+                progress
+        );
     }
 
     private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
