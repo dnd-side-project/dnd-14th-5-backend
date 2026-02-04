@@ -34,7 +34,7 @@ public class TestController {
     }
 
     @GetMapping("/type/{testType}")
-    public TestDetailResponse findByType(@Valid @PathVariable TestType testType) {
+    public TestDetailResponse findByType(@PathVariable TestType testType) {
         return testService.findByType(testType);
     }
 
