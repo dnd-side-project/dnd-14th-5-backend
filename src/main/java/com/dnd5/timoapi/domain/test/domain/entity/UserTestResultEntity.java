@@ -29,12 +29,12 @@ public class UserTestResultEntity extends BaseEntity {
     private ZtpiCategory category;
 
     @Column(name = "score", nullable = false)
-    private float score;
+    private double score;
 
     public static UserTestResultEntity from(
             UserTestRecordEntity userTestRecord,
             ZtpiCategory category,
-            float score
+            double score
     ) {
         return new UserTestResultEntity(
                 userTestRecord,
