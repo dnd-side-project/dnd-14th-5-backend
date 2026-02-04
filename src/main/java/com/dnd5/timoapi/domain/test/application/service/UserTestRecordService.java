@@ -121,7 +121,7 @@ public class UserTestRecordService {
     }
 
     private void validateAllQuestionsAnswered(List<TestQuestionEntity> testQuestionEntityList, List<UserTestResponseEntity> userTestResponseEntityList) {
-        if (testQuestionEntityList.size() < userTestResponseEntityList.size()) {
+        if (testQuestionEntityList.size() > userTestResponseEntityList.size()) {
             throw new BusinessException(UserTestRecordErrorCode.NOT_ALL_QUESTIONS_ANSWERED);
         }
     }
