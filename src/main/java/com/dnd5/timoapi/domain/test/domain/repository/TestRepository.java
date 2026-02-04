@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface TestRepository extends JpaRepository<TestEntity, Long> {
     List<TestEntity> findAllByDeletedAtIsNull();
     Optional<TestEntity> findByIdAndDeletedAtIsNull(Long id);
-    TestEntity findByType(TestType testType);
+    Optional<TestEntity> findByTypeAndDeletedAtIsNull(TestType testType);
 }

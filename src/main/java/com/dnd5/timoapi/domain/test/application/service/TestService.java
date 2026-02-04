@@ -45,7 +45,8 @@ public class TestService {
 
     @Transactional(readOnly = true)
     public TestDetailResponse findByType(TestType testType) {
-        TestEntity testEntity = testRepository.findByType(testType);
+        TestEntity testEntity = testRepository.findByTypeAndDeletedAtIsNull(testType)
+                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
         return TestDetailResponse.from(testEntity.toModel());
     }
 
