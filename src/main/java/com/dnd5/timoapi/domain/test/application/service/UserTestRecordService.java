@@ -3,14 +3,21 @@ package com.dnd5.timoapi.domain.test.application.service;
 import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUserId;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
+import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
+import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
+import com.dnd5.timoapi.domain.test.domain.repository.UserTestResultRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
+import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
+import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordDetailResponse;
@@ -20,6 +27,8 @@ import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +40,12 @@ public class UserTestRecordService {
 
     private final UserRepository userRepository;
     private final TestRepository testRepository;
+
     private final TestQuestionRepository testQuestionRepository;
+
     private final UserTestResponseRepository userTestResponseRepository;
+    private final UserTestResultRepository userTestResultRepository;
+
     private final UserTestRecordRepository userTestRecordRepository;
 
     public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
@@ -62,21 +75,14 @@ public class UserTestRecordService {
             throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
         }
 
-        int questionCount =
-                testQuestionRepository.countByTestId(
-                        userTestRecordEntity.getTest().getId()
-                );
+        List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestId(userTestRecordEntity.getTest().getId())
+                .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
 
-        int responseCount =
-                userTestResponseRepository.countByUserTestRecordId(
-                        testRecordId
-                );
+        List<UserTestResponseEntity> userTestResponseEntityList = userTestResponseRepository.findByUserTestRecordId(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
 
-        if (responseCount < questionCount) {
-            throw new BusinessException(
-                    UserTestRecordErrorCode.NOT_ALL_QUESTIONS_ANSWERED
-            );
-        }
+        validateAllQuestionsAnswered(testQuestionEntityList, userTestResponseEntityList);
+        createUserTestResults(userTestRecordEntity, userTestResponseEntityList);
 
         userTestRecordEntity.complete();
     }
@@ -112,6 +118,30 @@ public class UserTestRecordService {
     private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
         return userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+    }
+
+    private void validateAllQuestionsAnswered(List<TestQuestionEntity> testQuestionEntityList, List<UserTestResponseEntity> userTestResponseEntityList) {
+        if (testQuestionEntityList.size() < userTestResponseEntityList.size()) {
+            throw new BusinessException(UserTestRecordErrorCode.NOT_ALL_QUESTIONS_ANSWERED);
+        }
+    }
+
+    private Map<ZtpiCategory, Double> calculateCategoryAverages(List<UserTestResponseEntity> userTestResponseEntityList) {
+        return userTestResponseEntityList.stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getTestQuestion().getCategory(),
+                        Collectors.averagingDouble(UserTestResponseEntity::getScore)
+                ));
+    }
+
+    @Transactional
+    public void createUserTestResults(UserTestRecordEntity userTestRecordEntity, List<UserTestResponseEntity> userTestResponseEntityList) {
+        Map<ZtpiCategory, Double> userTestCategoryAverages = calculateCategoryAverages(userTestResponseEntityList);
+
+        userTestCategoryAverages.forEach((category, score) -> {
+            UserTestResultEntity userTestResultEntity = UserTestResultEntity.from(userTestRecordEntity, category, score);
+            userTestResultRepository.save(userTestResultEntity);
+        });
     }
 
 }
