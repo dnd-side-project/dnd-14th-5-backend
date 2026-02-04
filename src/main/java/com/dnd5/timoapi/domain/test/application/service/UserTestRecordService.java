@@ -138,10 +138,10 @@ public class UserTestRecordService {
     public void createUserTestResults(UserTestRecordEntity userTestRecordEntity, List<UserTestResponseEntity> userTestResponseEntityList) {
         Map<ZtpiCategory, Double> userTestCategoryAverages = calculateCategoryAverages(userTestResponseEntityList);
 
-        userTestCategoryAverages.forEach((category, score) -> {
-            UserTestResultEntity userTestResultEntity = UserTestResultEntity.from(userTestRecordEntity, category, score);
-            userTestResultRepository.save(userTestResultEntity);
-        });
+        List<UserTestResultEntity> userTestResultEntityList = userTestCategoryAverages.entrySet().stream()
+                .map(entry -> UserTestResultEntity.from(userTestRecordEntity, entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+        userTestResultRepository.saveAll(userTestResultEntityList);
     }
 
 }
