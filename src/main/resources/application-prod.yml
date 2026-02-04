@@ -24,7 +24,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: {PROD_DDL_AUTO:validate}
     properties:
       hibernate:
         format_sql: false
