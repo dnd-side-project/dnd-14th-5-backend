@@ -50,9 +50,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException e) {
+        final String message = String.format("요청한 리소스(%s)를 찾을 수 없습니다.", e.getResourcePath());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("NOT_FOUND", "요청한 리소스를 찾을 수 없습니다."));
+                .body(new ErrorResponse("NOT_FOUND", message));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
