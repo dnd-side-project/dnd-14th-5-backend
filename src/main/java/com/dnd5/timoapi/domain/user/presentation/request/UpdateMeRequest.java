@@ -1,4 +1,7 @@
 package com.dnd5.timoapi.domain.user.presentation.request;
 
-public record UpdateMeRequest() {
+public record UpdateMeRequest(
+        String name
+) {
+
 }
