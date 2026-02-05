@@ -24,7 +24,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${DDL_AUTO_PRO:validate}
     properties:
       hibernate:
         format_sql: false
@@ -35,6 +35,16 @@ spring:
   sql:
     init:
       mode: never
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/auth/callback/{registrationId}"
+            scope: profile, email
 
 logging:
   level:
@@ -74,6 +84,12 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 1800000
   refresh-expiration: 604800000
+
+oauth:
+  redirect-uri: ${OAUTH_REDIRECT_URI:/test.html}
+  cookie:
+    domain: ${COOKIE_DOMAIN:}
+    same-site: ${COOKIE_SAME_SITE:Lax}
 
 notification:
   enabled: ${NOTIFICATION_ENABLED:true}

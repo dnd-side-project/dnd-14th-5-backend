@@ -1,11 +1,10 @@
-package com.dnd5.timoapi.domain.auth.application;
+package com.dnd5.timoapi.domain.auth.application.service;
 
 import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
 import com.dnd5.timoapi.domain.auth.exception.AuthErrorCode;
 import io.jsonwebtoken.Claims;
 import com.dnd5.timoapi.domain.auth.presentation.response.TokenResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
-import com.dnd5.timoapi.domain.user.domain.model.enums.OAuthProvider;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;

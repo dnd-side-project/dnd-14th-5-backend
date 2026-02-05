@@ -30,6 +30,16 @@ spring:
     init:
       mode: always
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/auth/callback/{registrationId}"
+            scope: profile, email
+
 logging:
   level:
     org.hibernate.SQL: debug
@@ -37,7 +47,7 @@ logging:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
-  model: gemini-2.5-flash-lite
+  model: ${GEMINI_MODEL}
   base-url: https://aiplatform.googleapis.com/v1
 
 cors:
@@ -47,6 +57,12 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 1800000
   refresh-expiration: 604800000
+
+oauth:
+  redirect-uri: ${OAUTH_REDIRECT_URI}
+  cookie:
+    domain: ${COOKIE_DOMAIN:}
+    same-site: ${COOKIE_SAME_SITE:Lax}
 
 notification:
   enabled: ${NOTIFICATION_ENABLED:true}
