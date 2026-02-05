@@ -11,13 +11,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "oauth")
 public class OAuthProperties {
 
-    private String redirectUri = "/test.html";
-    private Cookie cookie = new Cookie();
-
-    @Getter
-    @Setter
-    public static class Cookie {
-        private String domain = "";
-        private String sameSite = "Lax";
-    }
+    private String redirectUri = "/";
 }

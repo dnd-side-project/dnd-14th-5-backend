@@ -86,10 +86,7 @@ jwt:
   refresh-expiration: 604800000
 
 oauth:
-  redirect-uri: ${OAUTH_REDIRECT_URI:/test.html}
-  cookie:
-    domain: ${COOKIE_DOMAIN:}
-    same-site: ${COOKIE_SAME_SITE:Lax}
+  redirect-uri: ${OAUTH_REDIRECT_URI:/}
 
 notification:
   enabled: ${NOTIFICATION_ENABLED:true}
