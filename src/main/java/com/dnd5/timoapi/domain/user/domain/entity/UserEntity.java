@@ -42,7 +42,7 @@ public class UserEntity extends BaseEntity {
     private Boolean isOnboarded = false;
 
     public static UserEntity from(User model) {
-        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), false);
+        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.isOnboarded());
     }
 
     public User toModel() {
