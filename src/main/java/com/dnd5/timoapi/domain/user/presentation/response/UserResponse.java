@@ -7,6 +7,7 @@ public record UserResponse(
         Long id,
         String name,
         String email,
+        Boolean isOnboarded,
         LocalDateTime createdAt
 ) {
     public static UserResponse from(User model) {
@@ -14,6 +15,7 @@ public record UserResponse(
                 model.id(),
                 model.nickname(),
                 model.email(),
+                model.isOnboarded(),
                 model.createdAt()
         );
     }

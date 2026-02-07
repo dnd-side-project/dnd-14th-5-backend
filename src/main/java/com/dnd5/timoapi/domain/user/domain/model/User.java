@@ -12,10 +12,11 @@ public record User(
         String timezone,
         OAuthProvider provider,
         UserRole role,
+        Boolean isOnboarded,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
     public static User create(String email, String nickname, String timezone, OAuthProvider provider) {
-        return new User(null, email, nickname, timezone, provider, UserRole.USER, null, null);
+        return new User(null, email, nickname, timezone, provider, UserRole.USER, false, null, null);
     }
 }
