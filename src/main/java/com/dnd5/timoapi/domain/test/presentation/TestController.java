@@ -4,7 +4,6 @@ import com.dnd5.timoapi.domain.test.application.service.TestService;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestResponse;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
