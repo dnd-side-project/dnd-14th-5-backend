@@ -46,8 +46,7 @@ public class UserEntity extends BaseEntity {
         return new User(getId(), email, nickname, timezone, provider, role, getCreatedAt(), getUpdatedAt());
     }
 
-    public void update(String nickname, String timezone) {
+    public void update(String nickname) {
         if (nickname != null) this.nickname = nickname;
-        if (timezone != null) this.timezone = timezone;
     }
 }

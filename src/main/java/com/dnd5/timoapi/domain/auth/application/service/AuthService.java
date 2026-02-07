@@ -1,17 +1,16 @@
-package com.dnd5.timoapi.domain.auth.application;
+package com.dnd5.timoapi.domain.auth.application.service;
 
 import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
 import com.dnd5.timoapi.domain.auth.exception.AuthErrorCode;
-import io.jsonwebtoken.Claims;
 import com.dnd5.timoapi.domain.auth.presentation.response.TokenResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
-import com.dnd5.timoapi.domain.user.domain.model.enums.OAuthProvider;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import com.dnd5.timoapi.global.security.jwt.JwtTokenExtractor;
 import com.dnd5.timoapi.global.security.jwt.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ public class AuthService {
     private final JwtTokenExtractor jwtTokenExtractor;
 
     public TokenResponse login(String email) {
-        UserEntity user = userRepository.findByEmail(email)
+        UserEntity user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         return issueTokens(user.getId(), user.getEmail(), user.getRole().name());
@@ -41,7 +40,7 @@ public class AuthService {
             throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
         }
 
-        UserEntity user = userRepository.findById(userId)
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         return issueTokens(user.getId(), user.getEmail(), user.getRole().name());
