@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
-import com.dnd5.timoapi.domain.test.domain.model.UserTestResponse;
+import com.dnd5.timoapi.domain.test.domain.model.UserTestResult;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,46 +18,40 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Table(name = "user_test_record_responses")
-public class UserTestResponseEntity extends BaseEntity {
+@Table(name = "user_test_record_results")
+public class UserTestResultEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_record_id", nullable = false)
     private UserTestRecordEntity userTestRecord;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id", nullable = false)
-    private TestQuestionEntity testQuestion;
+    @Column(nullable = false)
+    private ZtpiCategory category;
 
-    @Column(name = "answer_score", nullable = false)
-    private int answerScore;
+    @Column(name = "score", nullable = false)
+    private double score;
 
-    public static UserTestResponseEntity from(
+    public static UserTestResultEntity from(
             UserTestRecordEntity userTestRecord,
-            TestQuestionEntity testQuestion,
-            int answerScore
+            ZtpiCategory category,
+            double score
     ) {
-        return new UserTestResponseEntity(
+        return new UserTestResultEntity(
                 userTestRecord,
-                testQuestion,
-                answerScore
+                category,
+                score
         );
     }
 
-    public UserTestResponse toModel() {
-        return new UserTestResponse(
+    public UserTestResult toModel() {
+        return new UserTestResult(
                 getId(),
                 userTestRecord.getId(),
-                testQuestion.getId(),
-                getAnswerScore(),
+                getCategory(),
+                getScore(),
                 getCreatedAt(),
                 getUpdatedAt()
         );
     }
 
-    public void update(int score) {
-        this.answerScore = score;
-    }
-
-    public double getScore() { return (double) this.answerScore; }
 }
