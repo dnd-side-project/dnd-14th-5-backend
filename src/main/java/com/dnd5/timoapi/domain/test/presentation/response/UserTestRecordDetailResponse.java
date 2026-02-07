@@ -8,13 +8,18 @@ public record UserTestRecordDetailResponse(
         Long id,
         Long testId,
         TestRecordStatus status,
+        int progress,
         LocalDateTime createdAt
 ) {
-    public static UserTestRecordDetailResponse from(UserTestRecord model) {
+    public static UserTestRecordDetailResponse of(
+            UserTestRecord model,
+            int progress
+    ) {
         return new UserTestRecordDetailResponse(
                 model.id(),
                 model.testId(),
                 model.status(),
+                progress,
                 model.createdAt()
         );
     }
