@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.test.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.model.Test;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.TestCreateRequest;
@@ -42,6 +43,13 @@ public class TestService {
         return TestDetailResponse.from(testEntity.toModel());
     }
 
+    @Transactional(readOnly = true)
+    public TestDetailResponse findByType(TestType testType) {
+        TestEntity testEntity = testRepository.findByTypeAndDeletedAtIsNull(testType)
+                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
+        return TestDetailResponse.from(testEntity.toModel());
+    }
+
     public void update(Long testId, TestUpdateRequest request) {
         TestEntity testEntity = getTestEntity(testId);
         testEntity.update(request.type(), request.name(), request.description());
@@ -56,4 +64,5 @@ public class TestService {
         return testRepository.findByIdAndDeletedAtIsNull(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
     }
+
 }
