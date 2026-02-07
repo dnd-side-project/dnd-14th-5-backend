@@ -6,6 +6,8 @@ import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -30,6 +32,7 @@ public class UserTestRecordEntity extends BaseEntity {
     @JoinColumn(name = "test_id", nullable = false)
     private TestEntity test;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TestRecordStatus status;
 
