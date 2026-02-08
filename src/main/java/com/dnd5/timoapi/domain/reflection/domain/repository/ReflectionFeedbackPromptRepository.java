@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReflectionFeedbackPromptRepository extends
         JpaRepository<ReflectionFeedbackPromptEntity, Long> {
     Optional<ReflectionFeedbackPromptEntity> findByVersion(int version);
+    Optional<ReflectionFeedbackPromptEntity> findTopByDeletedAtIsNullOrderByVersionDesc();
 }
