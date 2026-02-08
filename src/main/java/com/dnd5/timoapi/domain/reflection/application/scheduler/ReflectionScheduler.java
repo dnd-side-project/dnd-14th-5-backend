@@ -59,7 +59,7 @@ public class ReflectionScheduler {
     }
 
     private void cacheTodayQuestion(Long userId) {
-        ZtpiCategory todayCategory = todayQuestionResolver.resolveFarthestCategory(userId);
+        ZtpiCategory todayCategory = todayQuestionResolver.resolveTodayCategory(userId);
         Long sequence = todayQuestionResolver.resolveTodaySequence(userId, todayCategory);
 
         reflectionQuestionRepository.findBySequenceAndCategory(sequence, todayCategory)
