@@ -31,7 +31,7 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
 
     // FIXME: @didfodms 프롬프트 작성 / 프롬프트도 데이터베이스에 저장하면 어떨까요?
     private String buildPrompt(ZtpiCategory category, String question, String userReflection) {
-        return getLastestPrompt().formatted(category.name(), userReflection);
+        return getLatestPrompt().formatted(category.name(), question, userReflection);
     }
 
     private FeedbackResult parseResponse(String response) {
@@ -43,7 +43,7 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
         }
     }
 
-    private String getLastestPrompt() {
+    private String getLatestPrompt() {
         ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity =  reflectionFeedbackPromptRepository.findTopByDeletedAtIsNullOrderByVersionDesc()
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));
 
