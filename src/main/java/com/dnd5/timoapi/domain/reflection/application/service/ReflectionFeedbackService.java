@@ -55,6 +55,7 @@ public class ReflectionFeedbackService {
         try {
             FeedbackResult feedbackResult = feedbackGenerator.execute(
                     reflectionQuestionEntity.getCategory(),
+                    reflectionQuestionEntity.getContent(),
                     reflectionEntity.getAnswerText()
             );
             feedbackEntity.complete(feedbackResult.score(), feedbackResult.content());

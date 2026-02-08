@@ -1,6 +1,10 @@
 package com.dnd5.timoapi.domain.reflection.infrastructure.ai;
 
+import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionFeedbackPromptEntity;
+import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackPromptRepository;
+import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.gemini.GeminiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,9 +17,11 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
 
+    private final ReflectionFeedbackPromptRepository reflectionFeedbackPromptRepository;
+
     @Override
-    public FeedbackResult execute(ZtpiCategory category, String userReflection) {
-        String prompt = buildPrompt(category, userReflection);
+    public FeedbackResult execute(ZtpiCategory category, String question, String userReflection) {
+        String prompt = buildPrompt(category, question, userReflection);
         String response = geminiClient.generateContent(prompt);
         if (response == null || response.isBlank()) {
             return new FeedbackResult(0, "");
@@ -24,14 +30,8 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
     }
 
     // FIXME: @didfodms 프롬프트 작성 / 프롬프트도 데이터베이스에 저장하면 어떨까요?
-    private String buildPrompt(ZtpiCategory category, String userReflection) {
-        return """
-                사용자가 부족한 시간 관점 카테고리: %s
-                사용자의 회고 내용: %s
-
-                위 내용을 바탕으로 1~100점 사이의 점수와 피드백을 JSON 형식으로 제공해주세요.
-                응답 형식: {"score": 점수, "content": "피드백 내용"}
-                """.formatted(category.name(), userReflection);
+    private String buildPrompt(ZtpiCategory category, String question, String userReflection) {
+        return getLastestPrompt().formatted(category.name(), userReflection);
     }
 
     private FeedbackResult parseResponse(String response) {
@@ -42,4 +42,12 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
             throw new RuntimeException("Failed to parse Gemini response", e);
         }
     }
+
+    private String getLastestPrompt() {
+        ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity =  reflectionFeedbackPromptRepository.findTopByDeletedAtIsNullOrderByVersionDesc()
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));
+
+        return reflectionFeedbackPromptEntity.getContent();
+    }
+
 }

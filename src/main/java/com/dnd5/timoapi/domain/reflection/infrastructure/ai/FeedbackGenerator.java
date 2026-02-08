@@ -4,5 +4,5 @@ import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 
 public interface FeedbackGenerator {
 
-    FeedbackResult execute(ZtpiCategory category, String userReflection);
+    FeedbackResult execute(ZtpiCategory category, String question, String userReflection);
 }
