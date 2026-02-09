@@ -9,4 +9,5 @@ public interface UserTestResponseRepository extends JpaRepository<UserTestRespon
 
     int countByUserTestRecordId(Long testRecordId);
     Optional<List<UserTestResponseEntity>> findByUserTestRecordId(Long testRecordId);
+    Optional<UserTestResponseEntity> findByUserTestRecordIdAndId(Long testRecordId, Long id);
 }

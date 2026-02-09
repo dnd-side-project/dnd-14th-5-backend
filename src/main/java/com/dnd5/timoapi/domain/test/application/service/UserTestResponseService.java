@@ -12,8 +12,10 @@ import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
+import com.dnd5.timoapi.domain.test.presentation.response.UserTestResponseResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +48,30 @@ public class UserTestResponseService {
         UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
 
         userTestResponseEntity.update(request.score());
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserTestResponseResponse> findAll(Long testRecordId) {
+        userTestRecordRepository.findById(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        return userTestResponseRepository.findByUserTestRecordId(testRecordId)
+                .orElse(List.of())
+                .stream()
+                .map(UserTestResponseEntity::toModel)
+                .map(UserTestResponseResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserTestResponseResponse findById(Long testRecordId, Long responseId) {
+        userTestRecordRepository.findById(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        return userTestResponseRepository.findByUserTestRecordIdAndId(testRecordId, responseId)
+                .map(UserTestResponseEntity::toModel)
+                .map(UserTestResponseResponse::from)
+                .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
     }
 
     private UserTestResponseEntity getUserTestResponseEntity(Long testResponseId) {
