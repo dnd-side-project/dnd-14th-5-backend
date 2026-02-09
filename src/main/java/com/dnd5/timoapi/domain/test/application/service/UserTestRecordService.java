@@ -85,6 +85,11 @@ public class UserTestRecordService {
         createUserTestResults(userTestRecordEntity, userTestResponseEntityList);
 
         userTestRecordEntity.complete();
+
+        UserEntity userEntity = userTestRecordEntity.getUser();
+        if (!userEntity.getIsOnboarded()) {
+            userEntity.completeOnboarding();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -143,5 +148,4 @@ public class UserTestRecordService {
                 .collect(Collectors.toList());
         userTestResultRepository.saveAll(userTestResultEntityList);
     }
-
 }
