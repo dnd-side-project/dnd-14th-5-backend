@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionService;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
+import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
@@ -31,8 +32,8 @@ public class ReflectionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody ReflectionCreateRequest request) {
-        reflectionService.create(request);
+    public ReflectionCreateResponse create(@Valid @RequestBody ReflectionCreateRequest request) {
+        return reflectionService.create(request);
     }
 
     @GetMapping("/today/question")

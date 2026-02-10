@@ -12,6 +12,7 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository
 import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
+import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
@@ -38,7 +39,7 @@ public class ReflectionService {
     private final ReflectionFeedbackRepository reflectionFeedbackRepository;
     private final TodayQuestionResolver todayQuestionResolver;
 
-    public void create(ReflectionCreateRequest request) {
+    public ReflectionCreateResponse create(ReflectionCreateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
 
         if (reflectionRepository.findByDateAndUserId(LocalDate.now(), userId).isPresent()) {
@@ -55,7 +56,8 @@ public class ReflectionService {
                 request.content(),
                 null
         );
-        reflectionRepository.save(ReflectionEntity.from(reflectionModel));
+        ReflectionEntity saved = reflectionRepository.save(ReflectionEntity.from(reflectionModel));
+        return new ReflectionCreateResponse(saved.getId());
     }
 
     @Transactional(readOnly = true)
