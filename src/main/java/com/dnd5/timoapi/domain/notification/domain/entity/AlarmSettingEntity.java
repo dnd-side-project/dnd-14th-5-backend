@@ -19,7 +19,6 @@ import java.time.LocalTime;
 @Entity
 @Table(
         name = "users_reflection_alarm_settings",
-        uniqueConstraints = @UniqueConstraint(columnNames = "user_id"),
         indexes = @Index(name = "idx_alarm_user_id", columnList = "user_id")
 )
 public class AlarmSettingEntity extends BaseEntity {
