@@ -10,6 +10,10 @@ public class SecurityUtil {
         if (authentication == null || authentication.getPrincipal() == null) {
             return null;
         }
-        return (Long) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Long userId) {
+            return userId;
+        }
+        return null;
     }
 }

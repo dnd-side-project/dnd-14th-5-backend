@@ -70,6 +70,12 @@ jwt:
   access-expiration: 1800000
   refresh-expiration: 604800000
 
+cookie:
+  secure: ${COOKIE_SECURE:true}
+  same-site: ${COOKIE_SAME_SITE:None}
+  domain: ${COOKIE_DOMAIN:}
+  path: ${COOKIE_PATH:/}
+
 oauth:
   redirect-uri: ${OAUTH_REDIRECT_URI:/}
 
