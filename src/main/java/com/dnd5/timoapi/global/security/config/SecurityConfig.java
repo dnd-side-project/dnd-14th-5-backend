@@ -68,7 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/reflections/**").authenticated()
                         .requestMatchers("/test-records/**").authenticated()
-                        .requestMatchers("/fcm/**").authenticated()
+                        .requestMatchers("/notifications/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth -> oauth

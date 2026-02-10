@@ -1,13 +1,19 @@
 package com.dnd5.timoapi.domain.fcm.domain.entity;
 
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
 @Table(
         name = "fcm_tokens",
@@ -21,13 +27,4 @@ public class FcmTokenEntity extends BaseEntity {
 
     @Column(nullable = false, length = 500)
     private String token;
-
-    @Column(name = "device_type", length = 50)
-    private String deviceType;
-
-    public FcmTokenEntity(Long userId, String token, String deviceType) {
-        this.userId = userId;
-        this.token = token;
-        this.deviceType = deviceType;
-    }
 }

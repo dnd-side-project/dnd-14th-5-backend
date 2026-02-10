@@ -1,7 +1,7 @@
 package com.dnd5.timoapi.domain.fcm.application.service;
 
 import com.dnd5.timoapi.domain.fcm.domain.entity.FcmTokenEntity;
-import com.dnd5.timoapi.domain.fcm.domain.repository.FcmDeviceTokenRepository;
+import com.dnd5.timoapi.domain.fcm.domain.repository.FcmTokenRepository;
 import com.dnd5.timoapi.domain.fcm.exception.FcmErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
@@ -19,23 +19,23 @@ import java.util.List;
 @Transactional
 public class FcmService {
 
-    private final FcmDeviceTokenRepository deviceTokenRepository;
+    private final FcmTokenRepository fcmTokenRepository;
     private final FcmSender fcmSender;
 
-    public void registerDeviceToken(String token, String deviceType) {
+    public void registerDeviceToken(String token) {
         Long userId = SecurityUtil.getCurrentUserId();
 
-        if (deviceTokenRepository.existsByUserIdAndTokenAndDeletedAtIsNull(userId, token)) {
+        if (fcmTokenRepository.existsByUserIdAndTokenAndDeletedAtIsNull(userId, token)) {
             return;
         }
 
-        deviceTokenRepository.save(new FcmTokenEntity(userId, token, deviceType));
+        fcmTokenRepository.save(new FcmTokenEntity(userId, token));
     }
 
     public void deleteDeviceToken(String token) {
         Long userId = SecurityUtil.getCurrentUserId();
 
-        FcmTokenEntity entity = deviceTokenRepository
+        FcmTokenEntity entity = fcmTokenRepository
                 .findByUserIdAndTokenAndDeletedAtIsNull(userId, token)
                 .orElseThrow(() -> new BusinessException(FcmErrorCode.DEVICE_TOKEN_NOT_FOUND));
 
@@ -44,7 +44,7 @@ public class FcmService {
 
     @Transactional(readOnly = true)
     public void sendToUser(Long userId, FcmMessage message) {
-        List<String> tokens = deviceTokenRepository.findByUserIdAndDeletedAtIsNull(userId)
+        List<String> tokens = fcmTokenRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .stream()
                 .map(FcmTokenEntity::getToken)
                 .toList();
