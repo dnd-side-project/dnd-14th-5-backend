@@ -58,4 +58,5 @@ public class UserTestResponseEntity extends BaseEntity {
         this.answerScore = score;
     }
 
+    public double getScore() { return (double) this.answerScore; }
 }

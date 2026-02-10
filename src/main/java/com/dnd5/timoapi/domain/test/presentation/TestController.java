@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.test.presentation;
 
 import com.dnd5.timoapi.domain.test.application.service.TestService;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestResponse;
 import jakarta.validation.constraints.Positive;
@@ -30,4 +31,10 @@ public class TestController {
     public TestDetailResponse findById(@Positive @PathVariable Long testId) {
         return testService.findById(testId);
     }
+
+    @GetMapping("/type/{testType}")
+    public TestDetailResponse findByType(@PathVariable TestType testType) {
+        return testService.findByType(testType);
+    }
+
 }

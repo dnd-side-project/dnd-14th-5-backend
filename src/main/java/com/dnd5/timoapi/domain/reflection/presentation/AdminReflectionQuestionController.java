@@ -3,7 +3,6 @@ package com.dnd5.timoapi.domain.reflection.presentation;
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionQuestionService;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionUpdateRequest;
-import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.global.common.response.PageResponse;
@@ -34,8 +33,8 @@ public class AdminReflectionQuestionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReflectionCreateResponse create(@Valid @RequestBody ReflectionQuestionCreateRequest request) {
-        return reflectionQuestionService.create(request);
+    public void create(@Valid @RequestBody ReflectionQuestionCreateRequest request) {
+        reflectionQuestionService.create(request);
     }
 
     @GetMapping

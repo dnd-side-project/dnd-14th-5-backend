@@ -38,16 +38,22 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @Column(nullable = false)
+    private Boolean isOnboarded = false;
+
     public static UserEntity from(User model) {
-        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role());
+        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.isOnboarded());
     }
 
     public User toModel() {
-        return new User(getId(), email, nickname, timezone, provider, role, getCreatedAt(), getUpdatedAt());
+        return new User(getId(), email, nickname, timezone, provider, role, isOnboarded, getCreatedAt(), getUpdatedAt());
     }
 
-    public void update(String nickname, String timezone) {
+    public void update(String nickname) {
         if (nickname != null) this.nickname = nickname;
-        if (timezone != null) this.timezone = timezone;
+    }
+
+    public void completeOnboarding() {
+        this.isOnboarded = true;
     }
 }

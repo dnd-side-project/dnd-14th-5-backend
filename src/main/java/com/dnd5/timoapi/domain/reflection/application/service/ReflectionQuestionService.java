@@ -6,7 +6,6 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRe
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionUpdateRequest;
-import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
@@ -26,15 +25,12 @@ public class ReflectionQuestionService {
 
     private final ReflectionQuestionRepository reflectionQuestionRepository;
 
-    public ReflectionCreateResponse create(ReflectionQuestionCreateRequest request) {
+    public void create(ReflectionQuestionCreateRequest request) {
         Long nextSequence = reflectionQuestionRepository.findMaxSequenceByCategory(request.category()) + 1;
 
         ReflectionQuestion questionModel = ReflectionQuestion.create(
                 nextSequence, request.category(), request.content(), request.createdBy());
-        ReflectionQuestionEntity saved = reflectionQuestionRepository.save(
-                ReflectionQuestionEntity.from(questionModel));
-
-        return new ReflectionCreateResponse(saved.getId());
+        reflectionQuestionRepository.save(ReflectionQuestionEntity.from(questionModel));
     }
 
     @Transactional(readOnly = true)

@@ -1,35 +1,38 @@
 package com.dnd5.timoapi.domain.auth.presentation;
 
-import com.dnd5.timoapi.domain.auth.application.AuthService;
+import com.dnd5.timoapi.domain.auth.application.service.AuthService;
 import com.dnd5.timoapi.domain.auth.presentation.request.LoginRequest;
-import com.dnd5.timoapi.domain.auth.presentation.request.ReissueRequest;
-import com.dnd5.timoapi.domain.auth.presentation.response.TokenResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test-auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/login")
-    public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request.email());
+    @PostMapping("/test-auth/login")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+        authService.login(request.email(), response);
     }
 
-    @PostMapping("/reissue")
-    public TokenResponse reissue(@Valid @RequestBody ReissueRequest request) {
-        return authService.reissue(request.refreshToken());
+    @PostMapping("/auth/reissue")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reissue(@CookieValue("refresh_token") String refreshToken, HttpServletResponse response) {
+        authService.reissue(refreshToken, response);
     }
 
-    @PostMapping("/logout")
-    public void logout() {
-        authService.logout();
+    @PostMapping("/auth/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(HttpServletResponse response) {
+        authService.logout(response);
     }
 }
