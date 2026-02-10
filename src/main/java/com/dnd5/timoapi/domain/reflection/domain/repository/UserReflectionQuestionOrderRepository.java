@@ -10,4 +10,6 @@ public interface UserReflectionQuestionOrderRepository extends
 
     Optional<UserReflectionQuestionOrderEntity> findByUserIdAndCategory(Long userId,
             ZtpiCategory category);
+
+    boolean existsByUserIdAndCategory(Long userId, ZtpiCategory category);
 }
