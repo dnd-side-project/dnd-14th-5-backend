@@ -1,6 +1,5 @@
 package com.dnd5.timoapi.domain.notification.application.service;
 
-import com.dnd5.timoapi.domain.fcm.application.service.FcmService;
 import com.dnd5.timoapi.domain.notification.domain.entity.AlarmSettingEntity;
 import com.dnd5.timoapi.domain.notification.domain.repository.AlarmSettingRepository;
 import com.dnd5.timoapi.domain.notification.exception.NotificationErrorCode;

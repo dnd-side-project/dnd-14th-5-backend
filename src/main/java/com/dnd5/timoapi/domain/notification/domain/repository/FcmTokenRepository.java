@@ -1,6 +1,6 @@
-package com.dnd5.timoapi.domain.fcm.domain.repository;
+package com.dnd5.timoapi.domain.notification.domain.repository;
 
-import com.dnd5.timoapi.domain.fcm.domain.entity.FcmTokenEntity;
+import com.dnd5.timoapi.domain.notification.domain.entity.FcmTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

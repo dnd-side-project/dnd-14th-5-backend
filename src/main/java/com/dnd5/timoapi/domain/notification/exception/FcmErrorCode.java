@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.fcm.exception;
+package com.dnd5.timoapi.domain.notification.exception;
 
 import com.dnd5.timoapi.global.exception.ErrorCode;
 import lombok.Getter;

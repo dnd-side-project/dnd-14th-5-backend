@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.fcm.domain.entity;
+package com.dnd5.timoapi.domain.notification.domain.entity;
 
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;

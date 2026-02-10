@@ -1,8 +1,8 @@
-package com.dnd5.timoapi.domain.fcm.application.service;
+package com.dnd5.timoapi.domain.notification.application.service;
 
-import com.dnd5.timoapi.domain.fcm.domain.entity.FcmTokenEntity;
-import com.dnd5.timoapi.domain.fcm.domain.repository.FcmTokenRepository;
-import com.dnd5.timoapi.domain.fcm.exception.FcmErrorCode;
+import com.dnd5.timoapi.domain.notification.domain.entity.FcmTokenEntity;
+import com.dnd5.timoapi.domain.notification.domain.repository.FcmTokenRepository;
+import com.dnd5.timoapi.domain.notification.exception.FcmErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmSender;
