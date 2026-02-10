@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.notification.application.service;
 import com.dnd5.timoapi.domain.notification.domain.entity.FcmTokenEntity;
 import com.dnd5.timoapi.domain.notification.domain.repository.FcmTokenRepository;
 import com.dnd5.timoapi.domain.notification.exception.FcmErrorCode;
+import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmSender;
@@ -24,6 +25,9 @@ public class FcmService {
 
     public void registerDeviceToken(String token) {
         Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
 
         if (fcmTokenRepository.existsByUserIdAndTokenAndDeletedAtIsNull(userId, token)) {
             return;
@@ -34,6 +38,9 @@ public class FcmService {
 
     public void deleteDeviceToken(String token) {
         Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
 
         FcmTokenEntity entity = fcmTokenRepository
                 .findByUserIdAndTokenAndDeletedAtIsNull(userId, token)
