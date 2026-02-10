@@ -83,3 +83,7 @@ notification:
   enabled: ${NOTIFICATION_ENABLED:true}
   discord:
     webhook-url: ${DISCORD_WEBHOOK_URL:}
+
+fcm:
+  enabled: ${FCM_ENABLED:false}
+  credentials-path: ${FCM_CREDENTIALS_PATH:}
