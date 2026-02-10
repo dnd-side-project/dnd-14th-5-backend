@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 
 @Slf4j
 @Configuration
@@ -23,8 +25,8 @@ public class FcmConfig {
 
     @PostConstruct
     public void initialize() {
-        if (!properties.enabled() || properties.credentialsPath() == null || properties.credentialsPath().isBlank()) {
-            log.info("FCM disabled or credentials not configured");
+        if (!properties.enabled()) {
+            log.info("FCM disabled");
             return;
         }
 
@@ -32,12 +34,21 @@ public class FcmConfig {
             return;
         }
 
-        try (FileInputStream serviceAccount = new FileInputStream(properties.credentialsPath())) {
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
+        try {
+            GoogleCredentials credentials;
+            String path = properties.credentialsPath();
 
-            FirebaseApp.initializeApp(options);
+            if (path == null || path.isBlank()) {
+                credentials = GoogleCredentials.getApplicationDefault();
+            } else if (path.startsWith("http")) {
+                credentials = GoogleCredentials.fromStream(URI.create(path).toURL().openStream());
+            } else {
+                credentials = GoogleCredentials.fromStream(new FileInputStream(path));
+            }
+
+            FirebaseApp.initializeApp(FirebaseOptions.builder()
+                    .setCredentials(credentials)
+                    .build());
             log.info("Firebase initialized successfully");
         } catch (IOException e) {
             log.error("Failed to initialize Firebase: {}", e.getMessage());

@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.notification.domain.repository.AlarmSettingReposi
 import com.dnd5.timoapi.domain.notification.exception.NotificationErrorCode;
 import com.dnd5.timoapi.domain.notification.presentation.response.ScheduleResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,11 @@ public class NotificationScheduleService {
     public void delete(Long scheduleId) {
         AlarmSettingEntity entity = findByIdAndValidateOwner(scheduleId);
         entity.setDeletedAt(LocalDateTime.now());
+    }
+
+    public void testSend() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        fcmService.sendToUser(userId, FcmMessage.of("회고 시간이에요", "오늘 하루를 돌아보며 회고를 작성해보세요."));
     }
 
     private AlarmSettingEntity findByIdAndValidateOwner(Long scheduleId) {

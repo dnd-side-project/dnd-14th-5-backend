@@ -108,3 +108,7 @@ notification:
 logstash:
   host: ${LOGSTASH_HOST:timo-logstash}
   port: ${LOGSTASH_PORT:5000}
+
+fcm:
+  enabled: ${FCM_ENABLED:false}
+  credentials-path: ${FCM_CREDENTIALS_PATH:}

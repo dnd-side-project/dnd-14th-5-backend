@@ -38,6 +38,12 @@ public class NotificationScheduleController {
         return scheduleService.getMy();
     }
 
+    @PostMapping("/test-send")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void testSend() {
+        scheduleService.testSend();
+    }
+
     @PatchMapping("/{scheduleId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable Long scheduleId, @Valid @RequestBody UpdateScheduleRequest request) {
