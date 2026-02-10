@@ -41,12 +41,15 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false)
     private Boolean isOnboarded = false;
 
+    @Column(nullable = false)
+    private Integer streakDays = 0;
+
     public static UserEntity from(User model) {
-        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.isOnboarded());
+        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.isOnboarded(), model.streakDays());
     }
 
     public User toModel() {
-        return new User(getId(), email, nickname, timezone, provider, role, isOnboarded, getCreatedAt(), getUpdatedAt());
+        return new User(getId(), email, nickname, timezone, provider, role, isOnboarded, streakDays, getCreatedAt(), getUpdatedAt());
     }
 
     public void update(String nickname) {
@@ -55,5 +58,13 @@ public class UserEntity extends BaseEntity {
 
     public void completeOnboarding() {
         this.isOnboarded = true;
+    }
+
+    public void incrementStreakDays() {
+        this.streakDays += 1;
+    }
+
+    public void resetStreakDays() {
+        this.streakDays = 0;
     }
 }
