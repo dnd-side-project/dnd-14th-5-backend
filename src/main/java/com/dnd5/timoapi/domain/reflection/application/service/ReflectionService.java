@@ -18,6 +18,9 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedba
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
+import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
+import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.common.response.PageResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
@@ -38,6 +41,7 @@ public class ReflectionService {
     private final ReflectionQuestionRepository reflectionQuestionRepository;
     private final ReflectionFeedbackRepository reflectionFeedbackRepository;
     private final TodayQuestionResolver todayQuestionResolver;
+    private final UserRepository userRepository;
 
     public ReflectionCreateResponse create(ReflectionCreateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -57,6 +61,11 @@ public class ReflectionService {
                 null
         );
         ReflectionEntity saved = reflectionRepository.save(ReflectionEntity.from(reflectionModel));
+
+        UserEntity userEntity = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        userEntity.incrementStreakDays();
+
         return new ReflectionCreateResponse(saved.getId());
     }
 
