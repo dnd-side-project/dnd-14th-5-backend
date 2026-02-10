@@ -8,6 +8,7 @@ public record UserResponse(
         String name,
         String email,
         Boolean isOnboarded,
+        Integer streakDays,
         LocalDateTime createdAt
 ) {
     public static UserResponse from(User model) {
@@ -16,6 +17,7 @@ public record UserResponse(
                 model.nickname(),
                 model.email(),
                 model.isOnboarded(),
+                model.streakDays(),
                 model.createdAt()
         );
     }

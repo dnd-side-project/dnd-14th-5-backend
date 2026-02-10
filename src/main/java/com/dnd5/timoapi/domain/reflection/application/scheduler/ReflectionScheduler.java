@@ -7,8 +7,12 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRe
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +28,7 @@ public class ReflectionScheduler {
     private final ReflectionQuestionRepository reflectionQuestionRepository;
     private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
     private final TodayQuestionResolver todayQuestionResolver;
+    private final UserRepository userRepository;
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -55,7 +60,23 @@ public class ReflectionScheduler {
             cacheTodayQuestion(userId);
         }
 
+        resetStreakForInactiveUsers(yesterdayReflections);
+
         log.info("Reflection scheduler completed");
+    }
+
+    private void resetStreakForInactiveUsers(List<ReflectionEntity> yesterdayReflections) {
+        Set<Long> activeUserIds = yesterdayReflections.stream()
+                .map(ReflectionEntity::getUserId)
+                .collect(Collectors.toSet());
+
+        List<UserEntity> streakUsers = userRepository.findAllByStreakDaysGreaterThanAndDeletedAtIsNull(0);
+        for (UserEntity user : streakUsers) {
+            if (!activeUserIds.contains(user.getId())) {
+                user.resetStreakDays();
+                log.info("Reset streak for userId: {}", user.getId());
+            }
+        }
     }
 
     private void cacheTodayQuestion(Long userId) {
