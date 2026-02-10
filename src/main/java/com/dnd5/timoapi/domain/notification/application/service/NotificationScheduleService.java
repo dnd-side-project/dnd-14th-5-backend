@@ -55,7 +55,7 @@ public class NotificationScheduleService {
 
     public void testSend() {
         Long userId = SecurityUtil.getCurrentUserId();
-        fcmService.sendToUser(userId, FcmMessage.of("회고 시간이에요", "오늘 하루를 돌아보며 회고를 작성해보세요."));
+        fcmService.sendToUser(userId, FcmMessage.of("테스트", "알림 테스트 성공"));
     }
 
     private AlarmSettingEntity findByIdAndValidateOwner(Long scheduleId) {

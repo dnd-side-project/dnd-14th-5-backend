@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NotificationScheduler {
 
+    private static final String NOTIFICATION_TITLE = "회고 시간이에요";
+    private static final String NOTIFICATION_BODY = "오늘 하루를 돌아보며 회고를 작성해보세요.";
+
     private final AlarmSettingRepository alarmSettingRepository;
     private final FcmService fcmService;
 
@@ -33,7 +36,7 @@ public class NotificationScheduler {
 
         for (AlarmSettingEntity setting : settings) {
             try {
-                fcmService.sendToUser(setting.getUserId(), FcmMessage.of("회고 시간이에요", "오늘 하루를 돌아보며 회고를 작성해보세요."));
+                fcmService.sendToUser(setting.getUserId(), FcmMessage.of(NOTIFICATION_TITLE, NOTIFICATION_BODY));
             } catch (Exception e) {
                 log.error("Failed to send notification to userId: {}", setting.getUserId(), e);
             }
