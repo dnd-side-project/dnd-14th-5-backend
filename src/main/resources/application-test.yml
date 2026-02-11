@@ -47,6 +47,10 @@ notification:
   discord:
     webhook-url:
 
+fcm:
+  enabled: false
+  credentials-path:
+
 logstash:
   host: localhost
   port: 5000
