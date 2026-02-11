@@ -2,6 +2,8 @@ package com.dnd5.timoapi.domain.test.application.service;
 
 import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUserId;
 
+import com.dnd5.timoapi.domain.reflection.domain.entity.UserReflectionQuestionOrderEntity;
+import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
@@ -47,6 +49,7 @@ public class UserTestRecordService {
     private final UserTestResultRepository userTestResultRepository;
 
     private final UserTestRecordRepository userTestRecordRepository;
+    private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
 
     public UserTestRecordCreateResponse create(UserTestRecordCreateRequest request) {
         Long userId = getCurrentUserId();
@@ -85,6 +88,7 @@ public class UserTestRecordService {
         createUserTestResults(userTestRecordEntity, userTestResponseEntityList);
 
         userTestRecordEntity.complete();
+        createUserReflectionQuestionOrders(userTestRecordEntity.getUser().getId());
 
         UserEntity userEntity = userTestRecordEntity.getUser();
         if (!userEntity.getIsOnboarded()) {
@@ -123,6 +127,16 @@ public class UserTestRecordService {
     private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
         return userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+    }
+
+    private void createUserReflectionQuestionOrders(Long userId) {
+        for (ZtpiCategory category : ZtpiCategory.values()) {
+            if (!userReflectionQuestionOrderRepository.existsByUserIdAndCategory(userId, category)) {
+                userReflectionQuestionOrderRepository.save(
+                        new UserReflectionQuestionOrderEntity(userId, category, 1L)
+                );
+            }
+        }
     }
 
     private void validateAllQuestionsAnswered(List<TestQuestionEntity> testQuestionEntityList, List<UserTestResponseEntity> userTestResponseEntityList) {
