@@ -25,6 +25,9 @@ public class TestService {
     private final TestRepository testRepository;
 
     public void create(TestCreateRequest request) {
+        if (testRepository.existsByTypeAndDeletedAtIsNull(request.type())) {
+            throw new BusinessException(TestErrorCode.TEST_TYPE_ALREADY_EXISTS);
+        }
         Test testModel = request.toModel();
         testRepository.save(TestEntity.from(testModel));
     }
@@ -52,6 +55,10 @@ public class TestService {
 
     public void update(Long testId, TestUpdateRequest request) {
         TestEntity testEntity = getTestEntity(testId);
+        if (request.type() != null && request.type() != testEntity.getType()
+                && testRepository.existsByTypeAndDeletedAtIsNull(request.type())) {
+            throw new BusinessException(TestErrorCode.TEST_TYPE_ALREADY_EXISTS);
+        }
         testEntity.update(request.type(), request.name(), request.description());
     }
 

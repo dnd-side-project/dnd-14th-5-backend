@@ -25,7 +25,7 @@ import java.util.List;
 @Table(name = "tests")
 public class TestEntity extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
     private TestType type;
 
