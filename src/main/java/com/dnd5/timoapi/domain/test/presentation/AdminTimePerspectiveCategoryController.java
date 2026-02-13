@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/time-perspective-category")
+@RequestMapping("/time-perspective-categories")
 @RequiredArgsConstructor
 @Validated
 public class AdminTimePerspectiveCategoryController {
-    
+
 }
