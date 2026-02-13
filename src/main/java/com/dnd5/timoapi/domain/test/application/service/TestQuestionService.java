@@ -28,18 +28,23 @@ public class TestQuestionService {
     private final TestQuestionRepository testQuestionRepository;
 
     public void create(Long testId, TestQuestionCreateRequest request) {
-        TestEntity entity = testRepository.findById(testId)
+        TestEntity testEntity = testRepository.findById(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
-        TestQuestionEntity testEntity = TestQuestionEntity.of(
-                entity,
+        int currentQuestionCount = testQuestionRepository.countByTestIdAndDeletedAtIsNull(testId);
+        if (testEntity.getMaxQuestionCount() < currentQuestionCount + 1) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_ALREADY_FULL);
+        }
+
+        TestQuestionEntity testQuestionEntity = TestQuestionEntity.of(
+                testEntity,
                 request.category(),
                 request.content(),
                 request.sequence(),
                 request.isReversed()
         );
 
-        testQuestionRepository.save(testEntity);
+        testQuestionRepository.save(testQuestionEntity);
     }
 
     @Transactional(readOnly = true)
@@ -68,14 +73,7 @@ public class TestQuestionService {
     }
 
     public void delete(Long questionId, Long testId) {
-        TestEntity testEntity = testRepository.findById(testId)
-                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
-        TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
-
-        if (!testEntity.getId().equals(testQuestionEntity.getId())) {
-            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND);
-        }
+        TestQuestionEntity testQuestionEntity = getTestQuestionEntity(testId, questionId);
         testQuestionEntity.setDeletedAt(LocalDateTime.now());
     }
 

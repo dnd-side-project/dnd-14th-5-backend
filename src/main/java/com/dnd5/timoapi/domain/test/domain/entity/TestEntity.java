@@ -48,4 +48,14 @@ public class TestEntity extends BaseEntity {
         if (name != null) this.name = name;
         if (description != null) this.description = description;
     }
+
+    public int getMaxQuestionCount() {
+        if (getType() == TestType.ZTPI_15) {
+            return 15;
+        } else if (getType() == TestType.ZTPI_56) {
+            return 56;
+        } else {
+            return 0;
+        }
+    }
 }
