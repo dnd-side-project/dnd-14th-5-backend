@@ -44,7 +44,7 @@ public class TestQuestionService {
 
     @Transactional(readOnly = true)
     public List<TestQuestionResponse> findAll(Long testId) {
-        return testQuestionRepository.findByTestIdOrderBySequenceAsc(testId).stream()
+        return testQuestionRepository.findByTestIdAndDeletedAtIsNullOrderBySequenceAsc(testId).stream()
                 .map(TestQuestionEntity::toModel)
                 .map(TestQuestionResponse::from)
                 .toList();
@@ -72,6 +72,10 @@ public class TestQuestionService {
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+
+        if (!testEntity.getId().equals(testQuestionEntity.getId())) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND);
+        }
         testQuestionEntity.setDeletedAt(LocalDateTime.now());
     }
 
