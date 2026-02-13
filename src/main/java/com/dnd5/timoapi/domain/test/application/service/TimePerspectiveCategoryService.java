@@ -4,6 +4,8 @@ import com.dnd5.timoapi.domain.test.domain.entity.TimePerspectiveCategoryEntity;
 import com.dnd5.timoapi.domain.test.domain.model.TimePerspectiveCategory;
 import com.dnd5.timoapi.domain.test.domain.repository.TimePerspectiveCategoryRepository;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryCreateRequest;
+import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,4 +22,10 @@ public class TimePerspectiveCategoryService {
         timePerspectiveCategoryRepository.save(TimePerspectiveCategoryEntity.from(model));
     }
 
+    public List<TimePerspectiveCategoryResponse> findAll() {
+        return timePerspectiveCategoryRepository.findAll().stream()
+                .map(TimePerspectiveCategoryEntity::toModel)
+                .map(TimePerspectiveCategoryResponse::from)
+                .toList();
+    }
 }
