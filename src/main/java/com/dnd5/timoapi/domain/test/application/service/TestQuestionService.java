@@ -36,6 +36,10 @@ public class TestQuestionService {
             throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_ALREADY_FULL);
         }
 
+        if (testQuestionRepository.existsByTestIdAndSequenceAndDeletedAtIsNull(testId, request.sequence())) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_SEQUENCE_DUPLICATED);
+        }
+
         TestQuestionEntity testQuestionEntity = TestQuestionEntity.of(
                 testEntity,
                 request.category(),
@@ -64,6 +68,10 @@ public class TestQuestionService {
     public void update(Long questionId, Long testId, @Valid TestQuestionUpdateRequest request) {
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findByIdAndTestIdAndDeletedAtIsNull(questionId, testId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+        if (request.sequence() != testQuestionEntity.getSequence()
+                && testQuestionRepository.existsByTestIdAndSequenceAndIdNotAndDeletedAtIsNull(testId, request.sequence(), questionId)) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_SEQUENCE_DUPLICATED);
+        }
         testQuestionEntity.update(
                 request.category(),
                 request.content(),

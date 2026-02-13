@@ -11,4 +11,6 @@ public interface TestQuestionRepository extends JpaRepository<TestQuestionEntity
     Optional<List<TestQuestionEntity>> findByTestId(Long id);
     List<TestQuestionEntity> findByTestIdAndDeletedAtIsNullOrderBySequenceAsc(Long testId);
     int countByTestIdAndDeletedAtIsNull(Long testId);
+    boolean existsByTestIdAndSequenceAndDeletedAtIsNull(Long testId, int sequence);
+    boolean existsByTestIdAndSequenceAndIdNotAndDeletedAtIsNull(Long testId, int sequence, Long id);
 }
