@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/time-perspective-categories")
+@RequestMapping("/admin/time-perspective-categories")
 @RequiredArgsConstructor
 @Validated
 public class AdminTimePerspectiveCategoryController {
