@@ -7,13 +7,12 @@ import jakarta.validation.constraints.NotEmpty;
 public record TimePerspectiveCategoryCreateRequest(
         @NotBlank
         String name,
-        @NotBlank
-        String character,
+        String characterName,
         String personality,
         @NotEmpty
         String description
 ) {
     public TimePerspectiveCategory toModel() {
-        return TimePerspectiveCategory.create(name, character, personality, description);
+        return TimePerspectiveCategory.create(name, characterName, personality, description);
     }
 }

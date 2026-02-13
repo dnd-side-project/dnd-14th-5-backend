@@ -20,8 +20,8 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String character;
+    @Column(name = "character_name", nullable = false)
+    private String characterName;
 
     @Column(nullable = false)
     private String personality;
@@ -30,11 +30,11 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
     private String description;
 
     public static TimePerspectiveCategoryEntity from(TimePerspectiveCategory model) {
-        return new TimePerspectiveCategoryEntity(model.name(), model.character(), model.personality(), model.description());
+        return new TimePerspectiveCategoryEntity(model.name(), model.characterName(), model.personality(), model.description());
     }
 
     public TimePerspectiveCategory toModel() {
-        return new TimePerspectiveCategory(getId(), getName(), getCharacter(), getPersonality(), getDescription(), getCreatedAt());
+        return new TimePerspectiveCategory(getId(), getName(), getCharacterName(), getPersonality(), getDescription(), getCreatedAt());
     }
 
 }
