@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.test.domain.entity;
 
 import com.dnd5.timoapi.domain.test.domain.model.TimePerspectiveCategory;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +36,13 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
 
     public TimePerspectiveCategory toModel() {
         return new TimePerspectiveCategory(getId(), getName(), getCharacterName(), getPersonality(), getDescription(), getCreatedAt(), getUpdatedAt());
+    }
+
+    public void update(String name, String characterName, String personality, String description) {
+        if (name != null) this.name = name;
+        if (characterName != null) this.characterName = characterName;
+        if (personality != null) this.personality = personality;
+        if (description != null) this.description = description;
     }
 
 }
