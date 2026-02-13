@@ -8,9 +8,10 @@ public record TimePerspectiveCategory(
         String characterName,
         String personality,
         String description,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
     public static TimePerspectiveCategory create(String name, String characterName, String personality, String description) {
-        return new TimePerspectiveCategory(null, name, characterName, personality, description, null);
+        return new TimePerspectiveCategory(null, name, characterName, personality, description, null, null);
     }
 }

@@ -34,7 +34,7 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
     }
 
     public TimePerspectiveCategory toModel() {
-        return new TimePerspectiveCategory(getId(), getName(), getCharacterName(), getPersonality(), getDescription(), getCreatedAt());
+        return new TimePerspectiveCategory(getId(), getName(), getCharacterName(), getPersonality(), getDescription(), getCreatedAt(), getUpdatedAt());
     }
 
 }
