@@ -20,6 +20,7 @@ public record OAuth2UserInfo(
         return switch (registrationId) {
             case "google" -> ofGoogle(attributes);
             case "naver" -> ofNaver(attributes);
+            case "kakao" -> ofKakao(attributes);
             default -> throw new BusinessException(AuthErrorCode.ILLEGAL_REGISTRATION_ID);
         };
     }
@@ -40,6 +41,22 @@ public record OAuth2UserInfo(
                 .name((String) response.get("name"))
                 .email((String) response.get("email"))
                 .provider(OAuthProvider.NAVER)
+                .build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static OAuth2UserInfo ofKakao(Map<String, Object> attributes) {
+        Map<String, Object> kakaoAccount =
+                (Map<String, Object>) attributes.get("kakao_account");
+
+        Map<String, Object> profile =
+                (Map<String, Object>) kakaoAccount.get("profile");
+
+        return OAuth2UserInfo.builder()
+                .name((String) profile.get("nickname"))
+                .email((String) kakaoAccount.get("email"))
+                .profile((String) profile.get("profile_image_url"))
+                .provider(OAuthProvider.KAKAO)
                 .build();
     }
 
