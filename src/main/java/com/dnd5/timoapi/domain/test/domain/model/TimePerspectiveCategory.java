@@ -10,4 +10,7 @@ public record TimePerspectiveCategory(
         String description,
         LocalDateTime createdAt
 ) {
+    public static TimePerspectiveCategory create(String name, String character, String personality, String description) {
+        return new TimePerspectiveCategory(null, name, character, personality, description, null);
+    }
 }
