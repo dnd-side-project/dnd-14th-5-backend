@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class AdminTimePerspectiveCategoryController {
 
-    TimePerspectiveCategoryService timePerspectiveCategoryService;
+    private final TimePerspectiveCategoryService timePerspectiveCategoryService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
