@@ -21,16 +21,16 @@ public class IntroductionEntity extends BaseEntity {
     private int version;
 
     @Column(nullable = false)
-    Long sequence;
+    private Long sequence;
 
     @Column(nullable = false)
-    String title;
+    private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    String imageUrl;
+    private String imageUrl;
 
     public static IntroductionEntity from(Introduction model) {
         return new IntroductionEntity(
