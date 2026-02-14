@@ -38,7 +38,6 @@ public class UserTestRecordController {
     }
 
     @PatchMapping("/{testRecordId}/complete")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public UserTestRecordDetailResponse complete(
             @Positive @PathVariable Long testRecordId
     ) {
