@@ -25,6 +25,7 @@ import com.dnd5.timoapi.global.common.response.PageResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -93,11 +94,16 @@ public class ReflectionService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ReflectionResponse> findAllMy(Pageable pageable) {
+    public List<ReflectionResponse> findAllMy(YearMonth month) {
         Long userId = SecurityUtil.getCurrentUserId();
-        Page<ReflectionEntity> reflectionEntities = reflectionRepository.findAllByUserId(userId, pageable);
 
-        List<ReflectionResponse> reflectionResponses = reflectionEntities.stream()
+        LocalDate start = month.atDay(1);
+        LocalDate end = month.atEndOfMonth();
+
+        List<ReflectionEntity> reflections =
+                reflectionRepository.findAllByUserIdAndDateBetween(userId, start, end);
+
+        return reflections.stream()
                 .map(entity -> {
                     ReflectionQuestionEntity questionEntity =
                             reflectionQuestionRepository.findById(entity.getQuestionId())
@@ -107,13 +113,6 @@ public class ReflectionService {
                     return toResponse(entity.toModel(), questionEntity.toModel());
                 })
                 .toList();
-
-        return new PageResponse<>(
-                reflectionResponses,
-                reflectionEntities.getTotalElements(),
-                reflectionEntities.getNumber(),
-                reflectionEntities.getSize()
-        );
     }
 
     @Transactional(readOnly = true)
