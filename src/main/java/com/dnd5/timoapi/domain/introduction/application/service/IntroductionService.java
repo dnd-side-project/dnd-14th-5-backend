@@ -26,30 +26,36 @@ public class IntroductionService {
     }
 
     @Transactional(readOnly = true)
-    public List<IntroductionResponse> findAll() {
-        return introductionRepository.findAllByDeletedAtIsNull().stream()
+    public List<IntroductionResponse> findAllByVersion(int version) {
+        return introductionRepository.findAllByVersionAndDeletedAtIsNull(version).stream()
                 .map(IntroductionEntity::toModel)
                 .map(IntroductionResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public IntroductionResponse findByVersion(int version) {
-        return IntroductionResponse.from(getEntity(version).toModel());
+    public IntroductionResponse findById(Long introductionId) {
+        return IntroductionResponse.from(getEntity(introductionId).toModel());
     }
 
-    public void update(int version, IntroductionUpdateRequest request) {
-        IntroductionEntity entity = getEntity(version);
-        entity.update(request.version(), request.content());
+    public void update(Long introductionId, IntroductionUpdateRequest request) {
+        IntroductionEntity entity = getEntity(introductionId);
+        entity.update(
+                request.version(),
+                request.sequence(),
+                request.title(),
+                request.description(),
+                request.imageUrl()
+        );
     }
 
-    public void delete(int version) {
-        IntroductionEntity entity = getEntity(version);
+    public void delete(Long introductionId) {
+        IntroductionEntity entity = getEntity(introductionId);
         entity.setDeletedAt(LocalDateTime.now());
     }
 
-    private IntroductionEntity getEntity(int version) {
-        return introductionRepository.findByVersionAndDeletedAtIsNull(version)
+    private IntroductionEntity getEntity(Long introductionId) {
+        return introductionRepository.findById(introductionId)
                 .orElseThrow(() -> new BusinessException(IntroductionErrorCode.INTRODUCTION_NOT_FOUND));
     }
 }

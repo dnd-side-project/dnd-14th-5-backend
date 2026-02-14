@@ -7,14 +7,20 @@ import java.time.LocalDateTime;
 public record IntroductionResponse(
         Long id,
         int version,
-        String content,
+        Long sequence,
+        String title,
+        String description,
+        String imageUrl,
         LocalDateTime createdAt
 ) {
     public static IntroductionResponse from(Introduction model) {
         return new IntroductionResponse(
                 model.id(),
                 model.version(),
-                model.content(),
+                model.sequence(),
+                model.title(),
+                model.description(),
+                model.imageUrl(),
                 model.createdAt()
         );
     }
