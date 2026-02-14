@@ -8,5 +8,5 @@ import java.util.List;
 public interface UserTestResultRepository extends JpaRepository<UserTestResultEntity, Long> {
 
     List<UserTestResultEntity> findByUserTestRecordId(Long userTestRecordId);
-
+    List<UserTestResultEntity> findAllByUserTestRecordId(Long testRecordId);
 }
