@@ -5,10 +5,13 @@ import java.time.LocalDateTime;
 public record Introduction(
         Long id,
         int version,
-        String content,
+        Long sequence,
+        String title,
+        String description,
+        String imageUrl,
         LocalDateTime createdAt
 ) {
-    public static Introduction create(int version, String content) {
-        return new Introduction(null, version, content, null);
+    public static Introduction create(int version, Long sequence, String title, String description, String imageUrl) {
+        return new Introduction(null, version, sequence, title, description, imageUrl, null);
     }
 }

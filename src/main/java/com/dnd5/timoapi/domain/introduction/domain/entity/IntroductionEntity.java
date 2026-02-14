@@ -17,22 +17,54 @@ import lombok.NoArgsConstructor;
 @Table(name = "service_introductions")
 public class IntroductionEntity extends BaseEntity {
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private int version;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
+    @Column(nullable = false)
+    Long sequence;
+
+    @Column(nullable = false)
+    String title;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String description;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    String imageUrl;
 
     public static IntroductionEntity from(Introduction model) {
-        return new IntroductionEntity(model.version(), model.content());
+        return new IntroductionEntity(
+                model.version(),
+                model.sequence(),
+                model.title(),
+                model.description(),
+                model.imageUrl()
+        );
     }
 
     public Introduction toModel() {
-        return new Introduction(getId(), version, content, getCreatedAt());
+        return new Introduction(
+                getId(),
+                version,
+                sequence,
+                title,
+                description,
+                imageUrl,
+                getCreatedAt()
+        );
     }
 
-    public void update(Integer version, String content) {
+    public void update(
+            Integer version,
+            Long sequence,
+            String title,
+            String description,
+            String imageUrl
+    ) {
         if (version != null) this.version = version;
-        if (content != null) this.content = content;
+        if (sequence != null) this.sequence = sequence;
+        if (title != null) this.title = title;
+        if (description != null) this.description = description;
+        if (imageUrl != null) this.imageUrl = imageUrl;
     }
 }
