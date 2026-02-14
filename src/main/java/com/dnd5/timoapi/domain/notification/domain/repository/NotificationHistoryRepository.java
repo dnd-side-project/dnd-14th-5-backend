@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NotificationHistoryRepository extends
         JpaRepository<NotificationHistoryEntity, Long> {
-    List<NotificationHistoryEntity> findAllByIsReadFalse();
+
+    List<NotificationHistoryEntity> findAllByUserIdAndIsReadFalse(Long userId);
 }

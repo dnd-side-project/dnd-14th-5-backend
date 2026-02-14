@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.notification.domain.repository.NotificationHistor
 import com.dnd5.timoapi.domain.notification.exception.NotificationErrorCode;
 import com.dnd5.timoapi.domain.notification.presentation.response.NotificationHistoryResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ public class NotificationHistoryService {
 
     @Transactional(readOnly = true)
     public List<NotificationHistoryResponse> getMyNotificationHistory() {
+        Long userId = SecurityUtil.getCurrentUserId();
+
         List<NotificationHistoryEntity> notificationHistoryEntities =
-                notificationHistoryRepository.findAllByIsReadFalse();
+                notificationHistoryRepository.findAllByUserIdAndIsReadFalse(userId);
 
         return notificationHistoryEntities.stream()
                 .map(NotificationHistoryEntity::toModel)
