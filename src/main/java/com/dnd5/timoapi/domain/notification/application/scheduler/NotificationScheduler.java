@@ -2,7 +2,9 @@ package com.dnd5.timoapi.domain.notification.application.scheduler;
 
 import com.dnd5.timoapi.domain.notification.application.service.FcmService;
 import com.dnd5.timoapi.domain.notification.domain.entity.AlarmSettingEntity;
+import com.dnd5.timoapi.domain.notification.domain.entity.NotificationHistoryEntity;
 import com.dnd5.timoapi.domain.notification.domain.repository.AlarmSettingRepository;
+import com.dnd5.timoapi.domain.notification.domain.repository.NotificationHistoryRepository;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +25,7 @@ public class NotificationScheduler {
 
     private final AlarmSettingRepository alarmSettingRepository;
     private final FcmService fcmService;
+    private final NotificationHistoryRepository notificationHistoryRepository;
 
     @Scheduled(cron = "0 * * * * *")
     @Transactional(readOnly = true)
@@ -37,6 +40,14 @@ public class NotificationScheduler {
         for (AlarmSettingEntity setting : settings) {
             try {
                 fcmService.sendToUser(setting.getUserId(), FcmMessage.of(NOTIFICATION_TITLE, NOTIFICATION_BODY));
+                notificationHistoryRepository.save(
+                        new NotificationHistoryEntity(
+                                setting.getUserId(),
+                                NOTIFICATION_TITLE,
+                                NOTIFICATION_BODY,
+                                false
+                        )
+                );
             } catch (Exception e) {
                 log.error("Failed to send notification to userId: {}", setting.getUserId(), e);
             }
