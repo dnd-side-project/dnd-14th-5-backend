@@ -28,23 +28,32 @@ public class TestQuestionService {
     private final TestQuestionRepository testQuestionRepository;
 
     public void create(Long testId, TestQuestionCreateRequest request) {
-        TestEntity entity = testRepository.findById(testId)
+        TestEntity testEntity = testRepository.findById(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
-        TestQuestionEntity testEntity = TestQuestionEntity.of(
-                entity,
+        int currentQuestionCount = testQuestionRepository.countByTestIdAndDeletedAtIsNull(testId);
+        if (testEntity.getMaxQuestionCount() < currentQuestionCount + 1) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_ALREADY_FULL);
+        }
+
+        if (testQuestionRepository.existsByTestIdAndSequenceAndDeletedAtIsNull(testId, request.sequence())) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_SEQUENCE_DUPLICATED);
+        }
+
+        TestQuestionEntity testQuestionEntity = TestQuestionEntity.of(
+                testEntity,
                 request.category(),
                 request.content(),
                 request.sequence(),
                 request.isReversed()
         );
 
-        testQuestionRepository.save(testEntity);
+        testQuestionRepository.save(testQuestionEntity);
     }
 
     @Transactional(readOnly = true)
     public List<TestQuestionResponse> findAll(Long testId) {
-        return testQuestionRepository.findByTestIdOrderBySequenceAsc(testId).stream()
+        return testQuestionRepository.findByTestIdAndDeletedAtIsNullOrderBySequenceAsc(testId).stream()
                 .map(TestQuestionEntity::toModel)
                 .map(TestQuestionResponse::from)
                 .toList();
@@ -59,6 +68,10 @@ public class TestQuestionService {
     public void update(Long questionId, Long testId, @Valid TestQuestionUpdateRequest request) {
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findByIdAndTestIdAndDeletedAtIsNull(questionId, testId)
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+        if (request.sequence() != testQuestionEntity.getSequence()
+                && testQuestionRepository.existsByTestIdAndSequenceAndIdNotAndDeletedAtIsNull(testId, request.sequence(), questionId)) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_SEQUENCE_DUPLICATED);
+        }
         testQuestionEntity.update(
                 request.category(),
                 request.content(),
@@ -68,10 +81,7 @@ public class TestQuestionService {
     }
 
     public void delete(Long questionId, Long testId) {
-        TestEntity testEntity = testRepository.findById(testId)
-                .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
-        TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+        TestQuestionEntity testQuestionEntity = getTestQuestionEntity(testId, questionId);
         testQuestionEntity.setDeletedAt(LocalDateTime.now());
     }
 

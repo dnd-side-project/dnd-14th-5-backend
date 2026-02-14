@@ -3,6 +3,8 @@ package com.dnd5.timoapi.global.exception;
 import com.dnd5.timoapi.global.infrastructure.notification.ErrorNotificationData;
 import com.dnd5.timoapi.global.infrastructure.notification.NotificationType;
 import com.dnd5.timoapi.global.infrastructure.notification.Notifier;
+import jakarta.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -48,8 +48,23 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("VALIDATION_ERROR", message));
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException e
+    ) {
+        String message = e.getConstraintViolations()
+                .stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining(", "));
+
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse("CONSTRAINT_VIOLATION", message));
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException e) {
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
+            NoResourceFoundException e) {
         final String message = String.format("요청한 리소스(%s)를 찾을 수 없습니다.", e.getResourcePath());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -57,14 +72,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+    public ResponseEntity<ErrorResponse> handleMethodNotSupportedException(
+            HttpRequestMethodNotSupportedException e) {
         return ResponseEntity
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(new ErrorResponse("METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParameterException(MissingServletRequestParameterException e) {
+    public ResponseEntity<ErrorResponse> handleMissingParameterException(
+            MissingServletRequestParameterException e) {
         String message = "필수 파라미터가 누락되었습니다: " + e.getParameterName();
         return ResponseEntity
                 .badRequest()
@@ -72,7 +89,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<ErrorResponse> handleTypeMismatchException(
+            MethodArgumentTypeMismatchException e) {
         String message = "파라미터 타입이 올바르지 않습니다: " + e.getName();
         return ResponseEntity
                 .badRequest()
@@ -80,14 +98,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupportedException(
+            HttpMediaTypeNotSupportedException e) {
         return ResponseEntity
                 .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(new ErrorResponse("UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 Content-Type입니다."));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMessageNotReadableException(HttpMessageNotReadableException e) {
+    public ResponseEntity<ErrorResponse> handleMessageNotReadableException(
+            HttpMessageNotReadableException e) {
         return ResponseEntity
                 .badRequest()
                 .body(new ErrorResponse("INVALID_REQUEST_BODY", "요청 본문을 읽을 수 없습니다."));
