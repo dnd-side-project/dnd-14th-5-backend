@@ -38,8 +38,8 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
     }
 
     public void update(String name, String characterName, String personality, String description) {
-        this.name = name;
-        this.characterName = characterName;
+        if (name != null) this.name = name;
+        if (characterName != null) this.characterName = characterName;
         if (personality != null) this.personality = personality;
         if (description != null) this.description = description;
     }
