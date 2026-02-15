@@ -86,7 +86,7 @@ management:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
-  model: gemini-2.5-flash-lite
+  model: ${GEMINI_MODEL}
   base-url: https://aiplatform.googleapis.com/v1
 
 cors:
