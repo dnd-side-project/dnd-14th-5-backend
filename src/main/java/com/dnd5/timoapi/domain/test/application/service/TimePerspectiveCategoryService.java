@@ -8,6 +8,8 @@ import com.dnd5.timoapi.domain.test.exception.TimePerspectiveCategoryErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryUpdateRequest;
+import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
+import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import jakarta.validation.Valid;
@@ -34,6 +36,11 @@ public class TimePerspectiveCategoryService {
                 .map(TimePerspectiveCategoryEntity::toModel)
                 .map(TimePerspectiveCategoryResponse::from)
                 .toList();
+    }
+
+    public TimePerspectiveCategoryDetailResponse findById(@Positive Long categoryId) {
+        TimePerspectiveCategoryEntity categoryEntity = getTimePerspectiveCategoryEntity(categoryId);
+        return TimePerspectiveCategoryDetailResponse.from(categoryEntity.toModel());
     }
 
     public void update(@Positive Long categoryId, @Valid TimePerspectiveCategoryUpdateRequest request) {
