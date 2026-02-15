@@ -1,14 +1,11 @@
 package com.dnd5.timoapi.domain.test.application.service;
 
-import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.TimePerspectiveCategoryEntity;
 import com.dnd5.timoapi.domain.test.domain.model.TimePerspectiveCategory;
 import com.dnd5.timoapi.domain.test.domain.repository.TimePerspectiveCategoryRepository;
 import com.dnd5.timoapi.domain.test.exception.TimePerspectiveCategoryErrorCode;
-import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryUpdateRequest;
-import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
