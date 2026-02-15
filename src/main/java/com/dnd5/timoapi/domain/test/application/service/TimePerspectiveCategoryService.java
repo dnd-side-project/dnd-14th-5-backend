@@ -41,6 +41,11 @@ public class TimePerspectiveCategoryService {
         timePerspectiveCategoryEntity.update(request.name(), request.characterName(), request.personality(), request.description());
     }
 
+    public void delete(@Positive Long categoryId) {
+        TimePerspectiveCategoryEntity categoryEntity = getTimePerspectiveCategoryEntity(categoryId);
+        timePerspectiveCategoryRepository.delete(categoryEntity);
+    }
+
     private TimePerspectiveCategoryEntity getTimePerspectiveCategoryEntity(@Positive Long categoryId) {
         return timePerspectiveCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new BusinessException(TimePerspectiveCategoryErrorCode.TIME_PERSPECTIVE_CATEGORY_NOT_FOUND));
