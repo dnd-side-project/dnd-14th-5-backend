@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum TestErrorCode implements ErrorCode {
 
     TEST_NOT_FOUND(HttpStatus.NOT_FOUND, "테스트를 찾을 수 없습니다."),
+    TEST_TYPE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 테스트 타입입니다."),
     ;
 
     private final HttpStatus status;

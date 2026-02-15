@@ -25,7 +25,7 @@ import java.util.List;
 @Table(name = "tests")
 public class TestEntity extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
     private TestType type;
 
@@ -47,5 +47,15 @@ public class TestEntity extends BaseEntity {
         if (type != null) this.type = type;
         if (name != null) this.name = name;
         if (description != null) this.description = description;
+    }
+
+    public int getMaxQuestionCount() {
+        if (getType() == TestType.ZTPI_15) {
+            return 15;
+        } else if (getType() == TestType.ZTPI_56) {
+            return 56;
+        } else {
+            return 0;
+        }
     }
 }

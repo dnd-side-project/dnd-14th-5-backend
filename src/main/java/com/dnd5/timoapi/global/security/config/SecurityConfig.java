@@ -64,11 +64,26 @@ public class SecurityConfig {
                         .requestMatchers("/auth/logout").authenticated()
                         .requestMatchers("/auth/**", "/test-auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // User
                         .requestMatchers("/users/**").authenticated()
+
+                        // 회고
                         .requestMatchers("/reflections/**").authenticated()
+
+                        // 테스트 기록
                         .requestMatchers("/test-records/**").authenticated()
+
+                        // 알림
                         .requestMatchers("/notifications/**").authenticated()
+
+                        // 테스트 (유저)
+                        .requestMatchers(HttpMethod.GET, "/tests").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/tests/*/questions").authenticated()
+                        
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth -> oauth
