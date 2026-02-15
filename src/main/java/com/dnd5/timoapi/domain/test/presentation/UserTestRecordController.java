@@ -38,11 +38,10 @@ public class UserTestRecordController {
     }
 
     @PatchMapping("/{testRecordId}/complete")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void complete(
+    public UserTestRecordDetailResponse complete(
             @Positive @PathVariable Long testRecordId
     ) {
-        userTestRecordService.complete(testRecordId);
+        return userTestRecordService.complete(testRecordId);
     }
 
     @GetMapping("/me")
