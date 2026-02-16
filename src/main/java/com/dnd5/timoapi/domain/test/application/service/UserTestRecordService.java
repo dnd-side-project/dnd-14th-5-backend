@@ -10,6 +10,7 @@ import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
@@ -34,6 +35,7 @@ import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -67,6 +69,24 @@ public class UserTestRecordService {
 
         TestEntity testEntity = testRepository.findById(request.testId())
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
+
+        Optional<UserTestRecordEntity> userTestRecordEntity =
+                userTestRecordRepository
+                        .findByUserIdAndTestIdAndStatus(
+                                userId,
+                                testEntity.getId(),
+                                TestRecordStatus.IN_PROGRESS);
+
+        if (userTestRecordEntity.isPresent()) {
+            Map<String, Object> additional = Map.of(
+                    "testRecordId", userTestRecordEntity.get().getId()
+            );
+
+            throw new BusinessException(
+                    UserTestRecordErrorCode.ALREADY_IN_PROGRESS,
+                    additional
+            );
+        }
 
         UserTestRecord model = request.toModel();
 
