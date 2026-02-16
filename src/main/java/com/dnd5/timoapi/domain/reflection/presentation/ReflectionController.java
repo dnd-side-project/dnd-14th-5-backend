@@ -41,6 +41,11 @@ public class ReflectionController {
         return reflectionService.findQuestionToday();
     }
 
+    @PostMapping("/today/question/change")
+    public ReflectionQuestionDetailResponse changeQuestionToday() {
+        return reflectionService.changeQuestionToday();
+    }
+
     @GetMapping("/today")
     public ReflectionDetailResponse findReflectionToday() {
         return reflectionService.findReflectionToday();

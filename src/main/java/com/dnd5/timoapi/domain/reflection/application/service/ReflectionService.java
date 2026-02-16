@@ -11,6 +11,8 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRe
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
 import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
+import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionDetailResponse;
@@ -42,6 +44,7 @@ public class ReflectionService {
     private final ReflectionQuestionRepository reflectionQuestionRepository;
     private final ReflectionFeedbackRepository reflectionFeedbackRepository;
     private final TodayQuestionResolver todayQuestionResolver;
+    private final TodayQuestionCacheService todayQuestionCacheService;
     private final UserRepository userRepository;
 
     public ReflectionCreateResponse create(ReflectionCreateRequest request) {
@@ -74,6 +77,45 @@ public class ReflectionService {
     public ReflectionQuestionDetailResponse findQuestionToday() {
         Long userId = SecurityUtil.getCurrentUserId();
         return ReflectionQuestionDetailResponse.from(findTodayQuestionEntity(userId).toModel());
+    }
+
+    @Transactional(readOnly = true)
+    public ReflectionQuestionDetailResponse changeQuestionToday() {
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        if (reflectionRepository.findByDateAndUserId(LocalDate.now(), userId).isPresent()) {
+            throw new BusinessException(ReflectionErrorCode.TODAY_REFLECTION_ALREADY_EXISTS);
+        }
+
+        Long currentQuestionId = todayQuestionCacheService.getQuestionId(userId);
+        ReflectionQuestionEntity currentQuestion = null;
+        if (currentQuestionId != null) {
+            currentQuestion = reflectionQuestionRepository.findById(currentQuestionId).orElse(null);
+        }
+
+        todayQuestionCacheService.evict(userId);
+
+        ZtpiCategory newCategory = todayQuestionResolver.resolveTodayCategory(userId);
+        Long newSequence;
+
+        if (currentQuestion != null && currentQuestion.getCategory().equals(newCategory)) {
+            newSequence = currentQuestion.getSequence() + 1;
+            Long maxSequence = reflectionQuestionRepository.findMaxSequenceByCategory(newCategory);
+            if (newSequence > maxSequence) {
+                newSequence = 1L;
+            }
+        } else {
+            newSequence = todayQuestionResolver.resolveTodaySequence(userId, newCategory);
+        }
+
+        ReflectionQuestionEntity newQuestion = reflectionQuestionRepository
+                .findBySequenceAndCategory(newSequence, newCategory)
+                .orElseThrow(() -> new BusinessException(
+                        ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
+
+        todayQuestionCacheService.setQuestionId(userId, newQuestion.getId());
+
+        return ReflectionQuestionDetailResponse.from(newQuestion.toModel());
     }
 
     @Transactional(readOnly = true)
