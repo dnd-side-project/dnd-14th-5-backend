@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.test.application.service;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
+import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
@@ -73,7 +74,13 @@ public class UserTestResponseService {
             );
         }
 
-        // URL에 타인의 testRecordId 입력되었을시 소유권 검증 추가
+        if (userTestRecordEntity.getStatus() == TestRecordStatus.COMPLETED) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", userTestRecordEntity.getId(),
+                    "status", userTestRecordEntity.getStatus()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
+        }
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
 
