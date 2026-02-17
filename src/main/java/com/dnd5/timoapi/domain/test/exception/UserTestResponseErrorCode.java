@@ -11,6 +11,7 @@ public enum UserTestResponseErrorCode implements ErrorCode {
 
     USER_TEST_ALREADY_RESPONSE(HttpStatus.CONFLICT, "유저의 테스트 문항이 이미 답변되었습니다."),
     USER_TEST_RESPONSE_NOT_FOUND(HttpStatus.NOT_FOUND, "유저의 테스트 문항 답변을 찾을 수 없습니다."),
+    USER_TEST_CROSS_RESPONSE(HttpStatus.BAD_REQUEST, "답변이 등록되는 테스트가 올바르지 않습니다."),
     ;
 
     private final HttpStatus status;

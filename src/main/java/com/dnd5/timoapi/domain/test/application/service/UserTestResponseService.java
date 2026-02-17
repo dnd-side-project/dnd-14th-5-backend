@@ -38,6 +38,14 @@ public class UserTestResponseService {
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
 
+        if (!userTestRecordEntity.getTest().getId().equals(testQuestionEntity.getTest().getId())) {
+            Map<String, Object> additional = Map.of(
+                    "userTestId", userTestRecordEntity.getId(),
+                    "questionTestId", testQuestionEntity.getTest().getId()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_CROSS_RESPONSE, additional);
+        }
+
         Optional<UserTestResponseEntity> userTestResponseEntity =
                 userTestResponseRepository.findByUserTestRecordAndTestQuestion(
                         userTestRecordEntity, testQuestionEntity
@@ -53,6 +61,8 @@ public class UserTestResponseService {
                     additional
             );
         }
+
+        // 교차 테스트 답변, test.id ≠ question.test.id 라면 안되게 막아주시면 되겠습니다~
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
 
