@@ -101,6 +101,14 @@ public class UserTestResponseService {
             throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG, additional);
         }
 
+        if (userTestRecordEntity.getStatus() == TestRecordStatus.COMPLETED) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", userTestRecordEntity.getId(),
+                    "status", userTestRecordEntity.getStatus()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
+        }
+
         userTestResponseEntity.update(request.score());
     }
 
