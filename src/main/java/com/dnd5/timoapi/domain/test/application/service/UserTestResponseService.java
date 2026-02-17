@@ -92,6 +92,15 @@ public class UserTestResponseService {
 
         UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
 
+        if (!userTestResponseEntity.getUserTestRecord().getId().equals(testRecordId)) {
+            Map<String, Object> additional = Map.of(
+                    "testRecordIdInUrl", testRecordId,
+                    "responseId", responseId,
+                    "responseTestRecordId", userTestResponseEntity.getUserTestRecord().getId()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG, additional);
+        }
+
         userTestResponseEntity.update(request.score());
     }
 

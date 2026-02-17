@@ -14,6 +14,7 @@ public enum UserTestResponseErrorCode implements ErrorCode {
     USER_TEST_CROSS_RESPONSE(HttpStatus.BAD_REQUEST, "답변이 등록되는 테스트가 올바르지 않습니다."),
     USER_TEST_NOT_OWNER(HttpStatus.FORBIDDEN, "테스트를 진행하는 유저의 소유권이 없습니다."),
     USER_TEST_ALREADY_COMPLETE(HttpStatus.BAD_REQUEST, "유저의 테스트 기록이 이미 완료되었습니다."),
+    USER_TEST_RESPONSE_NOT_BELONG(HttpStatus.BAD_REQUEST, "해당 테스트 기록에 속하지 않는 답변입니다.")
     ;
 
     private final HttpStatus status;
