@@ -79,12 +79,14 @@ class UserTestRecordServiceTest {
 
             when(test.getId()).thenReturn(TEST_ID);
 
+            UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
+            when(mockRecord.getId()).thenReturn(1L);
             when(userTestRecordRepository
-                    .existsByUserIdAndTestIdAndStatus(
+                    .findByUserIdAndTestIdAndStatus(
                             USER_ID,
                             TEST_ID,
                             TestRecordStatus.IN_PROGRESS))
-                    .thenReturn(true);
+                    .thenReturn(Optional.of(mockRecord));
 
             UserTestRecordCreateRequest request =
                     new UserTestRecordCreateRequest(TEST_ID);
@@ -114,12 +116,14 @@ class UserTestRecordServiceTest {
             when(testRepository.findById(TEST_ID))
                     .thenReturn(Optional.of(test));
 
+            UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
+            when(mockRecord.getId()).thenReturn(1L);
             when(userTestRecordRepository
-                    .existsByUserIdAndTestIdAndStatus(
+                    .findByUserIdAndTestIdAndStatus(
                             USER_ID,
                             TEST_ID,
                             TestRecordStatus.IN_PROGRESS))
-                    .thenReturn(false);
+                    .thenReturn(Optional.of(mockRecord));
 
             when(savedEntity.toModel()).thenReturn(model);
 
