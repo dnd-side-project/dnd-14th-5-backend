@@ -40,7 +40,7 @@ public class UserTestResponseService {
         validateUserTestRecordOwnership(userTestRecordEntity);
         validateTestRecordAlreadyCompleted(userTestRecordEntity);
 
-        TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
+        TestQuestionEntity testQuestionEntity = testQuestionRepository.findByIdDeletedAtIsNull(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
 
         if (!userTestRecordEntity.getTest().getId().equals(testQuestionEntity.getTest().getId())) {
