@@ -8,6 +8,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +31,8 @@ public class UserTestResponseEntity extends BaseEntity {
     private TestQuestionEntity testQuestion;
 
     @Column(name = "answer_score", nullable = false)
+    @Min(value = 1, message = "테스트 답변 점수는 최소 1점이어야 합니다.")
+    @Max(value = 5, message = "테스트 답변 점수는 최대 5점이어야 합니다.")
     private int answerScore;
 
     public static UserTestResponseEntity from(
