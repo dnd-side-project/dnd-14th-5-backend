@@ -104,7 +104,7 @@ public class UserTestRecordService {
             throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
         }
 
-        List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestId(
+        List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestIdAndDeletedAtIsNull(
                         userTestRecordEntity.getTest().getId())
                 .orElseThrow(
                         () -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
