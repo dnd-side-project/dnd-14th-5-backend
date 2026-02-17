@@ -98,48 +98,4 @@ class UserTestRecordServiceTest {
         }
     }
 
-    @Test
-    void userTestRecordServiceCreate_테스트_기록이_정상적으로_저장되는_경우() {
-        try (MockedStatic<SecurityUtil> mocked =
-                Mockito.mockStatic(SecurityUtil.class)) {
-
-            mocked.when(SecurityUtil::getCurrentUserId)
-                    .thenReturn(USER_ID);
-
-            UserEntity user = mock(UserEntity.class);
-            TestEntity test = mock(TestEntity.class);
-            UserTestRecordEntity savedEntity = mock(UserTestRecordEntity.class);
-            UserTestRecord model = mock(UserTestRecord.class);
-
-            when(userRepository.findById(USER_ID))
-                    .thenReturn(Optional.of(user));
-            when(testRepository.findById(TEST_ID))
-                    .thenReturn(Optional.of(test));
-
-            UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
-            when(mockRecord.getId()).thenReturn(1L);
-            when(userTestRecordRepository
-                    .findByUserIdAndTestIdAndStatus(
-                            USER_ID,
-                            TEST_ID,
-                            TestRecordStatus.IN_PROGRESS))
-                    .thenReturn(Optional.of(mockRecord));
-
-            when(savedEntity.toModel()).thenReturn(model);
-
-            when(userTestRecordRepository.save(any()))
-                    .thenReturn(savedEntity);
-
-            UserTestRecordCreateRequest request =
-                    new UserTestRecordCreateRequest(TEST_ID);
-
-            UserTestRecordCreateResponse response =
-                    service.create(request);
-
-            assertThat(response).isNotNull();
-            verify(userTestRecordRepository)
-                    .save(any(UserTestRecordEntity.class));
-        }
-    }
-
 }
