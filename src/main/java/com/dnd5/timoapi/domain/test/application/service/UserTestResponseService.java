@@ -37,7 +37,7 @@ public class UserTestResponseService {
         UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        Long userId = SecurityUtil.getCurrentUserId(); // 현재 로그인한 사용자 ID
+        Long userId = SecurityUtil.getCurrentUserId();
         if (!userTestRecordEntity.getUser().getId().equals(userId)) {
             Map<String, Object> additional = Map.of(
                     "userTestRecordId", userTestRecordEntity.getId(),
@@ -89,6 +89,16 @@ public class UserTestResponseService {
     public void update(Long testRecordId, Long responseId, @Valid UserTestResponseUpdateRequest request) {
         UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        Long userId = SecurityUtil.getCurrentUserId();
+        if (!userTestRecordEntity.getUser().getId().equals(userId)) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", userTestRecordEntity.getId(),
+                    "testRecordUserId", userTestRecordEntity.getUser().getId(),
+                    "currentUserId", userId
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
+        }
 
         UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
 
