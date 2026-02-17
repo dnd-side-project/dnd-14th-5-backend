@@ -3,7 +3,6 @@ package com.dnd5.timoapi.domain.test.application.service;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
-import com.dnd5.timoapi.domain.test.domain.model.UserTestResponse;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
@@ -16,6 +15,8 @@ import com.dnd5.timoapi.domain.test.presentation.response.UserTestResponseRespon
 import com.dnd5.timoapi.global.exception.BusinessException;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,22 @@ public class UserTestResponseService {
 
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+
+        Optional<UserTestResponseEntity> userTestResponseEntity =
+                userTestResponseRepository.findByUserTestRecordAndTestQuestion(
+                        userTestRecordEntity, testQuestionEntity
+                );
+
+        if (userTestResponseEntity.isPresent()) {
+            Map<String, Object> additional = Map.of(
+                    "testResponseId", userTestResponseEntity.get().getId()
+            );
+
+            throw new BusinessException(
+                    UserTestResponseErrorCode.USER_TEST_ALREADY_RESPONSE,
+                    additional
+            );
+        }
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
 

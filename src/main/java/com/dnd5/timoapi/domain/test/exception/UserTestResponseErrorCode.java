@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum UserTestResponseErrorCode implements ErrorCode {
 
+    USER_TEST_ALREADY_RESPONSE(HttpStatus.CONFLICT, "유저의 테스트 문항이 이미 답변되었습니다."),
     USER_TEST_RESPONSE_NOT_FOUND(HttpStatus.NOT_FOUND, "유저의 테스트 문항 답변을 찾을 수 없습니다."),
     ;
 
