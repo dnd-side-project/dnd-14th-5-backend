@@ -13,6 +13,7 @@ import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateR
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestResponseResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,16 @@ public class UserTestResponseService {
 
         UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        Long userId = SecurityUtil.getCurrentUserId(); // 현재 로그인한 사용자 ID
+        if (!userTestRecordEntity.getUser().getId().equals(userId)) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", userTestRecordEntity.getId(),
+                    "testRecordUserId", userTestRecordEntity.getUser().getId(),
+                    "currentUserId", userId
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
+        }
 
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
@@ -62,7 +73,7 @@ public class UserTestResponseService {
             );
         }
 
-        // 교차 테스트 답변, test.id ≠ question.test.id 라면 안되게 막아주시면 되겠습니다~
+        // URL에 타인의 testRecordId 입력되었을시 소유권 검증 추가
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
 
