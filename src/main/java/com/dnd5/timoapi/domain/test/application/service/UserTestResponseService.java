@@ -37,15 +37,8 @@ public class UserTestResponseService {
         UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        Long userId = SecurityUtil.getCurrentUserId();
-        if (!userTestRecordEntity.getUser().getId().equals(userId)) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", userTestRecordEntity.getId(),
-                    "testRecordUserId", userTestRecordEntity.getUser().getId(),
-                    "currentUserId", userId
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
-        }
+        validateUserTestRecordOwnership(userTestRecordEntity);
+        validateTestRecordAlreadyCompleted(userTestRecordEntity);
 
         TestQuestionEntity testQuestionEntity = testQuestionRepository.findById(request.questionId())
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
@@ -67,60 +60,26 @@ public class UserTestResponseService {
             Map<String, Object> additional = Map.of(
                     "testResponseId", userTestResponseEntity.get().getId()
             );
-
-            throw new BusinessException(
-                    UserTestResponseErrorCode.USER_TEST_ALREADY_RESPONSE,
-                    additional
-            );
-        }
-
-        if (userTestRecordEntity.getStatus() == TestRecordStatus.COMPLETED) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", userTestRecordEntity.getId(),
-                    "status", userTestRecordEntity.getStatus()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_RESPONSE, additional);
         }
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
-
     }
+
 
     public void update(Long testRecordId, Long responseId, @Valid UserTestResponseUpdateRequest request) {
         UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        Long userId = SecurityUtil.getCurrentUserId();
-        if (!userTestRecordEntity.getUser().getId().equals(userId)) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", userTestRecordEntity.getId(),
-                    "testRecordUserId", userTestRecordEntity.getUser().getId(),
-                    "currentUserId", userId
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
-        }
+        validateUserTestRecordOwnership(userTestRecordEntity);
+        validateTestRecordAlreadyCompleted(userTestRecordEntity);
 
         UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
-
-        if (!userTestResponseEntity.getUserTestRecord().getId().equals(testRecordId)) {
-            Map<String, Object> additional = Map.of(
-                    "testRecordIdInUrl", testRecordId,
-                    "responseId", responseId,
-                    "responseTestRecordId", userTestResponseEntity.getUserTestRecord().getId()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG, additional);
-        }
-
-        if (userTestRecordEntity.getStatus() == TestRecordStatus.COMPLETED) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", userTestRecordEntity.getId(),
-                    "status", userTestRecordEntity.getStatus()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
-        }
+        validateResponseBelongsToRecord(testRecordId, userTestResponseEntity);
 
         userTestResponseEntity.update(request.score());
     }
+
 
     @Transactional(readOnly = true)
     public List<UserTestResponseResponse> findAll(Long testRecordId) {
@@ -150,5 +109,39 @@ public class UserTestResponseService {
         return userTestResponseRepository.findById(testResponseId)
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
     }
+
+    private void validateUserTestRecordOwnership(UserTestRecordEntity record) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        if (!record.getUser().getId().equals(currentUserId)) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", record.getId(),
+                    "testRecordUserId", record.getUser().getId(),
+                    "currentUserId", currentUserId
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
+        }
+    }
+
+    private void validateTestRecordAlreadyCompleted(UserTestRecordEntity record) {
+        if (record.getStatus() == TestRecordStatus.COMPLETED) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", record.getId(),
+                    "status", record.getStatus()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
+        }
+    }
+
+    private void validateResponseBelongsToRecord(Long testRecordId, UserTestResponseEntity response) {
+        if (!response.getUserTestRecord().getId().equals(testRecordId)) {
+            Map<String, Object> additional = Map.of(
+                    "testRecordIdInUrl", testRecordId,
+                    "responseId", response.getId(),
+                    "responseTestRecordId", response.getUserTestRecord().getId()
+            );
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG, additional);
+        }
+    }
+
 
 }
