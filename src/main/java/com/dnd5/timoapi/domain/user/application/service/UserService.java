@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.user.application.service;
 
+import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
     public UserResponse getMe() {
@@ -33,6 +35,7 @@ public class UserService {
     public void deleteMe() {
         UserEntity user = getCurrentUserEntity();
         user.setDeletedAt(LocalDateTime.now());
+        refreshTokenRepository.deleteByUserId(user.getId());
     }
 
     private UserEntity getCurrentUserEntity() {
