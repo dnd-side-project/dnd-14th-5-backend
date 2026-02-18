@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.user.application.service.UserService;
 import com.dnd5.timoapi.domain.user.presentation.request.UpdateMeRequest;
 import com.dnd5.timoapi.domain.user.presentation.response.UserResponse;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class UserController {
 
     @PatchMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateMe(@RequestBody UpdateMeRequest request) {
+    public void updateMe(@Valid @RequestBody UpdateMeRequest request) {
         userService.updateMe(request);
     }
 
