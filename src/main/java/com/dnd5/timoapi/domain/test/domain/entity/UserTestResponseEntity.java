@@ -19,7 +19,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Table(name = "user_test_record_responses")
+@Table(
+        name = "user_test_record_responses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_test_record_question",
+                        columnNames = {"test_record_id", "question_id"}
+                )
+        }
+)
 public class UserTestResponseEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
