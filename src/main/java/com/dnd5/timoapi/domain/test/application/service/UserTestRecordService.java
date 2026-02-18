@@ -78,14 +78,8 @@ public class UserTestRecordService {
                                 TestRecordStatus.IN_PROGRESS);
 
         if (userTestRecordEntity.isPresent()) {
-            Map<String, Object> additional = Map.of(
-                    "testRecordId", userTestRecordEntity.get().getId()
-            );
-
-            throw new BusinessException(
-                    UserTestRecordErrorCode.ALREADY_IN_PROGRESS,
-                    additional
-            );
+            throw new BusinessException(UserTestRecordErrorCode.ALREADY_IN_PROGRESS,
+                    userTestRecordEntity.get().getId());
         }
 
         UserTestRecord model = request.toModel();
@@ -279,12 +273,8 @@ public class UserTestRecordService {
     private void validateUserTestRecordOwnership(UserTestRecordEntity record) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (!record.getUser().getId().equals(currentUserId)) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", record.getId(),
-                    "testRecordUserId", record.getUser().getId(),
-                    "currentUserId", currentUserId
-            );
-            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_NOT_OWNER, additional);
+            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_NOT_OWNER,
+                    record.getId(), record.getUser().getId(), currentUserId);
         }
     }
 

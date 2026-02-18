@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.of(e.getErrorCode()).addAdditional(e.getAdditional()));
+                .body(ErrorResponse.of(e.getErrorCode()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

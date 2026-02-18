@@ -17,7 +17,6 @@ import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,8 @@ public class UserTestResponseService {
                 .orElseThrow(() -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
 
         if (!userTestRecordEntity.getTest().getId().equals(testQuestionEntity.getTest().getId())) {
-            Map<String, Object> additional = Map.of(
-                    "userTestId", userTestRecordEntity.getId(),
-                    "questionTestId", testQuestionEntity.getTest().getId()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_CROSS_RESPONSE, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_CROSS_RESPONSE,
+                    userTestRecordEntity.getId(), testQuestionEntity.getTest().getId());
         }
 
         Optional<UserTestResponseEntity> userTestResponseEntity =
@@ -57,10 +53,8 @@ public class UserTestResponseService {
                 );
 
         if (userTestResponseEntity.isPresent()) {
-            Map<String, Object> additional = Map.of(
-                    "testResponseId", userTestResponseEntity.get().getId()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_RESPONSE, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_RESPONSE,
+                    userTestResponseEntity.get().getId());
         }
 
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
@@ -113,33 +107,22 @@ public class UserTestResponseService {
     private void validateUserTestRecordOwnership(UserTestRecordEntity record) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (!record.getUser().getId().equals(currentUserId)) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", record.getId(),
-                    "testRecordUserId", record.getUser().getId(),
-                    "currentUserId", currentUserId
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_NOT_OWNER,
+                    record.getId(), record.getUser().getId(), currentUserId);
         }
     }
 
     private void validateTestRecordAlreadyCompleted(UserTestRecordEntity record) {
         if (record.getStatus() == TestRecordStatus.COMPLETED) {
-            Map<String, Object> additional = Map.of(
-                    "userTestRecordId", record.getId(),
-                    "status", record.getStatus()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE,
+                    record.getId(), record.getStatus());
         }
     }
 
     private void validateResponseBelongsToRecord(Long testRecordId, UserTestResponseEntity response) {
         if (!response.getUserTestRecord().getId().equals(testRecordId)) {
-            Map<String, Object> additional = Map.of(
-                    "testRecordIdInUrl", testRecordId,
-                    "responseId", response.getId(),
-                    "responseTestRecordId", response.getUserTestRecord().getId()
-            );
-            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG, additional);
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_BELONG,
+                    testRecordId, response.getId(), response.getUserTestRecord().getId());
         }
     }
 
