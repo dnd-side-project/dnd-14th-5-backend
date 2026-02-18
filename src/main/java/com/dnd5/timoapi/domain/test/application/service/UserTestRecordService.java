@@ -32,13 +32,13 @@ import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +104,8 @@ public class UserTestRecordService {
             throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
         }
 
+        validateUserTestRecordOwnership(userTestRecordEntity);
+
         List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestIdAndDeletedAtIsNull(
                         userTestRecordEntity.getTest().getId())
                 .orElseThrow(
@@ -113,6 +115,8 @@ public class UserTestRecordService {
                         testRecordId)
                 .orElseThrow(() -> new BusinessException(
                         UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
+
+        validateNoDuplicateQuestionsAnswered(userTestResponseEntityList);
 
         validateAllQuestionsAnswered(testQuestionEntityList, userTestResponseEntityList);
         Map<ZtpiCategory, Double> userTestResults = createUserTestResults(userTestRecordEntity,
@@ -258,6 +262,29 @@ public class UserTestRecordService {
             List<UserTestResponseEntity> userTestResponseEntityList) {
         if (testQuestionEntityList.size() > userTestResponseEntityList.size()) {
             throw new BusinessException(UserTestRecordErrorCode.NOT_ALL_QUESTIONS_ANSWERED);
+        }
+    }
+
+    private void validateNoDuplicateQuestionsAnswered(List<UserTestResponseEntity> responses) {
+        long distinctCount = responses.stream()
+                .map(response -> response.getTestQuestion().getId())
+                .distinct()
+                .count();
+
+        if (distinctCount != responses.size()) {
+            throw new BusinessException(UserTestRecordErrorCode.DUPLICATE_QUESTION_RESPONSE);
+        }
+    }
+
+    private void validateUserTestRecordOwnership(UserTestRecordEntity record) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        if (!record.getUser().getId().equals(currentUserId)) {
+            Map<String, Object> additional = Map.of(
+                    "userTestRecordId", record.getId(),
+                    "testRecordUserId", record.getUser().getId(),
+                    "currentUserId", currentUserId
+            );
+            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_NOT_OWNER, additional);
         }
     }
 

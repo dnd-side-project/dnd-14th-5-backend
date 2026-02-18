@@ -13,7 +13,9 @@ public enum UserTestRecordErrorCode implements ErrorCode {
     ALREADY_IN_PROGRESS(HttpStatus.CONFLICT, "유저의 테스트 기록이 이미 진행 중입니다."),
     ALREADY_COMPLETED(HttpStatus.CONFLICT, "유저의 테스트 기록이 이미 완료되었습니다."),
     NOT_ALL_QUESTIONS_ANSWERED(HttpStatus.BAD_REQUEST, "유저가 테스트 문항에 모두 응답하지 않았습니다."),
-    USER_TEST_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "테스트 기록의 결과가 존재하지 않습니다.")
+    USER_TEST_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "테스트 기록의 결과가 존재하지 않습니다."),
+    DUPLICATE_QUESTION_RESPONSE(HttpStatus.CONFLICT, "중복되는 테스트 문항 답변이 있습니다."),
+    USER_TEST_NOT_OWNER(HttpStatus.FORBIDDEN, "테스트를 진행하는 유저의 소유권이 없습니다.")
     ;
 
     private final HttpStatus status;
