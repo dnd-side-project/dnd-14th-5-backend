@@ -5,12 +5,14 @@ import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record TestQuestionCreateRequest(
         @NotNull
         ZtpiCategory category,
         @NotBlank
         String content,
+        @Positive
         int sequence,
         boolean isReversed
 ) {

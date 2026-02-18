@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TestQuestionRepository extends JpaRepository<TestQuestionEntity, Long> {
 
+    Optional<TestQuestionEntity> findByIdAndDeletedAtIsNull(Long id);
     Optional<TestQuestionEntity> findByIdAndTestIdAndDeletedAtIsNull(Long id, Long testId);
     Optional<List<TestQuestionEntity>> findByTestId(Long id);
+    Optional<List<TestQuestionEntity>> findByTestIdAndDeletedAtIsNull(Long id);
     List<TestQuestionEntity> findByTestIdAndDeletedAtIsNullOrderBySequenceAsc(Long testId);
     int countByTestIdAndDeletedAtIsNull(Long testId);
     boolean existsByTestIdAndSequenceAndDeletedAtIsNull(Long testId, int sequence);

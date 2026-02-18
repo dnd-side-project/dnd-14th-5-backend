@@ -8,6 +8,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Table(name = "user_test_record_responses")
+@Table(
+        name = "user_test_record_responses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_test_record_question",
+                        columnNames = {"test_record_id", "question_id"}
+                )
+        }
+)
 public class UserTestResponseEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,6 +40,8 @@ public class UserTestResponseEntity extends BaseEntity {
     private TestQuestionEntity testQuestion;
 
     @Column(name = "answer_score", nullable = false)
+    @Min(value = 1, message = "테스트 답변 점수는 최소 1점이어야 합니다.")
+    @Max(value = 5, message = "테스트 답변 점수는 최대 5점이어야 합니다.")
     private int answerScore;
 
     public static UserTestResponseEntity from(

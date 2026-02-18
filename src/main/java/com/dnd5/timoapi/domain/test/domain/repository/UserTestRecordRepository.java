@@ -14,4 +14,7 @@ public interface UserTestRecordRepository extends JpaRepository<UserTestRecordEn
     Optional<UserTestRecordEntity> findTopByUserIdAndStatusOrderByCreatedAtDesc(
             Long userId, TestRecordStatus status);
 
+    Optional<UserTestRecordEntity>
+    findByUserIdAndTestIdAndStatus(Long userId, Long testId, TestRecordStatus status);
+
 }
