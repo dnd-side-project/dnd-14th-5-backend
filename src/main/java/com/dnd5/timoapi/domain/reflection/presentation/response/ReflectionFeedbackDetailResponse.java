@@ -10,17 +10,23 @@ public record ReflectionFeedbackDetailResponse(
         int score,
         String content,
         FeedbackStatus status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String failureReason
 ) {
 
     public static ReflectionFeedbackDetailResponse from(ReflectionFeedback model) {
+        return from(model, null);
+    }
+
+    public static ReflectionFeedbackDetailResponse from(ReflectionFeedback model, String failureReason) {
         return new ReflectionFeedbackDetailResponse(
                 model.id(),
                 model.reflectionId(),
                 model.score(),
                 model.content(),
                 model.status(),
-                model.createdAt()
+                model.createdAt(),
+                failureReason
         );
     }
 }

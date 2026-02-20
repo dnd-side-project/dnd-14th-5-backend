@@ -24,6 +24,13 @@ public class ReflectionFeedbackPromptService {
     private final ReflectionFeedbackPromptRepository reflectionFeedbackPromptRepository;
 
     public void create(ReflectionFeedbackPromptCreateRequest request) {
+        if (reflectionFeedbackPromptRepository.existsByVersion(request.version())) {
+            throw new BusinessException(
+                    ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_VERSION_DUPLICATED,
+                    request.version()
+            );
+        }
+
         ReflectionFeedbackPrompt reflectionFeedbackPrompt = request.toModel();
         reflectionFeedbackPromptRepository.save(ReflectionFeedbackPromptEntity.from(reflectionFeedbackPrompt));
     }

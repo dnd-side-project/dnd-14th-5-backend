@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.reflection.application.service;
 
+import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionFeedbackEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
@@ -9,10 +10,8 @@ import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionQuestion;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
-import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
-import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreateResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionDetailResponse;
@@ -20,18 +19,16 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedba
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
-import com.dnd5.timoapi.global.common.response.PageResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,11 +156,13 @@ public class ReflectionService {
 
     @Transactional(readOnly = true)
     public ReflectionDetailResponse findById(Long reflectionId) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         ReflectionEntity reflectionEntity =
                 reflectionRepository.findById(reflectionId)
                         .orElseThrow(() -> new BusinessException(
                                 ReflectionErrorCode.REFLECTION_NOT_FOUND
                         ));
+        validateOwnership(reflectionEntity, currentUserId);
 
         ReflectionQuestionEntity questionEntity =
                 reflectionQuestionRepository.findById(reflectionEntity.getQuestionId())
@@ -176,6 +175,17 @@ public class ReflectionService {
                 .orElse(null);
 
         return toResponse(reflectionEntity.toModel(), questionEntity.toModel(), feedback);
+    }
+
+    private void validateOwnership(ReflectionEntity reflectionEntity, Long currentUserId) {
+        if (!reflectionEntity.getUserId().equals(currentUserId)) {
+            throw new BusinessException(
+                    ReflectionErrorCode.REFLECTION_NOT_OWNER,
+                    reflectionEntity.getId(),
+                    reflectionEntity.getUserId(),
+                    currentUserId
+            );
+        }
     }
 
     private ReflectionQuestionEntity findTodayQuestionEntity(Long userId) {

@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity
 import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionQuestion;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
+import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionCreateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestionUpdateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReflectionQuestionService {
 
     private final ReflectionQuestionRepository reflectionQuestionRepository;
+    private final TodayQuestionCacheService todayQuestionCacheService;
 
     public void create(ReflectionQuestionCreateRequest request) {
         Long nextSequence = reflectionQuestionRepository.findMaxSequenceByCategory(request.category()) + 1;
@@ -66,6 +68,7 @@ public class ReflectionQuestionService {
 
     public void delete(Long questionId) {
         ReflectionQuestionEntity questionEntity = getQuestionEntity(questionId);
+        Long deletedQuestionId = questionEntity.getId();
         ZtpiCategory category = questionEntity.getCategory();
         Long deletedSequence = questionEntity.getSequence();
 
@@ -74,6 +77,8 @@ public class ReflectionQuestionService {
 
         reflectionQuestionRepository.findAllByCategoryAndSequenceGreaterThan(category, deletedSequence)
                 .forEach(ReflectionQuestionEntity::decreaseSequence);
+
+        todayQuestionCacheService.evictByQuestionId(deletedQuestionId);
     }
 
     private ReflectionQuestionEntity getQuestionEntity(Long questionId) {
