@@ -19,6 +19,7 @@ public enum ReflectionErrorCode implements ErrorCode {
     REFLECTION_FEEDBACK_ALREADY_EXISTS(HttpStatus.CONFLICT, "회고에 대한 피드백이 이미 존재합니다."),
     REFLECTION_FEEDBACK_SCORE_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "회고 피드백 점수 범위를 벗어났습니다. (score: %s, min: %s, max: %s)"),
     REFLECTION_FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백을 찾을 수 없습니다."),
+    REFLECTION_FEEDBACK_PROMPT_VERSION_DUPLICATED(HttpStatus.CONFLICT, "회고 피드백 프롬프트 version이 이미 존재합니다. (version: %s)"),
     REFLECTION_FEEDBACK_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백 프롬프트를 찾을 수 없습니다."),
     ;
 
