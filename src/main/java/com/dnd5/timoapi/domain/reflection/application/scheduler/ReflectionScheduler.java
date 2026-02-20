@@ -34,7 +34,8 @@ public class ReflectionScheduler {
     @Transactional
     public void processYesterdayReflections() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<ReflectionEntity> yesterdayReflections = reflectionRepository.findAllByDate(yesterday);
+        List<ReflectionEntity> yesterdayReflections =
+                reflectionRepository.findAllByDateAndUserDeletedAtIsNull(yesterday);
 
         log.info("Processing {} reflections from {}", yesterdayReflections.size(), yesterday);
 
