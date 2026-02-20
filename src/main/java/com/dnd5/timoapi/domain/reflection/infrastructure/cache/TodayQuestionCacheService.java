@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,5 +29,19 @@ public class TodayQuestionCacheService {
 
     public void evict(Long userId) {
         redisTemplate.delete(KEY_PREFIX + userId);
+    }
+
+    public void evictByQuestionId(Long questionId) {
+        Set<String> keys = redisTemplate.keys(KEY_PREFIX + "*");
+        if (keys == null || keys.isEmpty()) {
+            return;
+        }
+
+        for (String key : keys) {
+            String cachedQuestionId = redisTemplate.opsForValue().get(key);
+            if (cachedQuestionId != null && cachedQuestionId.equals(String.valueOf(questionId))) {
+                redisTemplate.delete(key);
+            }
+        }
     }
 }
