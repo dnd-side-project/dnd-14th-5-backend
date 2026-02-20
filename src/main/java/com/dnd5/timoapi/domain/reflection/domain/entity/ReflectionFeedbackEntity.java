@@ -61,4 +61,10 @@ public class ReflectionFeedbackEntity extends BaseEntity {
     public void fail() {
         this.status = FeedbackStatus.FAILED;
     }
+
+    public void restartProcessing() {
+        this.score = 0;
+        this.content = null;
+        this.status = FeedbackStatus.PROCESSING;
+    }
 }
