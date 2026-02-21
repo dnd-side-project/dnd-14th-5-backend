@@ -26,8 +26,6 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank
-    @NotEmpty
     @Column(nullable = false)
     private String nickname;
 
