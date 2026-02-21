@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.GCE_USER }}
           key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
           script: |
-            cd /
+            cd ~/timo
             docker compose -p timo pull app
             docker compose -p timo up -d app
             docker image prune -f
