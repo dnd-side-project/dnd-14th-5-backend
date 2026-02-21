@@ -36,8 +36,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private User getOrSaveUser(OAuth2UserInfo info) {
-        return userRepository.findByEmailAndDeletedAtIsNull(info.email())
-                .map(UserEntity::toModel)
+        return userRepository.findByEmail(info.email())
+                .map(entity -> {
+                    if (entity.getDeletedAt() != null) {
+                        entity.restore();
+                    }
+                    return entity.toModel();
+                })
                 .orElseGet(() -> userRepository.save(info.toEntity()).toModel());
     }
 }

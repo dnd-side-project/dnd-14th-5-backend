@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByIdAndDeletedAtIsNull(Long id);
+    Optional<UserEntity> findByEmail(String email);
     Optional<UserEntity> findByEmailAndDeletedAtIsNull(String email);
     boolean existsByEmailAndDeletedAtIsNull(String email);
     List<UserEntity> findAllByStreakDaysGreaterThanAndDeletedAtIsNull(Integer streakDays);

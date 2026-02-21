@@ -5,6 +5,7 @@ import com.dnd5.timoapi.global.infrastructure.notification.NotificationType;
 import com.dnd5.timoapi.global.infrastructure.notification.Notifier;
 import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,9 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import com.dnd5.timoapi.domain.auth.exception.AuthErrorCode;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -79,6 +82,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."));
     }
 
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorResponse> handleMissingCookieException(MissingRequestCookieException e) {
+        return ResponseEntity
+                .status(AuthErrorCode.MISSING_REFRESH_TOKEN.getStatus())
+                .body(ErrorResponse.of(AuthErrorCode.MISSING_REFRESH_TOKEN));
+    }
+
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingParameterException(
             MissingServletRequestParameterException e) {
@@ -111,6 +121,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(new ErrorResponse("INVALID_REQUEST_BODY", "요청 본문을 읽을 수 없습니다."));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse("DATA_INTEGRITY_VIOLATION", "입력값이 데이터베이스 제약 조건을 위반했습니다."));
     }
 
     @ExceptionHandler(Exception.class)

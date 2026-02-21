@@ -31,7 +31,11 @@ public class JwtTokenExtractor {
     }
 
     public Long getUserId(Claims claims) {
-        return Long.parseLong(claims.getSubject());
+        try {
+            return Long.parseLong(claims.getSubject());
+        } catch (NumberFormatException e) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
     }
 
     public String getEmail(Claims claims) {
@@ -39,6 +43,10 @@ public class JwtTokenExtractor {
     }
 
     public String getRole(Claims claims) {
-        return claims.get("role", String.class);
+        String role = claims.get("role", String.class);
+        if (role == null) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
+        return role;
     }
 }
