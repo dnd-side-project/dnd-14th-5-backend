@@ -6,6 +6,7 @@ import com.dnd5.timoapi.global.security.handler.CustomAccessDeniedHandler;
 import com.dnd5.timoapi.global.security.handler.CustomAuthenticationEntryPoint;
 import com.dnd5.timoapi.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -28,6 +30,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -49,6 +52,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        AuthenticationFailureHandler failureHandler = (request, response, exception) -> {
+            log.error("[OAUTH2 FAIL] uri={} query={} msg={}",
+                    request.getRequestURI(),
+                    request.getQueryString(),
+                    exception.getMessage(),
+                    exception
+            );
+            response.sendRedirect("/auth/fail");
+        };
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -91,6 +104,7 @@ public class SecurityConfig {
                         .redirectionEndpoint(redir -> redir.baseUri("/auth/callback/*"))
                         .userInfoEndpoint(c -> c.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(failureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
