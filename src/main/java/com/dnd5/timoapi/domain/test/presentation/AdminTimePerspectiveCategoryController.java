@@ -51,5 +51,4 @@ public class AdminTimePerspectiveCategoryController {
     public void delete(@Positive @PathVariable Long categoryId) {
         timePerspectiveCategoryService.delete(categoryId);
     }
-
 }
