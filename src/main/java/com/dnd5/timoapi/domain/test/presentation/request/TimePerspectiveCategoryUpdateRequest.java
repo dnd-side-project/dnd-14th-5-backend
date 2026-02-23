@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotEmpty;
 public record TimePerspectiveCategoryUpdateRequest(
         @NotBlank
         String name,
+        String englishName,
         String characterName,
         String personality,
         @NotEmpty
-        String description
+        String description,
+        Double idealValue
 ) {
 }
