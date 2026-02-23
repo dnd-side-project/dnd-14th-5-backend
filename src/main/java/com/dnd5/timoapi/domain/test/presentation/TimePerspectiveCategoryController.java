@@ -25,5 +25,4 @@ public class TimePerspectiveCategoryController {
     public TimePerspectiveCategoryDetailResponse findById(@Positive @PathVariable Long categoryId) {
         return timePerspectiveCategoryService.findById(categoryId);
     }
-
 }
