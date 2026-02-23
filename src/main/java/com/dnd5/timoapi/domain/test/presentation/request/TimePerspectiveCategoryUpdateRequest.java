@@ -1,7 +1,6 @@
 package com.dnd5.timoapi.domain.test.presentation.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 public record TimePerspectiveCategoryUpdateRequest(
         @NotBlank
@@ -9,7 +8,7 @@ public record TimePerspectiveCategoryUpdateRequest(
         String englishName,
         String characterName,
         String personality,
-        @NotEmpty
+        @NotBlank
         String description,
         Double idealValue
 ) {
