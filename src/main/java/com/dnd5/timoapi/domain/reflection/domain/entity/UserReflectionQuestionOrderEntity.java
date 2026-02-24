@@ -54,4 +54,8 @@ public class UserReflectionQuestionOrderEntity extends BaseEntity { // TODO ë¡œê
     public void incrementSequence() {
         this.sequence++;
     }
+
+    public void updateSequence(Long sequence) {
+        this.sequence = sequence;
+    }
 }

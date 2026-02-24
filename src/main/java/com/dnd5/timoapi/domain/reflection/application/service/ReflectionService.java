@@ -10,6 +10,7 @@ import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionQuestion;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
@@ -43,6 +44,7 @@ public class ReflectionService {
     private final TodayQuestionResolver todayQuestionResolver;
     private final TodayQuestionCacheService todayQuestionCacheService;
     private final UserRepository userRepository;
+    private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
 
     public ReflectionCreateResponse create(ReflectionCreateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -76,7 +78,6 @@ public class ReflectionService {
         return ReflectionQuestionDetailResponse.from(findTodayQuestionEntity(userId).toModel());
     }
 
-    @Transactional(readOnly = true)
     public ReflectionQuestionDetailResponse changeQuestionToday() {
         Long userId = SecurityUtil.getCurrentUserId();
 
@@ -111,6 +112,13 @@ public class ReflectionService {
                         ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
 
         todayQuestionCacheService.setQuestionId(userId, newQuestion.getId());
+
+        if (currentQuestion != null && currentQuestion.getCategory().equals(newCategory)) {
+            Long finalNewSequence = newSequence;
+            userReflectionQuestionOrderRepository
+                    .findByUserIdAndCategory(userId, newCategory)
+                    .ifPresent(order -> order.updateSequence(finalNewSequence));
+        }
 
         return ReflectionQuestionDetailResponse.from(newQuestion.toModel());
     }
