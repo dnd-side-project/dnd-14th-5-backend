@@ -14,11 +14,11 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRe
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
-import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,7 +49,6 @@ class ReflectionSchedulerTest {
     @Test
     void processYesterdayReflections_탈퇴유저_제외조회_사용() {
         Long activeUserId = 1L;
-        Long inactiveUserId = 2L;
         Long yesterdayQuestionId = 11L;
         Long todayQuestionId = 22L;
 
@@ -60,13 +59,16 @@ class ReflectionSchedulerTest {
                 .thenReturn(List.of(reflection));
 
         ReflectionQuestionEntity yesterdayQuestion = mock(ReflectionQuestionEntity.class);
+        when(yesterdayQuestion.getId()).thenReturn(yesterdayQuestionId);
         when(yesterdayQuestion.getCategory()).thenReturn(ZtpiCategory.FUTURE);
-        when(reflectionQuestionRepository.findById(yesterdayQuestionId))
-                .thenReturn(Optional.of(yesterdayQuestion));
+        when(reflectionQuestionRepository.findAllById(Set.of(yesterdayQuestionId)))
+                .thenReturn(List.of(yesterdayQuestion));
 
         UserReflectionQuestionOrderEntity order = mock(UserReflectionQuestionOrderEntity.class);
-        when(userReflectionQuestionOrderRepository.findByUserIdAndCategory(activeUserId, ZtpiCategory.FUTURE))
-                .thenReturn(Optional.of(order));
+        when(order.getUserId()).thenReturn(activeUserId);
+        when(order.getCategory()).thenReturn(ZtpiCategory.FUTURE);
+        when(userReflectionQuestionOrderRepository.findAllByUserIdIn(Set.of(activeUserId)))
+                .thenReturn(List.of(order));
 
         when(todayQuestionResolver.resolveTodayCategory(activeUserId)).thenReturn(ZtpiCategory.FUTURE);
         when(todayQuestionResolver.resolveTodaySequence(activeUserId, ZtpiCategory.FUTURE)).thenReturn(1L);
@@ -76,20 +78,12 @@ class ReflectionSchedulerTest {
         when(reflectionQuestionRepository.findBySequenceAndCategory(1L, ZtpiCategory.FUTURE))
                 .thenReturn(Optional.of(todayQuestion));
 
-        UserEntity activeUser = mock(UserEntity.class);
-        UserEntity inactiveUser = mock(UserEntity.class);
-        when(activeUser.getId()).thenReturn(activeUserId);
-        when(inactiveUser.getId()).thenReturn(inactiveUserId);
-        when(userRepository.findAllByStreakDaysGreaterThanAndDeletedAtIsNull(0))
-                .thenReturn(List.of(activeUser, inactiveUser));
-
         reflectionScheduler.processYesterdayReflections();
 
         verify(reflectionRepository).findAllByDateAndUserDeletedAtIsNull(any(LocalDate.class));
         verify(reflectionRepository, never()).findAllByDate(any(LocalDate.class));
         verify(order).incrementSequence();
         verify(todayQuestionResolver).cacheQuestionId(activeUserId, todayQuestionId);
-        verify(inactiveUser).resetStreakDays();
-        verify(activeUser, never()).resetStreakDays();
+        verify(userRepository).resetStreakForInactiveUsers(Set.of(activeUserId));
     }
 }

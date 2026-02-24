@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.reflection.application.scheduler;
 
+import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.UserReflectionQuestionOrderEntity;
@@ -28,6 +29,7 @@ public class ReflectionScheduler {
     private final ReflectionQuestionRepository reflectionQuestionRepository;
     private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
     private final UserRepository userRepository;
+    private final TodayQuestionResolver todayQuestionResolver;
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -44,6 +46,7 @@ public class ReflectionScheduler {
         }
 
         incrementQuestionSequences(yesterdayReflections);
+        cacheNextQuestions(yesterdayReflections);
 
         Set<Long> activeUserIds = yesterdayReflections.stream()
                 .map(ReflectionEntity::getUserId)
@@ -91,6 +94,19 @@ public class ReflectionScheduler {
 
             order.incrementSequence();
             log.info("Incremented sequence for userId: {}, category: {}", reflection.getUserId(), category);
+        }
+    }
+
+    private void cacheNextQuestions(List<ReflectionEntity> reflections) {
+        Set<Long> userIds = reflections.stream()
+                .map(ReflectionEntity::getUserId)
+                .collect(Collectors.toSet());
+
+        for (Long userId : userIds) {
+            ZtpiCategory category = todayQuestionResolver.resolveTodayCategory(userId);
+            Long sequence = todayQuestionResolver.resolveTodaySequence(userId, category);
+            reflectionQuestionRepository.findBySequenceAndCategory(sequence, category)
+                    .ifPresent(q -> todayQuestionResolver.cacheQuestionId(userId, q.getId()));
         }
     }
 
