@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class TodayQuestionCacheService {
 
     private static final String KEY_PREFIX = "reflection:question:today:";
+    private static final String SKIP_COUNT_KEY_PREFIX = "reflection:question:skip:count:";
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -29,6 +30,18 @@ public class TodayQuestionCacheService {
 
     public void evict(Long userId) {
         redisTemplate.delete(KEY_PREFIX + userId);
+    }
+
+    public int getSkipCount(Long userId) {
+        String value = redisTemplate.opsForValue().get(SKIP_COUNT_KEY_PREFIX + userId);
+        return value != null ? Integer.parseInt(value) : 0;
+    }
+
+    public void incrementSkipCount(Long userId) {
+        String key = SKIP_COUNT_KEY_PREFIX + userId;
+        Duration ttl = Duration.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atTime(LocalTime.MIDNIGHT));
+        redisTemplate.opsForValue().increment(key);
+        redisTemplate.expire(key, ttl);
     }
 
     public void evictByQuestionId(Long questionId) {
