@@ -79,6 +79,12 @@ public class ReflectionFeedbackService {
         return ReflectionFeedbackDetailResponse.from(feedbackEntity.toModel(), failureReason);
     }
 
+    public void delete(Long feedbackId) {
+        ReflectionFeedbackEntity feedbackEntity = reflectionFeedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_NOT_FOUND));
+        reflectionFeedbackRepository.delete(feedbackEntity);
+    }
+
     private void validateOwnership(ReflectionEntity reflectionEntity, Long currentUserId) {
         if (!reflectionEntity.getUserId().equals(currentUserId)) {
             throw new BusinessException(

@@ -191,6 +191,14 @@ public class ReflectionService {
         return toResponse(reflectionEntity.toModel(), questionEntity.toModel(), feedback);
     }
 
+    public void delete(Long reflectionId) {
+        ReflectionEntity reflectionEntity = reflectionRepository.findById(reflectionId)
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+        reflectionFeedbackRepository.findByReflectionId(reflectionId)
+                .ifPresent(reflectionFeedbackRepository::delete);
+        reflectionRepository.delete(reflectionEntity);
+    }
+
     private void validateOwnership(ReflectionEntity reflectionEntity, Long currentUserId) {
         if (!reflectionEntity.getUserId().equals(currentUserId)) {
             throw new BusinessException(
