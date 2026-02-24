@@ -34,12 +34,6 @@ public class AdminTimePerspectiveCategoryController {
         timePerspectiveCategoryService.create(request);
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<TimePerspectiveCategoryResponse> findAll() {
-        return timePerspectiveCategoryService.findAll();
-    }
-
     @PatchMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable Long categoryId, @Valid @RequestBody TimePerspectiveCategoryUpdateRequest request) {

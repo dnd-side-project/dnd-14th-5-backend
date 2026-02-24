@@ -2,7 +2,9 @@ package com.dnd5.timoapi.domain.test.presentation;
 
 import com.dnd5.timoapi.domain.test.application.service.TimePerspectiveCategoryService;
 import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryDetailResponse;
+import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryResponse;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TimePerspectiveCategoryController {
 
     private final TimePerspectiveCategoryService timePerspectiveCategoryService;
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<TimePerspectiveCategoryResponse> findAll() {
+        return timePerspectiveCategoryService.findAll();
+    }
 
     @GetMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
