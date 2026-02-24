@@ -21,6 +21,7 @@ public enum ReflectionErrorCode implements ErrorCode {
     REFLECTION_FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백을 찾을 수 없습니다."),
     REFLECTION_FEEDBACK_PROMPT_VERSION_DUPLICATED(HttpStatus.CONFLICT, "회고 피드백 프롬프트 version이 이미 존재합니다. (version: %s)"),
     REFLECTION_FEEDBACK_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "회고 피드백 프롬프트를 찾을 수 없습니다."),
+    QUESTION_CHANGE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "질문 변경 횟수를 초과했습니다. (일 5회 제한)"),
     ;
 
     private final HttpStatus status;

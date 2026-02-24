@@ -85,6 +85,10 @@ public class ReflectionService {
             throw new BusinessException(ReflectionErrorCode.TODAY_REFLECTION_ALREADY_EXISTS);
         }
 
+        if (todayQuestionCacheService.getSkipCount(userId) >= 5) {
+            throw new BusinessException(ReflectionErrorCode.QUESTION_CHANGE_LIMIT_EXCEEDED);
+        }
+
         Long currentQuestionId = todayQuestionCacheService.getQuestionId(userId);
         ReflectionQuestionEntity currentQuestion = null;
         if (currentQuestionId != null) {
@@ -119,6 +123,8 @@ public class ReflectionService {
                     .findByUserIdAndCategory(userId, newCategory)
                     .ifPresent(order -> order.updateSequence(finalNewSequence));
         }
+
+        todayQuestionCacheService.incrementSkipCount(userId);
 
         return ReflectionQuestionDetailResponse.from(newQuestion.toModel());
     }
