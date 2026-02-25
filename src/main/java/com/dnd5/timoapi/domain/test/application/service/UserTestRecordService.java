@@ -78,8 +78,7 @@ public class UserTestRecordService {
                                 TestRecordStatus.IN_PROGRESS);
 
         if (userTestRecordEntity.isPresent()) {
-            throw new BusinessException(UserTestRecordErrorCode.ALREADY_IN_PROGRESS,
-                    userTestRecordEntity.get().getId());
+            return UserTestRecordCreateResponse.from(userTestRecordEntity.get().toModel(), true);
         }
 
         UserTestRecord model = request.toModel();
@@ -88,7 +87,7 @@ public class UserTestRecordService {
                 userTestRecordRepository.save(
                         UserTestRecordEntity.from(userEntity, testEntity, model));
 
-        return UserTestRecordCreateResponse.from(savedEntity.toModel());
+        return UserTestRecordCreateResponse.from(savedEntity.toModel(), false);
     }
 
     public UserTestRecordDetailResponse complete(Long testRecordId) {
