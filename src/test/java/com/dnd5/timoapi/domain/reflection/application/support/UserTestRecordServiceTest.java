@@ -1,7 +1,6 @@
 package com.dnd5.timoapi.domain.reflection.application.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -27,7 +26,6 @@ import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateReq
 import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
-import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.util.EnumMap;
 import java.util.List;
@@ -62,7 +60,7 @@ class UserTestRecordServiceTest {
     private static final Long TEST_ID = 100L;
 
     @Test
-    void create_이미_진행중인_테스트_기록이_존재하면_예외() {
+    void create_이미_진행중인_테스트_기록이_존재하면_기존_기록_반환() {
         try (MockedStatic<SecurityUtil> mocked =
                 Mockito.mockStatic(SecurityUtil.class)) {
 
@@ -79,8 +77,9 @@ class UserTestRecordServiceTest {
 
             when(test.getId()).thenReturn(TEST_ID);
 
+            UserTestRecord existingModel = new UserTestRecord(1L, USER_ID, TEST_ID, TestRecordStatus.IN_PROGRESS, null, null);
             UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
-            when(mockRecord.getId()).thenReturn(1L);
+            when(mockRecord.toModel()).thenReturn(existingModel);
             when(userTestRecordRepository
                     .findByUserIdAndTestIdAndStatus(
                             USER_ID,
@@ -91,9 +90,10 @@ class UserTestRecordServiceTest {
             UserTestRecordCreateRequest request =
                     new UserTestRecordCreateRequest(TEST_ID);
 
-            assertThatThrownBy(() -> service.create(request))
-                    .isInstanceOf(BusinessException.class);
+            UserTestRecordCreateResponse response = service.create(request);
 
+            assertThat(response.isExisting()).isTrue();
+            assertThat(response.id()).isEqualTo(1L);
             verify(userTestRecordRepository, never()).save(any());
         }
     }
