@@ -2,6 +2,8 @@ package com.dnd5.timoapi.domain.reflection.domain.repository;
 
 import com.dnd5.timoapi.domain.reflection.domain.entity.UserReflectionQuestionOrderEntity;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +14,6 @@ public interface UserReflectionQuestionOrderRepository extends
             ZtpiCategory category);
 
     boolean existsByUserIdAndCategory(Long userId, ZtpiCategory category);
+
+    List<UserReflectionQuestionOrderEntity> findAllByUserIdIn(Collection<Long> userIds);
 }
