@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.user.domain.model;
 
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.model.enums.OAuthProvider;
 import com.dnd5.timoapi.domain.user.domain.model.enums.UserRole;
 
@@ -12,12 +13,13 @@ public record User(
         String timezone,
         OAuthProvider provider,
         UserRole role,
+        ZtpiCategory category,
         Boolean isOnboarded,
         Integer streakDays,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
     public static User create(String email, String nickname, String timezone, OAuthProvider provider) {
-        return new User(null, email, nickname, timezone, provider, UserRole.USER, false, 0, null, null);
+        return new User(null, email, nickname, timezone, provider, UserRole.USER, null,false, 0, null, null);
     }
 }

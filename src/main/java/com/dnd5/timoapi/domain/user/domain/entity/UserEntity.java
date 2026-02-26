@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.user.domain.entity;
 
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.model.User;
 import com.dnd5.timoapi.domain.user.domain.model.enums.OAuthProvider;
 import com.dnd5.timoapi.domain.user.domain.model.enums.UserRole;
@@ -40,6 +41,10 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ZtpiCategory category = null;
+
     @Column(nullable = false)
     private Boolean isOnboarded = false;
 
@@ -47,15 +52,19 @@ public class UserEntity extends BaseEntity {
     private Integer streakDays = 0;
 
     public static UserEntity from(User model) {
-        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.isOnboarded(), model.streakDays());
+        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.category(), model.isOnboarded(), model.streakDays());
     }
 
     public User toModel() {
-        return new User(getId(), email, nickname, timezone, provider, role, isOnboarded, streakDays, getCreatedAt(), getUpdatedAt());
+        return new User(getId(), email, nickname, timezone, provider, role, category, isOnboarded, streakDays, getCreatedAt(), getUpdatedAt());
     }
 
     public void update(String nickname) {
         if (nickname != null) this.nickname = nickname;
+    }
+
+    public void updateZtpiCategory(ZtpiCategory category) {
+        this.category = category;
     }
 
     public void completeOnboarding() {
