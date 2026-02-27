@@ -116,9 +116,14 @@ public class UserTestRecordService {
                 userTestResponseEntityList);
 
         userTestRecordEntity.complete();
-        createUserReflectionQuestionOrders(userTestRecordEntity.getUser().getId());
 
         UserEntity userEntity = userTestRecordEntity.getUser();
+
+        ZtpiCategory userMaxCategory = getUserTestRecordMaxCategory(testRecordId);
+        userEntity.updateZtpiCategory(userMaxCategory);
+
+        createUserReflectionQuestionOrders(userTestRecordEntity.getUser().getId());
+
         if (!userEntity.getIsOnboarded()) {
             userEntity.completeOnboarding();
         }
@@ -301,5 +306,21 @@ public class UserTestRecordService {
         userTestResultRepository.saveAll(userTestResultEntityList);
 
         return userTestCategoryAverages;
+    }
+
+    public ZtpiCategory getUserTestRecordMaxCategory(Long testRecordId) {
+
+        List<UserTestResultEntity> results =
+                userTestResultRepository.findByUserTestRecordId(testRecordId);
+
+        if (results.isEmpty()) {
+            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_RESULT_NOT_FOUND);
+        }
+
+        return results.stream()
+                .max(Comparator.comparing(UserTestResultEntity::getScore))
+                .orElseThrow(() -> new BusinessException(
+                        UserTestRecordErrorCode.USER_TEST_RESULT_NOT_FOUND))
+                .getCategory();
     }
 }
