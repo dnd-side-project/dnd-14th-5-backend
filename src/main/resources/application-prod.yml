@@ -122,3 +122,9 @@ logstash:
 fcm:
   enabled: ${FCM_ENABLED:false}
   credentials-path: ${FCM_CREDENTIALS_PATH:}
+
+cookie:
+  secure: ${COOKIE_SECURE:true}
+  same-site: ${COOKIE_SAME_SITE:None}
+  domain: ${COOKIE_DOMAIN:}
+  path: ${COOKIE_PATH:/}
