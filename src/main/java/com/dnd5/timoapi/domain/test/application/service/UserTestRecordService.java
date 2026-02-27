@@ -119,7 +119,7 @@ public class UserTestRecordService {
 
         UserEntity userEntity = userTestRecordEntity.getUser();
 
-        ZtpiCategory userMaxCategory = getUserTestRecordMaxCategory(testRecordId);
+        ZtpiCategory userMaxCategory = calculateClosestCategory(userTestResults);
         userEntity.updateZtpiCategory(userMaxCategory);
 
         createUserReflectionQuestionOrders(userTestRecordEntity.getUser().getId());
