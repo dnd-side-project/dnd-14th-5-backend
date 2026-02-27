@@ -119,7 +119,7 @@ public class UserTestRecordService {
 
         UserEntity userEntity = userTestRecordEntity.getUser();
 
-        ZtpiCategory userMaxCategory = getMaxCategory(testRecordId);
+        ZtpiCategory userMaxCategory = getUserTestRecordMaxCategory(testRecordId);
         userEntity.updateZtpiCategory(userMaxCategory);
 
         createUserReflectionQuestionOrders(userTestRecordEntity.getUser().getId());
@@ -308,7 +308,7 @@ public class UserTestRecordService {
         return userTestCategoryAverages;
     }
 
-    public ZtpiCategory getMaxCategory(Long testRecordId) {
+    public ZtpiCategory getUserTestRecordMaxCategory(Long testRecordId) {
 
         List<UserTestResultEntity> results =
                 userTestResultRepository.findByUserTestRecordId(testRecordId);
