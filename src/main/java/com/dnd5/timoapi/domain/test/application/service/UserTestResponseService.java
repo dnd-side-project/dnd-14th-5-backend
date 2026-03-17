@@ -99,6 +99,14 @@ public class UserTestResponseService {
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
+    public void delete(Long testRecordId, Long responseId) {
+        userTestRecordRepository.findById(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        userTestResponseRepository.deleteByUserTestRecordIdAndId(testRecordId, responseId);
+    }
+
     private UserTestResponseEntity getUserTestResponseEntity(Long testResponseId) {
         return userTestResponseRepository.findById(testResponseId)
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
@@ -125,6 +133,4 @@ public class UserTestResponseService {
                     testRecordId, response.getId(), response.getUserTestRecord().getId());
         }
     }
-
-
 }

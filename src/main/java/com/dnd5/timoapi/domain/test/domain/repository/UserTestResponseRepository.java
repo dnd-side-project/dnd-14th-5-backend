@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.test.domain.repository;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,5 @@ public interface UserTestResponseRepository extends JpaRepository<UserTestRespon
             UserTestRecordEntity record,
             TestQuestionEntity question
     );
+    void deleteByUserTestRecordIdAndId(@Positive Long testRecordId, @Positive Long responseId);
 }
