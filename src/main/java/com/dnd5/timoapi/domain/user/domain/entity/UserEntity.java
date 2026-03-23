@@ -69,8 +69,12 @@ public class UserEntity extends BaseEntity {
         this.isOnboarded = true;
     }
 
-    public void incrementStreakDays() {
-        this.streakDays += 1;
+    public void updateStreak(boolean isConsecutive) {
+        if (isConsecutive) {
+            this.streakDays += 1;
+        } else {
+            this.streakDays = 1;
+        }
     }
 
     public void resetStreakDays() {
