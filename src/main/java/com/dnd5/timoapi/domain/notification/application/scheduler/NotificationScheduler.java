@@ -30,8 +30,7 @@ public class NotificationScheduler {
     @Scheduled(cron = "0 * * * * *")
     public void sendScheduledNotifications() {
         LocalTime now = LocalTime.now().truncatedTo(ChronoUnit.MINUTES);
-        List<AlarmSettingEntity> settings = alarmSettingRepository.findAllByAlarmTimeAndDeletedAtIsNull(
-                now);
+        List<AlarmSettingEntity> settings = alarmSettingRepository.findAllByAlarmTime(now);
 
         if (settings.isEmpty()) {
             return;
