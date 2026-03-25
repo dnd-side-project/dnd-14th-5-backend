@@ -99,12 +99,16 @@ public class UserTestResponseService {
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void delete(Long testRecordId, Long responseId) {
         userTestRecordRepository.findById(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        userTestResponseRepository.deleteByUserTestRecordIdAndId(testRecordId, responseId);
+        UserTestResponseEntity userTestResponseEntity = userTestResponseRepository
+                .findByUserTestRecordIdAndIdAndDeletedAtIsNull(testRecordId, responseId)
+                .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
+
+        userTestResponseEntity.softDelete();
     }
 
     private UserTestResponseEntity getUserTestResponseEntity(Long testResponseId) {
