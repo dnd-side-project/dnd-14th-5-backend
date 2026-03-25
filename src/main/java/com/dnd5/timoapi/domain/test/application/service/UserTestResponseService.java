@@ -60,28 +60,28 @@ public class UserTestResponseService {
         userTestResponseRepository.save(UserTestResponseEntity.from(userTestRecordEntity, testQuestionEntity, request.score()));
     }
 
-
-    public void update(Long testRecordId, Long responseId, @Valid UserTestResponseUpdateRequest request) {
-        UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findById(testRecordId)
+    public void update(Long testRecordId, Long responseId, UserTestResponseUpdateRequest request) {
+        UserTestRecordEntity userTestRecordEntity = userTestRecordRepository
+                .findByIdAndDeletedAtIsNull(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
         validateUserTestRecordOwnership(userTestRecordEntity);
         validateTestRecordAlreadyCompleted(userTestRecordEntity);
 
-        UserTestResponseEntity userTestResponseEntity = getUserTestResponseEntity(responseId);
-        validateResponseBelongsToRecord(testRecordId, userTestResponseEntity);
+        UserTestResponseEntity userTestResponseEntity = userTestResponseRepository
+                .findByUserTestRecordIdAndIdAndDeletedAtIsNull(testRecordId, responseId)
+                .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
 
         userTestResponseEntity.update(request.score());
     }
 
-
     @Transactional(readOnly = true)
     public List<UserTestResponseResponse> findAll(Long testRecordId) {
-        userTestRecordRepository.findById(testRecordId)
+        userTestRecordRepository.findByIdAndDeletedAtIsNull(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        return userTestResponseRepository.findByUserTestRecordId(testRecordId)
-                .orElse(List.of())
+        return userTestResponseRepository
+                .findByUserTestRecordIdAndDeletedAtIsNull(testRecordId)
                 .stream()
                 .map(UserTestResponseEntity::toModel)
                 .map(UserTestResponseResponse::from)
@@ -90,10 +90,11 @@ public class UserTestResponseService {
 
     @Transactional(readOnly = true)
     public UserTestResponseResponse findById(Long testRecordId, Long responseId) {
-        userTestRecordRepository.findById(testRecordId)
+        userTestRecordRepository.findByIdAndDeletedAtIsNull(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
-        return userTestResponseRepository.findByUserTestRecordIdAndId(testRecordId, responseId)
+        return userTestResponseRepository
+                .findByUserTestRecordIdAndIdAndDeletedAtIsNull(testRecordId, responseId)
                 .map(UserTestResponseEntity::toModel)
                 .map(UserTestResponseResponse::from)
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
