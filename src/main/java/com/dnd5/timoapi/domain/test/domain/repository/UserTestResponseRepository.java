@@ -21,4 +21,6 @@ public interface UserTestResponseRepository extends JpaRepository<UserTestRespon
     List<UserTestResponseEntity> findByUserTestRecordIdAndDeletedAtIsNull(Long testRecordId);
 
     Optional<UserTestResponseEntity> findByIdAndDeletedAtIsNull(Long testResponseId);
+
+    int countByUserTestRecordIdAndDeletedAtIsNull(Long testRecordId);
 }
