@@ -8,7 +8,6 @@ import com.dnd5.timoapi.domain.user.presentation.request.UpdateMeRequest;
 import com.dnd5.timoapi.domain.user.presentation.response.UserResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,9 +32,9 @@ public class UserService {
     }
 
     public void deleteMe() {
-        UserEntity user = getCurrentUserEntity();
-        user.setDeletedAt(LocalDateTime.now());
-        refreshTokenRepository.deleteByUserId(user.getId());
+        UserEntity userEntity = getCurrentUserEntity();
+        userEntity.softDelete();
+        refreshTokenRepository.deleteByUserId(userEntity.getId());
     }
 
     private UserEntity getCurrentUserEntity() {
