@@ -1,10 +1,13 @@
 package com.dnd5.timoapi.domain.test.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
+import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.model.Test;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
+import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
+import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.TestCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
@@ -23,6 +26,7 @@ import java.util.List;
 public class TestService {
 
     private final TestRepository testRepository;
+    private final TestQuestionRepository testQuestionRepository;
 
     public void create(TestCreateRequest request) {
         if (testRepository.existsByTypeAndDeletedAtIsNull(request.type())) {
@@ -62,9 +66,18 @@ public class TestService {
         testEntity.update(request.type(), request.name(), request.description());
     }
 
+    @Transactional(readOnly = true)
     public void delete(Long testId) {
         TestEntity testEntity = getTestEntity(testId);
-        testEntity.setDeletedAt(LocalDateTime.now());
+
+        List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestIdAndDeletedAtIsNull(testId);
+        if(testQuestionEntityList.isEmpty()) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND);
+        }
+
+        testQuestionEntityList.forEach(TestQuestionEntity::softDelete);
+
+        testEntity.softDelete();
     }
 
     private TestEntity getTestEntity(Long testId) {
