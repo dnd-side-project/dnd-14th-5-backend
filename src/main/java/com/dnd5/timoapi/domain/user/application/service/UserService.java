@@ -31,6 +31,7 @@ public class UserService {
         user.update(request.name());
     }
 
+    @Transactional(readOnly = true)
     public void deleteMe() {
         UserEntity userEntity = getCurrentUserEntity();
         userEntity.softDelete();
