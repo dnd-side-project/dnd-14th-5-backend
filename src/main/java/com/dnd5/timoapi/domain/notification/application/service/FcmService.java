@@ -46,7 +46,7 @@ public class FcmService {
                 .findByUserIdAndTokenAndDeletedAtIsNull(userId, token)
                 .orElseThrow(() -> new BusinessException(FcmErrorCode.DEVICE_TOKEN_NOT_FOUND));
 
-        entity.setDeletedAt(LocalDateTime.now());
+        entity.softDelete();
     }
 
     @Transactional(readOnly = true)
