@@ -102,7 +102,7 @@ public class UserTestResponseService {
 
     @Transactional
     public void delete(Long testRecordId, Long responseId) {
-        userTestRecordRepository.findById(testRecordId)
+        userTestRecordRepository.findByIdAndDeletedAtIsNull(testRecordId)
                 .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 
         UserTestResponseEntity userTestResponseEntity = userTestResponseRepository
@@ -113,7 +113,7 @@ public class UserTestResponseService {
     }
 
     private UserTestResponseEntity getUserTestResponseEntity(Long testResponseId) {
-        return userTestResponseRepository.findById(testResponseId)
+        return userTestResponseRepository.findByIdAndDeletedAtIsNull(testResponseId)
                 .orElseThrow(() -> new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
     }
 
