@@ -66,7 +66,7 @@ public class TestService {
         testEntity.update(request.type(), request.name(), request.description());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void delete(Long testId) {
         TestEntity testEntity = getTestEntity(testId);
 
