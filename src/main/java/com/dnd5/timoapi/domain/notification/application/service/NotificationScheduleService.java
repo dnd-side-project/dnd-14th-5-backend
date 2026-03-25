@@ -50,7 +50,7 @@ public class NotificationScheduleService {
 
     public void delete(Long scheduleId) {
         AlarmSettingEntity entity = findByIdAndValidateOwner(scheduleId);
-        entity.setDeletedAt(LocalDateTime.now());
+        entity.softDelete();
     }
 
     public void testSend() {

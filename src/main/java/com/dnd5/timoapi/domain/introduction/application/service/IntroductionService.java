@@ -51,7 +51,7 @@ public class IntroductionService {
 
     public void delete(Long introductionId) {
         IntroductionEntity entity = getEntity(introductionId);
-        entity.setDeletedAt(LocalDateTime.now());
+        entity.softDelete();
     }
 
     private IntroductionEntity getEntity(Long introductionId) {
