@@ -76,16 +76,10 @@ public class TestService {
         TestEntity testEntity = getTestEntity(testId);
 
         List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestIdAndDeletedAtIsNull(testId);
-        if(testQuestionEntityList.isEmpty()) {
-            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND);
-        }
 
         testQuestionEntityList.forEach(TestQuestionEntity::softDelete);
 
         List<UserTestRecordEntity> userTestRecordEntityList = userTestRecordRepository.findByTestIdAndDeletedAtIsNull(testId);
-        if(userTestRecordEntityList.isEmpty()) {
-            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND);
-        }
 
         userTestRecordEntityList.forEach(
                 userTestRecordEntity -> userTestRecordService.delete(userTestRecordEntity.getId())
