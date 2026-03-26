@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface AlarmSettingRepository extends JpaRepository<AlarmSettingEntity, Long> {
 
-    Optional<AlarmSettingEntity> findByUserIdAndDeletedAtIsNull(Long userId);
+    Optional<AlarmSettingEntity> findByUserId(Long userId);
 
-    boolean existsByUserIdAndDeletedAtIsNull(Long userId);
+    boolean existsByUserId(Long userId);
 
-    List<AlarmSettingEntity> findAllByAlarmTimeAndDeletedAtIsNull(LocalTime alarmTime);
+    List<AlarmSettingEntity> findAllByAlarmTime(LocalTime alarmTime);
 }
