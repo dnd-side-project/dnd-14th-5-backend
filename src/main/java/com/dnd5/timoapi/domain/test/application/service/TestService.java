@@ -2,12 +2,15 @@ package com.dnd5.timoapi.domain.test.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
+import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.model.Test;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
+import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.exception.TestErrorCode;
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
+import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.TestCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TestUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
@@ -17,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,6 +29,9 @@ public class TestService {
 
     private final TestRepository testRepository;
     private final TestQuestionRepository testQuestionRepository;
+    private final UserTestRecordRepository userTestRecordRepository;
+
+    private final UserTestRecordService userTestRecordService;
 
     public void create(TestCreateRequest request) {
         if (testRepository.existsByTypeAndDeletedAtIsNull(request.type())) {
@@ -76,6 +81,15 @@ public class TestService {
         }
 
         testQuestionEntityList.forEach(TestQuestionEntity::softDelete);
+
+        List<UserTestRecordEntity> userTestRecordEntityList = userTestRecordRepository.findByTestIdAndDeletedAtIsNull(testId);
+        if(userTestRecordEntityList.isEmpty()) {
+            throw new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND);
+        }
+
+        userTestRecordEntityList.forEach(
+                UserTestRecordEntity -> userTestRecordService.delete(UserTestRecordEntity.getId())
+        );
 
         testEntity.softDelete();
     }
