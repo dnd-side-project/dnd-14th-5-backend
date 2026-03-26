@@ -67,7 +67,9 @@ public class ReflectionService {
 
         UserEntity userEntity = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-        userEntity.incrementStreakDays();
+
+        boolean wroteYesterday = isWroteYesterday(userId);
+        userEntity.updateStreak(wroteYesterday);
 
         return new ReflectionCreateResponse(saved.getId());
     }
@@ -208,6 +210,12 @@ public class ReflectionService {
                     currentUserId
             );
         }
+    }
+
+    private boolean isWroteYesterday(Long userId) {
+        return reflectionRepository
+                .findByDateAndUserId(LocalDate.now().minusDays(1), userId)
+                .isPresent();
     }
 
     private ReflectionQuestionEntity findTodayQuestionEntity(Long userId) {

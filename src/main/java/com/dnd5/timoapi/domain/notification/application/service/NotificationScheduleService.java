@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Service
@@ -25,7 +24,7 @@ public class NotificationScheduleService {
     public void create(LocalTime notificationTime, String token) {
         Long userId = SecurityUtil.getCurrentUserId();
 
-        if (alarmSettingRepository.existsByUserIdAndDeletedAtIsNull(userId)) {
+        if (alarmSettingRepository.existsByUserId(userId)) {
             throw new BusinessException(NotificationErrorCode.SCHEDULE_ALREADY_EXISTS);
         }
 
@@ -37,7 +36,7 @@ public class NotificationScheduleService {
     public ScheduleResponse getMy() {
         Long userId = SecurityUtil.getCurrentUserId();
 
-        AlarmSettingEntity entity = alarmSettingRepository.findByUserIdAndDeletedAtIsNull(userId)
+        AlarmSettingEntity entity = alarmSettingRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.SCHEDULE_NOT_FOUND));
 
         return ScheduleResponse.from(entity);
@@ -50,7 +49,7 @@ public class NotificationScheduleService {
 
     public void delete(Long scheduleId) {
         AlarmSettingEntity entity = findByIdAndValidateOwner(scheduleId);
-        entity.softDelete();
+        alarmSettingRepository.delete(entity);
     }
 
     public void testSend() {
@@ -61,11 +60,8 @@ public class NotificationScheduleService {
     private AlarmSettingEntity findByIdAndValidateOwner(Long scheduleId) {
         Long userId = SecurityUtil.getCurrentUserId();
 
-        AlarmSettingEntity entity = alarmSettingRepository.findById(scheduleId)
-                .filter(e -> e.getDeletedAt() == null)
+        return alarmSettingRepository.findById(scheduleId)
                 .filter(e -> e.getUserId().equals(userId))
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.SCHEDULE_NOT_FOUND));
-
-        return entity;
     }
 }
