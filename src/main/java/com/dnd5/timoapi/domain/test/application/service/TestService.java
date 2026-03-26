@@ -88,7 +88,7 @@ public class TestService {
         }
 
         userTestRecordEntityList.forEach(
-                UserTestRecordEntity -> userTestRecordService.delete(UserTestRecordEntity.getId())
+                userTestRecordEntity -> userTestRecordService.delete(userTestRecordEntity.getId())
         );
 
         testEntity.softDelete();
