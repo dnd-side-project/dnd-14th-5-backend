@@ -28,7 +28,7 @@ public class TestQuestionService {
     private final TestQuestionRepository testQuestionRepository;
 
     public void create(Long testId, TestQuestionCreateRequest request) {
-        TestEntity testEntity = testRepository.findById(testId)
+        TestEntity testEntity = testRepository.findByIdAndDeletedAtIsNull(testId)
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
         int currentQuestionCount = testQuestionRepository.countByTestIdAndDeletedAtIsNull(testId);
@@ -82,7 +82,7 @@ public class TestQuestionService {
 
     public void delete(Long questionId, Long testId) {
         TestQuestionEntity testQuestionEntity = getTestQuestionEntity(testId, questionId);
-        testQuestionEntity.setDeletedAt(LocalDateTime.now());
+        testQuestionEntity.softDelete();
     }
 
     private TestQuestionEntity getTestQuestionEntity(Long testId, Long questionId) {

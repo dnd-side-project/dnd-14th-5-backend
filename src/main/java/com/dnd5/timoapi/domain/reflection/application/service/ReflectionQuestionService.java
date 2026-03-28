@@ -73,7 +73,7 @@ public class ReflectionQuestionService {
         Long deletedSequence = questionEntity.getSequence();
 
         questionEntity.setSequence(-questionEntity.getId());
-        questionEntity.setDeletedAt(LocalDateTime.now());
+        questionEntity.softDelete();
 
         reflectionQuestionRepository.findAllByCategoryAndSequenceGreaterThan(category, deletedSequence)
                 .forEach(ReflectionQuestionEntity::decreaseSequence);
