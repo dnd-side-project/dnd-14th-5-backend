@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.domain.model;
+package com.dnd5.timoapi.domain.user.domain.model;
 
 import static com.dnd5.timoapi.global.security.context.SecurityUtil.getCurrentUserId;
 
