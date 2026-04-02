@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.domain.model;
+package com.dnd5.timoapi.domain.user.domain.model;
 
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import java.time.LocalDateTime;

@@ -5,11 +5,11 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuesti
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestResultRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestResultRepository;
 import com.dnd5.timoapi.domain.user.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.List;
