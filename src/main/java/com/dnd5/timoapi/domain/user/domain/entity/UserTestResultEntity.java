@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.domain.entity;
+package com.dnd5.timoapi.domain.user.domain.entity;
 
 import com.dnd5.timoapi.domain.test.domain.model.UserTestResult;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;

@@ -1,7 +1,6 @@
 package com.dnd5.timoapi.domain.test.domain.repository;
 
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
-import java.util.Optional;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

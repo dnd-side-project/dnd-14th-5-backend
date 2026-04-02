@@ -6,9 +6,9 @@ import com.dnd5.timoapi.domain.reflection.domain.entity.UserReflectionQuestionOr
 import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResponseEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
