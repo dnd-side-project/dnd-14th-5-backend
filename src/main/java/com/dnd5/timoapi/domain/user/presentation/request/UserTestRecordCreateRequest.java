@@ -1,6 +1,6 @@
-package com.dnd5.timoapi.domain.test.presentation.request;
+package com.dnd5.timoapi.domain.user.presentation.request;
 
-import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.test.domain.entity;
 
 import com.dnd5.timoapi.domain.test.domain.model.UserTestResult;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

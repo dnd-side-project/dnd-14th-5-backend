@@ -1,14 +1,14 @@
 package com.dnd5.timoapi.domain.test.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
-import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
+import com.dnd5.timoapi.domain.user.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
