@@ -6,7 +6,7 @@ import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.UserTestResultRepository;
@@ -49,7 +49,7 @@ public class TodayQuestionResolver {
 
     public ZtpiCategory resolveTodayCategory(Long userId) {
         UserTestRecordEntity latestRecord = userTestRecordRepository
-                .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, TestRecordStatus.COMPLETED)
+                .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, UserTestRecordStatus.COMPLETED)
                 .orElseThrow(() -> new BusinessException(
                         UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
 

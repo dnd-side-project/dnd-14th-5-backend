@@ -13,7 +13,7 @@ import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
 import com.dnd5.timoapi.domain.test.domain.entity.TestEntity;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.user.presentation.request.UserTestRecordCreateRequest;
@@ -66,14 +66,14 @@ class UserTestRecordServiceTest {
 
             when(test.getId()).thenReturn(TEST_ID);
 
-            UserTestRecord existingModel = new UserTestRecord(1L, USER_ID, TEST_ID, TestRecordStatus.IN_PROGRESS, null, null);
+            UserTestRecord existingModel = new UserTestRecord(1L, USER_ID, TEST_ID, UserTestRecordStatus.IN_PROGRESS, null, null);
             UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
             when(mockRecord.toModel()).thenReturn(existingModel);
             when(userTestRecordRepository
                     .findByUserIdAndTestIdAndStatus(
                             USER_ID,
                             TEST_ID,
-                            TestRecordStatus.IN_PROGRESS))
+                            UserTestRecordStatus.IN_PROGRESS))
                     .thenReturn(Optional.of(mockRecord));
 
             UserTestRecordCreateRequest request =

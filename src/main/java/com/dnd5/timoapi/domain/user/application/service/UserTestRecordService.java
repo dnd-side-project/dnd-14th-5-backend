@@ -10,7 +10,7 @@ import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestResponseEntity;
 import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
 import com.dnd5.timoapi.domain.test.domain.repository.TestRepository;
@@ -75,7 +75,7 @@ public class UserTestRecordService {
                         .findByUserIdAndTestIdAndStatus(
                                 userId,
                                 testEntity.getId(),
-                                TestRecordStatus.IN_PROGRESS);
+                                UserTestRecordStatus.IN_PROGRESS);
 
         if (userTestRecordEntity.isPresent()) {
             return UserTestRecordCreateResponse.from(userTestRecordEntity.get().toModel(), true);
