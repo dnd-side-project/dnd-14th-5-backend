@@ -80,8 +80,4 @@ public class UserEntity extends BaseEntity {
     public void resetStreakDays() {
         this.streakDays = 0;
     }
-
-    public void restore() {
-        setDeletedAt(null);
-    }
 }

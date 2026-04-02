@@ -9,8 +9,8 @@ public interface TestQuestionRepository extends JpaRepository<TestQuestionEntity
 
     Optional<TestQuestionEntity> findByIdAndDeletedAtIsNull(Long id);
     Optional<TestQuestionEntity> findByIdAndTestIdAndDeletedAtIsNull(Long id, Long testId);
-    Optional<List<TestQuestionEntity>> findByTestId(Long id);
-    Optional<List<TestQuestionEntity>> findByTestIdAndDeletedAtIsNull(Long id);
+    List<TestQuestionEntity> findByTestId(Long testId);
+    List<TestQuestionEntity> findByTestIdAndDeletedAtIsNull(Long testId);
     List<TestQuestionEntity> findByTestIdAndDeletedAtIsNullOrderBySequenceAsc(Long testId);
     int countByTestIdAndDeletedAtIsNull(Long testId);
     boolean existsByTestIdAndSequenceAndDeletedAtIsNull(Long testId, int sequence);

@@ -59,9 +59,9 @@ class UserTestRecordServiceTest {
             UserEntity user = mock(UserEntity.class);
             TestEntity test = mock(TestEntity.class);
 
-            when(userRepository.findById(USER_ID))
+            when(userRepository.findByIdAndDeletedAtIsNull(USER_ID))
                     .thenReturn(Optional.of(user));
-            when(testRepository.findById(TEST_ID))
+            when(testRepository.findByIdAndDeletedAtIsNull(TEST_ID))
                     .thenReturn(Optional.of(test));
 
             when(test.getId()).thenReturn(TEST_ID);
@@ -70,7 +70,7 @@ class UserTestRecordServiceTest {
             UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
             when(mockRecord.toModel()).thenReturn(existingModel);
             when(userTestRecordRepository
-                    .findByUserIdAndTestIdAndStatus(
+                    .findByUserIdAndTestIdAndStatusAndDeletedAtIsNull(
                             USER_ID,
                             TEST_ID,
                             UserTestRecordStatus.IN_PROGRESS))

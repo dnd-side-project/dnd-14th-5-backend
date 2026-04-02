@@ -9,5 +9,5 @@ public interface UserTestResultRepository extends JpaRepository<UserTestResultEn
 
     List<UserTestResultEntity> findByUserTestRecordId(Long userTestRecordId);
     List<UserTestResultEntity> findAllByUserTestRecordId(Long testRecordId);
-
+    List<UserTestResultEntity> findAllByUserTestRecordIdAndDeletedAtIsNull(Long testRecordId);
 }

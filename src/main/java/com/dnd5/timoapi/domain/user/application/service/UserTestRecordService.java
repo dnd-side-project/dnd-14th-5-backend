@@ -64,15 +64,15 @@ public class UserTestRecordService {
         if (userId == null) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
-        UserEntity userEntity = userRepository.findById(userId)
+        UserEntity userEntity = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        TestEntity testEntity = testRepository.findById(request.testId())
+        TestEntity testEntity = testRepository.findByIdAndDeletedAtIsNull(request.testId())
                 .orElseThrow(() -> new BusinessException(TestErrorCode.TEST_NOT_FOUND));
 
         Optional<UserTestRecordEntity> userTestRecordEntity =
                 userTestRecordRepository
-                        .findByUserIdAndTestIdAndStatus(
+                        .findByUserIdAndTestIdAndStatusAndDeletedAtIsNull(
                                 userId,
                                 testEntity.getId(),
                                 UserTestRecordStatus.IN_PROGRESS);
@@ -100,14 +100,16 @@ public class UserTestRecordService {
         validateUserTestRecordOwnership(userTestRecordEntity);
 
         List<TestQuestionEntity> testQuestionEntityList = testQuestionRepository.findByTestIdAndDeletedAtIsNull(
-                        userTestRecordEntity.getTest().getId())
-                .orElseThrow(
-                        () -> new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND));
+                        userTestRecordEntity.getTest().getId());
+        if (testQuestionEntityList.isEmpty()) {
+            throw new BusinessException(TestQuestionErrorCode.TEST_QUESTION_NOT_FOUND);
+        }
 
-        List<UserTestResponseEntity> userTestResponseEntityList = userTestResponseRepository.findByUserTestRecordId(
-                        testRecordId)
-                .orElseThrow(() -> new BusinessException(
-                        UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND));
+        List<UserTestResponseEntity> userTestResponseEntityList = userTestResponseRepository.findByUserTestRecordIdAndDeletedAtIsNull(
+                        testRecordId);
+        if (userTestResponseEntityList.isEmpty()) {
+            throw new BusinessException(UserTestResponseErrorCode.USER_TEST_RESPONSE_NOT_FOUND);
+        }
 
         validateNoDuplicateQuestionsAnswered(userTestResponseEntityList);
 
@@ -135,6 +137,24 @@ public class UserTestRecordService {
                 null,
                 resultResponse
         );
+    }
+
+    @Transactional
+    public void delete(Long testRecordId) {
+        UserTestRecordEntity userTestRecordEntity = userTestRecordRepository.findByIdAndDeletedAtIsNull(testRecordId)
+                .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
+
+        List<UserTestResponseEntity> userTestResponseEntityList =
+                userTestResponseRepository.findAllByUserTestRecordIdAndDeletedAtIsNull(testRecordId);
+
+        userTestResponseEntityList.forEach(UserTestResponseEntity::softDelete);
+
+        List<UserTestResultEntity> userTestResultEntityList =
+                userTestResultRepository.findAllByUserTestRecordIdAndDeletedAtIsNull(testRecordId);
+
+        userTestResultEntityList.forEach(UserTestResultEntity::softDelete);
+
+        userTestRecordEntity.softDelete();
     }
 
     private ZtpiCategory calculateClosestCategory(
@@ -181,7 +201,7 @@ public class UserTestRecordService {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        return userTestRecordRepository.findByUserId(userId).stream()
+        return userTestRecordRepository.findByUserIdAndDeletedAtIsNull(userId).stream()
                 .map(UserTestRecordEntity::toModel)
                 .map(UserTestRecordResponse::from)
                 .toList();
@@ -191,7 +211,7 @@ public class UserTestRecordService {
     public UserTestRecordDetailResponse findById(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
         int progress =
-                userTestResponseRepository.countByUserTestRecordId(testRecordId);
+                userTestResponseRepository.countByUserTestRecordIdAndDeletedAtIsNull(testRecordId);
 
         if (!userTestRecordEntity.isCompleted()) {
             return UserTestRecordDetailResponse.of(
@@ -202,7 +222,7 @@ public class UserTestRecordService {
         }
 
         List<UserTestResultEntity> resultEntities =
-                userTestResultRepository.findAllByUserTestRecordId(testRecordId);
+                userTestResultRepository.findAllByUserTestRecordIdAndDeletedAtIsNull(testRecordId);
 
         if (resultEntities.isEmpty()) {
             throw new BusinessException(UserTestRecordErrorCode.USER_TEST_RESULT_NOT_FOUND);
@@ -240,7 +260,7 @@ public class UserTestRecordService {
     }
 
     private UserTestRecordEntity getUserTestRecordEntity(Long testRecordId) {
-        return userTestRecordRepository.findById(testRecordId)
+        return userTestRecordRepository.findByIdAndDeletedAtIsNull(testRecordId)
                 .orElseThrow(() -> new BusinessException(
                         UserTestRecordErrorCode.USER_TEST_RECORD_NOT_FOUND));
     }
@@ -311,7 +331,7 @@ public class UserTestRecordService {
     public ZtpiCategory getUserTestRecordMaxCategory(Long testRecordId) {
 
         List<UserTestResultEntity> results =
-                userTestResultRepository.findByUserTestRecordId(testRecordId);
+                userTestResultRepository.findAllByUserTestRecordIdAndDeletedAtIsNull(testRecordId);
 
         if (results.isEmpty()) {
             throw new BusinessException(UserTestRecordErrorCode.USER_TEST_RESULT_NOT_FOUND);
