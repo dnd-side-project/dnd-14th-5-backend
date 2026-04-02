@@ -1,9 +1,9 @@
 package com.dnd5.timoapi.domain.user.application.service;
 
 import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
-import com.dnd5.timoapi.domain.test.application.service.UserTestRecordService;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
+import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
