@@ -1,9 +1,9 @@
-package com.dnd5.timoapi.domain.test.presentation;
+package com.dnd5.timoapi.domain.user.presentation;
 
-import com.dnd5.timoapi.domain.test.application.service.UserTestResponseService;
-import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
-import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
-import com.dnd5.timoapi.domain.test.presentation.response.UserTestResponseResponse;
+import com.dnd5.timoapi.domain.user.application.service.UserTestResponseService;
+import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseCreateRequest;
+import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseUpdateRequest;
+import com.dnd5.timoapi.domain.user.presentation.response.UserTestResponseResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;

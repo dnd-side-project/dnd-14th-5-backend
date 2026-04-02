@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.presentation.request;
+package com.dnd5.timoapi.domain.user.presentation.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

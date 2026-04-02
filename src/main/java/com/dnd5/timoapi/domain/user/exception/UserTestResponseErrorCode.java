@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.exception;
+package com.dnd5.timoapi.domain.user.exception;
 
 import com.dnd5.timoapi.global.exception.ErrorCode;
 import lombok.Getter;

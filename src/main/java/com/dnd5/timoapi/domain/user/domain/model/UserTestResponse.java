@@ -1,4 +1,4 @@
-package com.dnd5.timoapi.domain.test.domain.model;
+package com.dnd5.timoapi.domain.user.domain.model;
 
 import java.time.LocalDateTime;
 
