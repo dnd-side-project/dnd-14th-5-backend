@@ -50,6 +50,16 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
 
+            byte[] requestBody = wrappedRequest.getContentAsByteArray();
+            if (requestBody.length > 0) {
+                logData.put("requestBody", new String(requestBody, StandardCharsets.UTF_8));
+            }
+
+            byte[] responseBody = wrappedResponse.getContentAsByteArray();
+            if (responseBody.length > 0) {
+                logData.put("responseBody", new String(responseBody, StandardCharsets.UTF_8));
+            }
+
             String jsonLog;
             try {
                 jsonLog = objectMapper.writeValueAsString(logData);
