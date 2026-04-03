@@ -10,12 +10,12 @@ import static org.mockito.Mockito.when;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResultEntity;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestResultRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestResultRepository;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import java.util.EnumMap;
 import java.util.List;
@@ -57,7 +57,7 @@ class TodayQuestionResolverTest {
     @Test
     void resolveTodayCategory_완료된_테스트_기록_없으면_예외() {
         when(userTestRecordRepository.findTopByUserIdAndStatusOrderByCreatedAtDesc(
-                eq(USER_ID), eq(TestRecordStatus.COMPLETED)))
+                eq(USER_ID), eq(UserTestRecordStatus.COMPLETED)))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> todayQuestionResolver.resolveTodayCategory(USER_ID))
@@ -183,7 +183,7 @@ class TodayQuestionResolverTest {
         UserTestRecordEntity mockRecord = mock(UserTestRecordEntity.class);
         when(mockRecord.getId()).thenReturn(RECORD_ID);
         when(userTestRecordRepository.findTopByUserIdAndStatusOrderByCreatedAtDesc(
-                eq(USER_ID), eq(TestRecordStatus.COMPLETED)))
+                eq(USER_ID), eq(UserTestRecordStatus.COMPLETED)))
                 .thenReturn(Optional.of(mockRecord));
     }
 

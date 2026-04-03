@@ -1,7 +1,7 @@
-package com.dnd5.timoapi.domain.test.domain.repository;
+package com.dnd5.timoapi.domain.user.domain.repository;
 
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,10 +12,10 @@ public interface UserTestRecordRepository extends JpaRepository<UserTestRecordEn
     List<UserTestRecordEntity> findByUserId(Long userId);
 
     Optional<UserTestRecordEntity> findTopByUserIdAndStatusOrderByCreatedAtDesc(
-            Long userId, TestRecordStatus status);
+            Long userId, UserTestRecordStatus status);
 
-    Optional<UserTestRecordEntity> findByUserIdAndTestIdAndStatus(Long userId, Long testId, TestRecordStatus status);
-    Optional<UserTestRecordEntity> findByUserIdAndTestIdAndStatusAndDeletedAtIsNull(Long userId, Long id, TestRecordStatus testRecordStatus);
+    Optional<UserTestRecordEntity> findByUserIdAndTestIdAndStatus(Long userId, Long testId, UserTestRecordStatus status);
+    Optional<UserTestRecordEntity> findByUserIdAndTestIdAndStatusAndDeletedAtIsNull(Long userId, Long id, UserTestRecordStatus testRecordStatus);
     Optional<UserTestRecordEntity> findByIdAndDeletedAtIsNull(Long testRecordId);
     List<UserTestRecordEntity> findByUserIdAndDeletedAtIsNull(Long userId);
     List<UserTestRecordEntity> findByTestIdAndDeletedAtIsNull(Long testId);

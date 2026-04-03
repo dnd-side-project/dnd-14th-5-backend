@@ -1,6 +1,6 @@
-package com.dnd5.timoapi.domain.test.presentation.response;
+package com.dnd5.timoapi.domain.user.presentation.response;
 
-import com.dnd5.timoapi.domain.test.domain.model.UserTestRecord;
+import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
 
 public record UserTestRecordCreateResponse(
         Long id,

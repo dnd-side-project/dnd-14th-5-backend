@@ -1,10 +1,10 @@
-package com.dnd5.timoapi.domain.test.presentation;
+package com.dnd5.timoapi.domain.user.presentation;
 
-import com.dnd5.timoapi.domain.test.application.service.UserTestRecordService;
-import com.dnd5.timoapi.domain.test.presentation.request.UserTestRecordCreateRequest;
-import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordCreateResponse;
-import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordDetailResponse;
-import com.dnd5.timoapi.domain.test.presentation.response.UserTestRecordResponse;
+import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
+import com.dnd5.timoapi.domain.user.presentation.request.UserTestRecordCreateRequest;
+import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordCreateResponse;
+import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordDetailResponse;
+import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;

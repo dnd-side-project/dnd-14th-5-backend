@@ -1,18 +1,18 @@
-package com.dnd5.timoapi.domain.test.application.service;
+package com.dnd5.timoapi.domain.user.application.service;
 
 import com.dnd5.timoapi.domain.test.domain.entity.TestQuestionEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestRecordEntity;
-import com.dnd5.timoapi.domain.test.domain.entity.UserTestResponseEntity;
-import com.dnd5.timoapi.domain.test.domain.model.enums.TestRecordStatus;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResponseEntity;
+import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import com.dnd5.timoapi.domain.test.domain.repository.TestQuestionRepository;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestRecordRepository;
-import com.dnd5.timoapi.domain.test.domain.repository.UserTestResponseRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestResponseRepository;
 import com.dnd5.timoapi.domain.test.exception.TestQuestionErrorCode;
-import com.dnd5.timoapi.domain.test.exception.UserTestRecordErrorCode;
-import com.dnd5.timoapi.domain.test.exception.UserTestResponseErrorCode;
-import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseCreateRequest;
-import com.dnd5.timoapi.domain.test.presentation.request.UserTestResponseUpdateRequest;
-import com.dnd5.timoapi.domain.test.presentation.response.UserTestResponseResponse;
+import com.dnd5.timoapi.domain.user.exception.UserTestRecordErrorCode;
+import com.dnd5.timoapi.domain.user.exception.UserTestResponseErrorCode;
+import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseCreateRequest;
+import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseUpdateRequest;
+import com.dnd5.timoapi.domain.user.presentation.response.UserTestResponseResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import jakarta.validation.Valid;
@@ -126,7 +126,7 @@ public class UserTestResponseService {
     }
 
     private void validateTestRecordAlreadyCompleted(UserTestRecordEntity record) {
-        if (record.getStatus() == TestRecordStatus.COMPLETED) {
+        if (record.getStatus() == UserTestRecordStatus.COMPLETED) {
             throw new BusinessException(UserTestResponseErrorCode.USER_TEST_ALREADY_COMPLETE,
                     record.getId(), record.getStatus());
         }
