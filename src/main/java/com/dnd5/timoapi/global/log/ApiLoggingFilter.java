@@ -74,9 +74,13 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 jsonLog = logData.toString();
             }
 
-            if (wrappedResponse.getStatus() >= 500) {
+            int status = wrappedResponse.getStatus();
+            if (status >= 500) {
                 MDC.put("logType", "ERROR");
                 log.error(jsonLog);
+            } else if (status >= 400) {
+                MDC.put("logType", "WARN");
+                log.warn(jsonLog);
             } else {
                 MDC.put("logType", "API");
                 log.info(jsonLog);
