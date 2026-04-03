@@ -72,6 +72,8 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+  api:
+    max-body-size: 65536
 
 gemini:
   api-key: ${GEMINI_API_KEY}

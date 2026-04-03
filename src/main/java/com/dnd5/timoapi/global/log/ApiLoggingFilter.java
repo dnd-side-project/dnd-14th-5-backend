@@ -27,7 +27,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
 
-    @Value("${logging.api.max-body-size:1048576}")
+    @Value("${logging.api.max-body-size:65536}")
     private int maxBodySize;
 
     public ApiLoggingFilter(ObjectMapper objectMapper) {
@@ -48,7 +48,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         ContentCachingRequestWrapper wrappedRequest =
-                new ContentCachingRequestWrapper(request, 1024 * 1024);
+                new ContentCachingRequestWrapper(request, maxBodySize);
         ContentCachingResponseWrapper wrappedResponse =
                 new ContentCachingResponseWrapper(response);
 
@@ -70,12 +70,18 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
             byte[] requestBody = wrappedRequest.getContentAsByteArray();
             if (requestBody.length > 0) {
-                logData.put("requestBody", new String(requestBody, StandardCharsets.UTF_8));
+                String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
+                logData.put("requestBody", requestBody.length >= maxBodySize
+                        ? requestBodyStr + " [TRUNCATED]"
+                        : requestBodyStr);
             }
 
             byte[] responseBody = wrappedResponse.getContentAsByteArray();
             if (responseBody.length > 0) {
-                logData.put("responseBody", new String(responseBody, StandardCharsets.UTF_8));
+                String responseBodyStr = new String(responseBody, StandardCharsets.UTF_8);
+                logData.put("responseBody", responseBody.length >= maxBodySize
+                        ? responseBodyStr + " [TRUNCATED]"
+                        : responseBodyStr);
             }
 
             String jsonLog;
