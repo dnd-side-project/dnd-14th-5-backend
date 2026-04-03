@@ -14,6 +14,7 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,12 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(ApiLoggingFilter.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/actuator") || uri.equals("/favicon.ico");
+    }
 
     @Override
     protected void doFilterInternal(
