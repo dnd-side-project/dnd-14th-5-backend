@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class ApiLoggingFilter extends OncePerRequestFilter {
@@ -52,6 +53,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 new ContentCachingResponseWrapper(response);
 
         long startTime = System.currentTimeMillis();
+        MDC.put("traceId", UUID.randomUUID().toString());
 
         try {
             filterChain.doFilter(wrappedRequest, wrappedResponse);
