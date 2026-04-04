@@ -113,8 +113,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         byte[] body = wrappedRequest.getContentAsByteArray();
         if (body.length == 0) return;
 
-        String bodyStr = new String(body, StandardCharsets.UTF_8);
         boolean truncated = body.length >= maxBodySize;
+        String bodyStr = new String(body, 0, Math.min(body.length, maxBodySize), StandardCharsets.UTF_8);
 
         if (contentType.contains("application/json")) {
             logData.put("requestBody", parseJson(bodyStr, truncated));
@@ -128,8 +128,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         byte[] body = wrappedResponse.getContentAsByteArray();
         if (body.length == 0) return;
 
-        String bodyStr = new String(body, StandardCharsets.UTF_8);
-        boolean truncated = body.length >= maxBodySize;
+        boolean truncated = body.length > maxBodySize;
+        String bodyStr = new String(body, 0, Math.min(body.length, maxBodySize), StandardCharsets.UTF_8);
 
         if (contentType.contains("application/json")) {
             logData.put("responseBody", parseJson(bodyStr, truncated));
