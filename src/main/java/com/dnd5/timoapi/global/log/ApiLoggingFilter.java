@@ -36,8 +36,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return uri.startsWith("/actuator") || uri.equals("/favicon.ico");
+        String path = request.getServletPath();
+        return path.startsWith("/actuator") || path.equals("/favicon.ico");
     }
 
     @Override
