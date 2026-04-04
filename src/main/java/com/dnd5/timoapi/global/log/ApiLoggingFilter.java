@@ -68,20 +68,26 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
 
-            byte[] requestBody = wrappedRequest.getContentAsByteArray();
-            if (requestBody.length > 0) {
-                String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
-                logData.put("requestBody", requestBody.length >= maxBodySize
-                        ? requestBodyStr + " [TRUNCATED]"
-                        : requestBodyStr);
+            String requestContentType = request.getContentType();
+            if (requestContentType != null && requestContentType.contains("application/json")) {
+                byte[] requestBody = wrappedRequest.getContentAsByteArray();
+                if (requestBody.length > 0) {
+                    String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
+                    logData.put("requestBody", requestBody.length >= maxBodySize
+                            ? requestBodyStr + " [TRUNCATED]"
+                            : requestBodyStr);
+                }
             }
 
-            byte[] responseBody = wrappedResponse.getContentAsByteArray();
-            if (responseBody.length > 0) {
-                String responseBodyStr = new String(responseBody, StandardCharsets.UTF_8);
-                logData.put("responseBody", responseBody.length >= maxBodySize
-                        ? responseBodyStr + " [TRUNCATED]"
-                        : responseBodyStr);
+            String responseContentType = wrappedResponse.getContentType();
+            if (responseContentType != null && responseContentType.contains("application/json")) {
+                byte[] responseBody = wrappedResponse.getContentAsByteArray();
+                if (responseBody.length > 0) {
+                    String responseBodyStr = new String(responseBody, StandardCharsets.UTF_8);
+                    logData.put("responseBody", responseBody.length >= maxBodySize
+                            ? responseBodyStr + " [TRUNCATED]"
+                            : responseBodyStr);
+                }
             }
 
             String jsonLog;
