@@ -18,12 +18,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
 public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(ApiLoggingFilter.class);
+
+    private static final Set<String> SENSITIVE_PATHS = Set.of(
+            "/auth/login", "/auth/callback", "/auth/reissue", "/test-auth/login"
+    );
 
     private final ObjectMapper objectMapper;
 
@@ -38,6 +43,10 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return path.startsWith("/actuator") || path.equals("/favicon.ico");
+    }
+
+    private boolean isSensitivePath(String path) {
+        return SENSITIVE_PATHS.stream().anyMatch(path::startsWith);
     }
 
     @Override
@@ -68,38 +77,9 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
 
-            String requestContentType = request.getContentType();
-            if (requestContentType != null && requestContentType.contains("application/json")) {
-                byte[] requestBody = wrappedRequest.getContentAsByteArray();
-                if (requestBody.length > 0) {
-                    String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
-                    if (requestBody.length >= maxBodySize) {
-                        logData.put("requestBody", requestBodyStr + " [TRUNCATED]");
-                    } else {
-                        try {
-                            logData.put("requestBody", objectMapper.readTree(requestBodyStr));
-                        } catch (Exception e) {
-                            logData.put("requestBody", requestBodyStr);
-                        }
-                    }
-                }
-            }
-
-            String responseContentType = wrappedResponse.getContentType();
-            if (responseContentType != null && responseContentType.contains("application/json")) {
-                byte[] responseBody = wrappedResponse.getContentAsByteArray();
-                if (responseBody.length > 0) {
-                    String responseBodyStr = new String(responseBody, StandardCharsets.UTF_8);
-                    if (responseBody.length >= maxBodySize) {
-                        logData.put("responseBody", responseBodyStr + " [TRUNCATED]");
-                    } else {
-                        try {
-                            logData.put("responseBody", objectMapper.readTree(responseBodyStr));
-                        } catch (Exception e) {
-                            logData.put("responseBody", responseBodyStr);
-                        }
-                    }
-                }
+            if (!isSensitivePath(request.getServletPath())) {
+                logRequestBody(request, wrappedRequest, logData);
+                logResponseBody(wrappedResponse, logData);
             }
 
             String jsonLog;
@@ -123,6 +103,45 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             MDC.clear();
 
             wrappedResponse.copyBodyToResponse();
+        }
+    }
+
+    private void logRequestBody(HttpServletRequest request, ContentCachingRequestWrapper wrappedRequest, Map<String, Object> logData) {
+        String contentType = request.getContentType();
+        if (contentType == null) return;
+
+        byte[] body = wrappedRequest.getContentAsByteArray();
+        if (body.length == 0) return;
+
+        String bodyStr = new String(body, StandardCharsets.UTF_8);
+        boolean truncated = body.length >= maxBodySize;
+
+        if (contentType.contains("application/json")) {
+            logData.put("requestBody", parseJson(bodyStr, truncated));
+        }
+    }
+
+    private void logResponseBody(ContentCachingResponseWrapper wrappedResponse, Map<String, Object> logData) {
+        String contentType = wrappedResponse.getContentType();
+        if (contentType == null) return;
+
+        byte[] body = wrappedResponse.getContentAsByteArray();
+        if (body.length == 0) return;
+
+        String bodyStr = new String(body, StandardCharsets.UTF_8);
+        boolean truncated = body.length >= maxBodySize;
+
+        if (contentType.contains("application/json")) {
+            logData.put("responseBody", parseJson(bodyStr, truncated));
+        }
+    }
+
+    private Object parseJson(String bodyStr, boolean truncated) {
+        if (truncated) return bodyStr + " [TRUNCATED]";
+        try {
+            return objectMapper.readTree(bodyStr);
+        } catch (Exception e) {
+            return bodyStr;
         }
     }
 }
