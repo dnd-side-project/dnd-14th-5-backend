@@ -73,9 +73,15 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 byte[] requestBody = wrappedRequest.getContentAsByteArray();
                 if (requestBody.length > 0) {
                     String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
-                    logData.put("requestBody", requestBody.length >= maxBodySize
-                            ? requestBodyStr + " [TRUNCATED]"
-                            : requestBodyStr);
+                    if (requestBody.length >= maxBodySize) {
+                        logData.put("requestBody", requestBodyStr + " [TRUNCATED]");
+                    } else {
+                        try {
+                            logData.put("requestBody", objectMapper.readTree(requestBodyStr));
+                        } catch (Exception e) {
+                            logData.put("requestBody", requestBodyStr);
+                        }
+                    }
                 }
             }
 
@@ -84,9 +90,15 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 byte[] responseBody = wrappedResponse.getContentAsByteArray();
                 if (responseBody.length > 0) {
                     String responseBodyStr = new String(responseBody, StandardCharsets.UTF_8);
-                    logData.put("responseBody", responseBody.length >= maxBodySize
-                            ? responseBodyStr + " [TRUNCATED]"
-                            : responseBodyStr);
+                    if (responseBody.length >= maxBodySize) {
+                        logData.put("responseBody", responseBodyStr + " [TRUNCATED]");
+                    } else {
+                        try {
+                            logData.put("responseBody", objectMapper.readTree(responseBodyStr));
+                        } catch (Exception e) {
+                            logData.put("responseBody", responseBodyStr);
+                        }
+                    }
                 }
             }
 
