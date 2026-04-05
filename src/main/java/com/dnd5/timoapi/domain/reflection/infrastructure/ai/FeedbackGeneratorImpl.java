@@ -1,6 +1,5 @@
 package com.dnd5.timoapi.domain.reflection.infrastructure.ai;
 
-import com.dnd5.timoapi.domain.reflection.application.service.ReflectionFeedbackPromptService;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionFeedbackPromptEntity;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackPromptRepository;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
@@ -17,30 +16,34 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
 
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
-
-    private final ReflectionFeedbackPromptService reflectionFeedbackPromptService;
-
     private final ReflectionFeedbackPromptRepository reflectionFeedbackPromptRepository;
 
     @Override
     public FeedbackResult execute(ZtpiCategory category, String question, String userReflection) {
-        String prompt = buildPrompt(category, question, userReflection);
-        String response = geminiClient.generateContent(prompt);
+        String systemPrompt = getLatestSystemPrompt();
+        String userPrompt = buildUserPrompt(category, question, userReflection);
+        String response = geminiClient.generateContent(systemPrompt, userPrompt);
         if (response == null || response.isBlank()) {
             return new FeedbackResult(0, "");
         }
         return parseResponse(response);
     }
 
-    private String buildPrompt(ZtpiCategory category, String question, String userReflection) {
-        return getLatestPrompt().formatted(category.name(), question, userReflection);
+    private String getLatestSystemPrompt() {
+        ReflectionFeedbackPromptEntity entity = reflectionFeedbackPromptRepository
+                .findTopByDeletedAtIsNullOrderByVersionDesc()
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));
+        return entity.getContent();
     }
 
-    private String getLatestPrompt() {
-        ReflectionFeedbackPromptEntity reflectionFeedbackPromptEntity =  reflectionFeedbackPromptRepository.findTopByDeletedAtIsNullOrderByVersionDesc()
-                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_PROMPT_NOT_FOUND));
-
-        return reflectionFeedbackPromptEntity.getContent();
+    private String buildUserPrompt(ZtpiCategory category, String question, String userReflection) {
+        return """
+                {
+                  "category": "%s",
+                  "question": "%s",
+                  "response": "%s"
+                }
+                """.formatted(category.name(), question, userReflection);
     }
 
     private FeedbackResult parseResponse(String response) {

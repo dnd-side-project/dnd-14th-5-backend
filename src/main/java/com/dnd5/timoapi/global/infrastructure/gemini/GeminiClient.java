@@ -15,8 +15,8 @@ public class GeminiClient {
     private final WebClient geminiWebClient;
     private final GeminiProperties properties;
 
-    public String generateContent(String prompt) {
-        GeminiRequest request = GeminiRequest.of(prompt);
+    public String generateContent(String systemPrompt, String userPrompt) {
+        GeminiRequest request = GeminiRequest.of(systemPrompt, userPrompt);
 
         List<GeminiResponse> responses = geminiWebClient.post()
                 .uri("/publishers/google/models/{model}:streamGenerateContent?key={apiKey}",
