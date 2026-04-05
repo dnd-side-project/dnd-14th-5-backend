@@ -37,13 +37,15 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
     }
 
     private String buildUserPrompt(ZtpiCategory category, String question, String userReflection) {
-        return """
-                {
-                  "category": "%s",
-                  "question": "%s",
-                  "response": "%s"
-                }
-                """.formatted(category.name(), question, userReflection);
+        try {
+            return objectMapper.writeValueAsString(java.util.Map.of(
+                    "category", category.name(),
+                    "question", question,
+                    "response", userReflection
+            ));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to build user prompt: ", e);
+        }
     }
 
     private FeedbackResult parseResponse(String response) {
