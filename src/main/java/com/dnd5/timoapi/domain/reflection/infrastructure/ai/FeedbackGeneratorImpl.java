@@ -58,7 +58,7 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
             }
             return objectMapper.readValue(cleaned, FeedbackResult.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse Gemini response", e);
+            throw new RuntimeException("Failed to parse Gemini response: ", e);
         }
     }
 
