@@ -46,6 +46,11 @@ public class FeedbackGeneratorImpl implements FeedbackGenerator {
     private FeedbackResult parseResponse(String response) {
         try {
             String cleaned = response.replaceAll("```json\\s*", "").replaceAll("```\\s*", "").trim();
+            int start = cleaned.indexOf('{');
+            int end = cleaned.lastIndexOf('}');
+            if (start != -1 && end != -1 && start < end) {
+                cleaned = cleaned.substring(start, end + 1);
+            }
             return objectMapper.readValue(cleaned, FeedbackResult.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse Gemini response", e);
