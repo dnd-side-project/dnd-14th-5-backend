@@ -8,7 +8,7 @@ import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.gemini.GeminiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
