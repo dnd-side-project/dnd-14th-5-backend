@@ -100,12 +100,11 @@ public class ReflectionFeedbackService {
             Long reflectionId,
             ReflectionFeedbackEntity existingFeedback
     ) {
-        if (existingFeedback.getStatus() == FeedbackStatus.COMPLETED) {
+        if (existingFeedback.getStatus() != FeedbackStatus.FAILED) {
             throw new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_ALREADY_EXISTS);
         }
 
-        log.info("Retrying feedback generation for reflectionId={}, previousStatus={}",
-                reflectionId, existingFeedback.getStatus());
+        log.info("Retrying failed reflection feedback generation for reflectionId={}", reflectionId);
         existingFeedback.restartProcessing();
         return existingFeedback;
     }

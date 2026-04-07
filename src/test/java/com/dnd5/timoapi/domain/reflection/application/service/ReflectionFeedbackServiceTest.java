@@ -118,30 +118,26 @@ class ReflectionFeedbackServiceTest {
     }
 
     @Test
-    void create_PROCESSING_기존_피드백도_재시도_허용() {
+    void create_PROCESSING_기존_피드백은_재생성_불가() {
         Long reflectionId = 10L;
         ReflectionEntity reflectionEntity = new ReflectionEntity(1L, 3L, LocalDate.now(), "회고 내용");
         when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflectionEntity));
 
-        ReflectionFeedbackEntity processingFeedback = spy(
-                new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING)
-        );
+        ReflectionFeedbackEntity processingFeedback = new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING);
         when(reflectionFeedbackRepository.findByReflectionId(reflectionId))
                 .thenReturn(Optional.of(processingFeedback));
 
-        try (MockedStatic<SecurityUtil> securityMocked = Mockito.mockStatic(SecurityUtil.class);
-             MockedStatic<TransactionSynchronizationManager> txMocked = Mockito.mockStatic(TransactionSynchronizationManager.class)) {
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);
 
-            securityMocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);
-            txMocked.when(() -> TransactionSynchronizationManager.registerSynchronization(any(TransactionSynchronization.class)))
-                    .thenAnswer(invocation -> null);
-
-            ReflectionFeedbackDetailResponse response = reflectionFeedbackService.create(reflectionId);
-
-            assertThat(response.status()).isEqualTo(FeedbackStatus.PROCESSING);
+            assertThatThrownBy(() -> reflectionFeedbackService.create(reflectionId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(exception -> {
+                        BusinessException businessException = (BusinessException) exception;
+                        assertThat(businessException.getErrorCode())
+                                .isEqualTo(ReflectionErrorCode.REFLECTION_FEEDBACK_ALREADY_EXISTS);
+                    });
         }
-
-        verify(processingFeedback).restartProcessing();
     }
 
     @Test
