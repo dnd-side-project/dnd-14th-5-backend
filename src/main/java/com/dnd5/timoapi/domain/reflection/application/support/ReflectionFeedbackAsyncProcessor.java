@@ -36,14 +36,14 @@ public class ReflectionFeedbackAsyncProcessor {
                 .findByReflectionId(reflectionId)
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_NOT_FOUND));
 
-        ReflectionEntity reflectionEntity = reflectionRepository.findById(reflectionId)
-                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND));
-
-        ReflectionQuestionEntity questionEntity = reflectionQuestionRepository
-                .findById(reflectionEntity.getQuestionId())
-                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
-
         try {
+            ReflectionEntity reflectionEntity = reflectionRepository.findById(reflectionId)
+                    .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+
+            ReflectionQuestionEntity questionEntity = reflectionQuestionRepository
+                    .findById(reflectionEntity.getQuestionId())
+                    .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
+
             FeedbackResult feedbackResult = feedbackGenerator.execute(
                     questionEntity.getCategory(),
                     questionEntity.getContent(),
