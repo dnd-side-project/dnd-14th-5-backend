@@ -18,22 +18,10 @@
     <reconnectionDelay>10 seconds</reconnectionDelay>
   </appender>
 
-  <appender name="LOGSTASH_ERROR" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-    <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
-    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>ERROR</level>
-    </filter>
-    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"${APP_NAME}","logType":"ERROR"}</customFields>
-    </encoder>
-    <reconnectionDelay>10 seconds</reconnectionDelay>
-  </appender>
-
   <springProfile name="prod">
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="LOGSTASH"/>
-      <appender-ref ref="LOGSTASH_ERROR"/>
     </root>
   </springProfile>
 
