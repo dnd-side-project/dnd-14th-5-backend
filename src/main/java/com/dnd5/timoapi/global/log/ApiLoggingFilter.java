@@ -75,10 +75,12 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             Map<String, Object> logData = new HashMap<>();
             logData.put("method", request.getMethod());
             logData.put("uri", request.getRequestURI());
-            logData.put("queryString", request.getQueryString());
             logData.put("statusCode", wrappedResponse.getStatus());
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
+            if (request.getQueryString() != null) {
+                logData.put("queryString", request.getQueryString());
+            }
 
             if (!isSensitivePath(request.getServletPath())) {
                 logRequestBody(request, wrappedRequest, logData);
