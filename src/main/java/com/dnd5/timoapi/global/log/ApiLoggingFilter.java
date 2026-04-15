@@ -33,6 +33,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             "/auth/login", "/auth/callback", "/auth/reissue", "/test-auth/login"
     );
 
+    private static final String ADMIN_PATH_PREFIX = "/admin";
+
     private final ObjectMapper objectMapper;
 
     @Value("${logging.api.max-body-size:65536}")
@@ -93,6 +95,9 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 jsonLog = logData.toString();
             }
+
+            String apiType = request.getRequestURI().startsWith(ADMIN_PATH_PREFIX) ? "ADMIN" : "USER";
+            MDC.put("apiType", apiType);
 
             int status = wrappedResponse.getStatus();
             if (status >= 500) {
