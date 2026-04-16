@@ -30,9 +30,11 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -64,6 +66,8 @@ public class ReflectionService {
                 null
         );
         ReflectionEntity saved = reflectionRepository.save(ReflectionEntity.from(reflectionModel));
+        log.info("reflection_created reflectionId={} userId={} questionId={} category={} answerLength={}",
+                saved.getId(), userId, questionEntity.getId(), questionEntity.getCategory(), request.content().length());
 
         UserEntity userEntity = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

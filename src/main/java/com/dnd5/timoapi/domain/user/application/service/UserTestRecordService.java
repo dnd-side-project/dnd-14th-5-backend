@@ -39,9 +39,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -92,6 +94,8 @@ public class UserTestRecordService {
 
     public UserTestRecordDetailResponse complete(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
+        Long userId = userTestRecordEntity.getUser().getId();
+        log.info("test_complete_start testRecordId={} userId={}", testRecordId, userId);
 
         if (userTestRecordEntity.isCompleted()) {
             throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
@@ -116,6 +120,7 @@ public class UserTestRecordService {
         validateAllQuestionsAnswered(testQuestionEntityList, userTestResponseEntityList);
         Map<ZtpiCategory, Double> userTestResults = createUserTestResults(userTestRecordEntity,
                 userTestResponseEntityList);
+        log.info("test_complete_done testRecordId={} userId={} scores={}", testRecordId, userId, userTestResults);
 
         userTestRecordEntity.complete();
 

@@ -17,8 +17,10 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TodayQuestionResolver {
@@ -40,6 +42,7 @@ public class TodayQuestionResolver {
         Long questionId = findQuestionId(sequence, category);
 
         cacheService.setQuestionId(userId, questionId);
+        log.info("question_resolved userId={} category={} questionId={}", userId, category, questionId);
         return questionId;
     }
 
@@ -61,7 +64,9 @@ public class TodayQuestionResolver {
                         UserTestResultEntity::getCategory,
                         UserTestResultEntity::getScore));
 
-        return selectWeightedRandom(scoreMap);
+        ZtpiCategory selected = selectWeightedRandom(scoreMap);
+        log.info("question_category_resolved userId={} scores={} selected={}", userId, scoreMap, selected);
+        return selected;
     }
 
     public Long resolveTodaySequence(Long userId, ZtpiCategory category) {

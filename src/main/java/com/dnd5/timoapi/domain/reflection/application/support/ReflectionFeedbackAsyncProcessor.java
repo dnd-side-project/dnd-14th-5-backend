@@ -32,6 +32,7 @@ public class ReflectionFeedbackAsyncProcessor {
     @Async("feedbackTaskExecutor")
     @Transactional
     public void process(Long reflectionId) {
+        log.info("feedback_async_start reflectionId={}", reflectionId);
         ReflectionFeedbackEntity feedbackEntity = reflectionFeedbackRepository
                 .findByReflectionId(reflectionId)
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_NOT_FOUND));
@@ -51,6 +52,7 @@ public class ReflectionFeedbackAsyncProcessor {
             );
             validateScore(feedbackResult.score());
             feedbackEntity.complete(feedbackResult.score(), feedbackResult.content());
+            log.info("feedback_async_done reflectionId={} score={}", reflectionId, feedbackResult.score());
         } catch (Exception e) {
             log.error("Feedback generation failed for reflectionId={}", reflectionId, e);
             feedbackEntity.fail();
