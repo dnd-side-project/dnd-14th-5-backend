@@ -38,17 +38,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.dnd5.timoapi.global.analytics.event.TestCompletedEvent;
+import com.dnd5.timoapi.global.analytics.event.TestStartedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserTestRecordService {
 
+    private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final TestRepository testRepository;
 
@@ -89,13 +91,13 @@ public class UserTestRecordService {
                 userTestRecordRepository.save(
                         UserTestRecordEntity.from(userEntity, testEntity, model));
 
+        eventPublisher.publishEvent(new TestStartedEvent(userId, savedEntity.getId()));
         return UserTestRecordCreateResponse.from(savedEntity.toModel(), false);
     }
 
     public UserTestRecordDetailResponse complete(Long testRecordId) {
         UserTestRecordEntity userTestRecordEntity = getUserTestRecordEntity(testRecordId);
         Long userId = userTestRecordEntity.getUser().getId();
-        log.info("test_complete_start testRecordId={} userId={}", testRecordId, userId);
 
         if (userTestRecordEntity.isCompleted()) {
             throw new BusinessException(UserTestRecordErrorCode.ALREADY_COMPLETED);
@@ -120,9 +122,9 @@ public class UserTestRecordService {
         validateAllQuestionsAnswered(testQuestionEntityList, userTestResponseEntityList);
         Map<ZtpiCategory, Double> userTestResults = createUserTestResults(userTestRecordEntity,
                 userTestResponseEntityList);
-        log.info("test_complete_done testRecordId={} userId={} scores={}", testRecordId, userId, userTestResults);
 
         userTestRecordEntity.complete();
+        eventPublisher.publishEvent(new TestCompletedEvent(userId, testRecordId, userTestResults));
 
         UserEntity userEntity = userTestRecordEntity.getUser();
 
