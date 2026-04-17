@@ -96,7 +96,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 jsonLog = logData.toString();
             }
 
-            String apiType = request.getRequestURI().startsWith(ADMIN_PATH_PREFIX) ? "ADMIN" : "USER";
+            String apiType = request.getServletPath().startsWith(ADMIN_PATH_PREFIX) ? "ADMIN" : "USER";
             MDC.put("apiType", apiType);
 
             int status = wrappedResponse.getStatus();
