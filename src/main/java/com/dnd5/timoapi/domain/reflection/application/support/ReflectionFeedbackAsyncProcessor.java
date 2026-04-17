@@ -10,8 +10,10 @@ import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.ai.FeedbackGenerator;
 import com.dnd5.timoapi.domain.reflection.infrastructure.ai.FeedbackResult;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import com.dnd5.timoapi.global.analytics.event.FeedbackReceivedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class ReflectionFeedbackAsyncProcessor {
     private static final int MIN_FEEDBACK_SCORE = 0;
     private static final int MAX_FEEDBACK_SCORE = 5;
 
+    private final ApplicationEventPublisher eventPublisher;
     private final ReflectionRepository reflectionRepository;
     private final ReflectionFeedbackRepository reflectionFeedbackRepository;
     private final ReflectionQuestionRepository reflectionQuestionRepository;
@@ -32,6 +35,7 @@ public class ReflectionFeedbackAsyncProcessor {
     @Async("feedbackTaskExecutor")
     @Transactional
     public void process(Long reflectionId) {
+        log.info("feedback_async_start reflectionId={}", reflectionId);
         ReflectionFeedbackEntity feedbackEntity = reflectionFeedbackRepository
                 .findByReflectionId(reflectionId)
                 .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_FEEDBACK_NOT_FOUND));
@@ -51,6 +55,9 @@ public class ReflectionFeedbackAsyncProcessor {
             );
             validateScore(feedbackResult.score());
             feedbackEntity.complete(feedbackResult.score(), feedbackResult.content());
+
+            Long userId = reflectionEntity.getUserId();
+            eventPublisher.publishEvent(new FeedbackReceivedEvent(userId, reflectionId, feedbackResult.score()));
         } catch (Exception e) {
             log.error("Feedback generation failed for reflectionId={}", reflectionId, e);
             feedbackEntity.fail();
