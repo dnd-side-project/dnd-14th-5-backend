@@ -33,6 +33,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             "/auth/login", "/auth/callback", "/auth/reissue", "/test-auth/login"
     );
 
+    private static final String ADMIN_PATH_PREFIX = "/admin";
+
     private final ObjectMapper objectMapper;
 
     @Value("${logging.api.max-body-size:65536}")
@@ -75,10 +77,12 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             Map<String, Object> logData = new HashMap<>();
             logData.put("method", request.getMethod());
             logData.put("uri", request.getRequestURI());
-            logData.put("queryString", request.getQueryString());
             logData.put("statusCode", wrappedResponse.getStatus());
             logData.put("duration", duration);
             logData.put("clientIp", request.getRemoteAddr());
+            if (request.getQueryString() != null) {
+                logData.put("queryString", request.getQueryString());
+            }
 
             if (!isSensitivePath(request.getServletPath())) {
                 logRequestBody(request, wrappedRequest, logData);
@@ -92,12 +96,13 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
                 jsonLog = logData.toString();
             }
 
+            String apiType = request.getServletPath().startsWith(ADMIN_PATH_PREFIX) ? "ADMIN" : "USER";
+            MDC.put("apiType", apiType);
+
             int status = wrappedResponse.getStatus();
             if (status >= 500) {
-                MDC.put("logType", "ERROR");
                 log.error(jsonLog);
             } else if (status >= 400) {
-                MDC.put("logType", "WARN");
                 log.warn(jsonLog);
             } else {
                 MDC.put("logType", "API");

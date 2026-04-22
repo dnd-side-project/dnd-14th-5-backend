@@ -8,7 +8,9 @@ import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmMessage;
 import com.dnd5.timoapi.global.infrastructure.fcm.FcmSender;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
+import com.dnd5.timoapi.global.analytics.event.NotificationSentEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import java.util.List;
 @Transactional
 public class FcmService {
 
+    private final ApplicationEventPublisher eventPublisher;
     private final FcmTokenRepository fcmTokenRepository;
     private final FcmSender fcmSender;
 
@@ -58,6 +61,7 @@ public class FcmService {
 
         if (tokens.isEmpty()) return;
 
+        eventPublisher.publishEvent(new NotificationSentEvent(userId, tokens.size()));
         fcmSender.sendToTokens(tokens, message);
     }
 }
