@@ -75,6 +75,7 @@ public class ReflectionService {
 
         boolean wroteYesterday = isWroteYesterday(userId);
         userEntity.updateStreak(wroteYesterday);
+        userEntity.incrementTotalDays();
 
         return new ReflectionCreateResponse(saved.getId());
     }

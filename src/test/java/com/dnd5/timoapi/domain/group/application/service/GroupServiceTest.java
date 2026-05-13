@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.group.domain.entity.GroupEntity;
 import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberEntity;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupMemberRole;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
+import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupRepository;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
@@ -12,6 +13,14 @@ import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
+import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
+import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
+import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
+import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import org.junit.jupiter.api.Test;
@@ -22,6 +31,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,15 +52,24 @@ class GroupServiceTest {
     @Mock
     private GroupMemberRepository groupMemberRepository;
 
+    @Mock
+    private ReflectionRepository reflectionRepository;
+
+    @Mock
+    private ReflectionQuestionRepository reflectionQuestionRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
     @Test
-    void createGroup_성공_코드_자동_생성() {
+    void createGroup_FRIEND_성공_코드_자동_생성() {
         Long userId = 1L;
-        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null);
+        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null, null);
 
         GroupEntity savedGroup = mock(GroupEntity.class);
         when(savedGroup.getId()).thenReturn(10L);
         when(savedGroup.toModel()).thenReturn(
-                new com.dnd5.timoapi.domain.group.domain.model.Group(10L, "ABCD1234", "팀A", GroupType.FRIEND, null, null, null)
+                new com.dnd5.timoapi.domain.group.domain.model.Group(10L, "ABCD1234", "팀A", GroupType.FRIEND, null, null, null, null)
         );
 
         when(groupRepository.existsByCodeAndDeletedAtIsNull(anyString())).thenReturn(false);
@@ -71,6 +90,34 @@ class GroupServiceTest {
     }
 
     @Test
+    void createGroup_CHARACTER_category_없으면_400() {
+        GroupCreateRequest request = new GroupCreateRequest("캐릭터그룹", GroupType.CHARACTER, null, null);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);
+
+            assertThatThrownBy(() -> groupService.createGroup(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_INVALID_CATEGORY));
+        }
+    }
+
+    @Test
+    void createGroup_FRIEND_category_있으면_400() {
+        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null, ZtpiCategory.FUTURE);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);
+
+            assertThatThrownBy(() -> groupService.createGroup(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_INVALID_CATEGORY));
+        }
+    }
+
+    @Test
     void getMyGroups_내_그룹만_반환() {
         Long userId = 1L;
 
@@ -81,7 +128,7 @@ class GroupServiceTest {
         GroupEntity groupEntity = mock(GroupEntity.class);
         when(groupEntity.getId()).thenReturn(10L);
         when(groupEntity.toModel()).thenReturn(
-                new com.dnd5.timoapi.domain.group.domain.model.Group(10L, "CODE1234", "팀A", GroupType.FRIEND, null, null, null)
+                new com.dnd5.timoapi.domain.group.domain.model.Group(10L, "CODE1234", "팀A", GroupType.FRIEND, null, null, null, null)
         );
 
         when(groupMemberRepository.findAllByUserIdAndDeletedAtIsNull(userId)).thenReturn(List.of(membership));
@@ -106,7 +153,7 @@ class GroupServiceTest {
 
         GroupEntity groupEntity = mock(GroupEntity.class);
         when(groupEntity.toModel()).thenReturn(
-                new com.dnd5.timoapi.domain.group.domain.model.Group(groupId, "ABCD1234", "팀A", GroupType.FRIEND, null, null, null)
+                new com.dnd5.timoapi.domain.group.domain.model.Group(groupId, "ABCD1234", "팀A", GroupType.FRIEND, null, null, null, null)
         );
 
         GroupMemberEntity member = mock(GroupMemberEntity.class);
@@ -137,7 +184,7 @@ class GroupServiceTest {
         GroupEntity groupEntity = mock(GroupEntity.class);
         when(groupEntity.getCode()).thenReturn(code);
         when(groupEntity.toModel()).thenReturn(
-                new com.dnd5.timoapi.domain.group.domain.model.Group(groupId, code, "팀A", GroupType.FRIEND, null, null, null)
+                new com.dnd5.timoapi.domain.group.domain.model.Group(groupId, code, "팀A", GroupType.FRIEND, null, null, null, null)
         );
 
         when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
@@ -297,6 +344,75 @@ class GroupServiceTest {
 
             verify(nextMember).promoteToOwner();
             verify(ownerMember).softDelete();
+        }
+    }
+
+    @Test
+    void getTodayReflections_FRIEND_비멤버_403() {
+        Long userId = 1L;
+        Long groupId = 10L;
+
+        GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+
+        GroupMemberEntity member = mock(GroupMemberEntity.class);
+        when(member.getUserId()).thenReturn(2L);
+        when(groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)).thenReturn(List.of(member));
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(false);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
+
+            assertThatThrownBy(() -> groupService.getTodayReflections(groupId, GroupReflectionSort.LATEST))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_ACCESS_DENIED));
+        }
+    }
+
+    @Test
+    void getTodayReflections_CHARACTER_전체_유저_회고_반환() {
+        Long userId = 1L;
+        Long groupId = 10L;
+
+        GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.CHARACTER);
+        when(groupEntity.getCategory()).thenReturn(ZtpiCategory.FUTURE);
+        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getUserId()).thenReturn(2L);
+        when(reflection.getQuestionId()).thenReturn(100L);
+        when(reflection.getAnswerText()).thenReturn("회고 내용");
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.getId()).thenReturn(100L);
+        when(question.getContent()).thenReturn("오늘의 질문");
+        when(question.getCategory()).thenReturn(ZtpiCategory.FUTURE);
+
+        UserEntity user = mock(UserEntity.class);
+        when(user.getId()).thenReturn(2L);
+        when(user.getNickname()).thenReturn("홍길동");
+        when(user.getStreakDays()).thenReturn(5);
+        when(user.getTotalDays()).thenReturn(30);
+
+        when(reflectionRepository.findAllByDateAndQuestionCategory(any(LocalDate.class), eq(ZtpiCategory.FUTURE)))
+                .thenReturn(List.of(reflection));
+        when(reflectionQuestionRepository.findAllById(anyList())).thenReturn(List.of(question));
+        when(userRepository.findAllById(anyList())).thenReturn(List.of(user));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
+
+            List<GroupTodayReflectionItem> result = groupService.getTodayReflections(groupId, GroupReflectionSort.LATEST);
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).nickname()).isEqualTo("홍길동");
+            assertThat(result.get(0).questionCategory()).isEqualTo(ZtpiCategory.FUTURE);
+            assertThat(result.get(0).answerText()).isEqualTo("회고 내용");
+            assertThat(result.get(0).streakDays()).isEqualTo(5);
+            assertThat(result.get(0).totalDays()).isEqualTo(30);
         }
     }
 }
