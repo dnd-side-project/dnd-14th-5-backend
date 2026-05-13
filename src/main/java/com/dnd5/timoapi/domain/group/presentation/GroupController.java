@@ -6,6 +6,8 @@ import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
+import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +67,12 @@ public class GroupController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leaveGroup(@Positive @PathVariable Long groupId) {
         groupService.leaveGroup(groupId);
+    }
+
+    @GetMapping("/{groupId}/reflections/today")
+    public List<GroupTodayReflectionItem> getTodayReflections(
+            @Positive @PathVariable Long groupId,
+            @RequestParam(defaultValue = "LATEST") GroupReflectionSort sort) {
+        return groupService.getTodayReflections(groupId, sort);
     }
 }

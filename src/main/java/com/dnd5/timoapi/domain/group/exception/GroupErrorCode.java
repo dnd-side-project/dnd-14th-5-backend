@@ -14,6 +14,7 @@ public enum GroupErrorCode implements ErrorCode {
     GROUP_ALREADY_JOINED(HttpStatus.CONFLICT, "이미 참여한 그룹입니다."),
     GROUP_FORBIDDEN(HttpStatus.FORBIDDEN, "그룹 관리 권한이 없습니다."),
     GROUP_ACCESS_DENIED(HttpStatus.FORBIDDEN, "그룹에 접근할 권한이 없습니다."),
+    GROUP_INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "캐릭터 그룹에는 ZTPI 캐릭터를 지정해야 합니다."),
     ;
 
     private final HttpStatus status;

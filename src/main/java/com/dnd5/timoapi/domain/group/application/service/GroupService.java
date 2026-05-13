@@ -5,6 +5,8 @@ import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberEntity;
 import com.dnd5.timoapi.domain.group.domain.model.Group;
 import com.dnd5.timoapi.domain.group.domain.model.GroupMember;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupMemberRole;
+import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
+import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupRepository;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
@@ -13,14 +15,25 @@ import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
+import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
+import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
+import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
+import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +42,15 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final ReflectionRepository reflectionRepository;
+    private final ReflectionQuestionRepository reflectionQuestionRepository;
+    private final UserRepository userRepository;
 
     public GroupCreateResponse createGroup(GroupCreateRequest request) {
+        validateCategoryForType(request.type(), request.category() != null);
         Long userId = SecurityUtil.getCurrentUserId();
         String code = generateUniqueCode();
-        Group group = Group.create(code, request.name(), request.type(), request.image());
+        Group group = Group.create(code, request.name(), request.type(), request.image(), request.category());
         GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
         GroupMember ownerMember = GroupMember.create(savedGroup.getId(), userId, GroupMemberRole.OWNER);
         groupMemberRepository.save(GroupMemberEntity.from(ownerMember));
@@ -130,6 +147,74 @@ public class GroupService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<GroupTodayReflectionItem> getTodayReflections(Long groupId, GroupReflectionSort sort) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        GroupEntity groupEntity = getGroupEntity(groupId);
+        LocalDate today = LocalDate.now();
+
+        List<ReflectionEntity> reflections;
+
+        if (groupEntity.getType() == GroupType.CHARACTER) {
+            reflections = reflectionRepository.findAllByDateAndQuestionCategory(today, groupEntity.getCategory());
+        } else {
+            List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)
+                    .stream()
+                    .map(GroupMemberEntity::getUserId)
+                    .toList();
+
+            if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
+                throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
+            }
+
+            if (memberUserIds.isEmpty()) {
+                return List.of();
+            }
+            reflections = reflectionRepository.findAllByDateAndUserIdIn(today, memberUserIds);
+        }
+
+        if (reflections.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> questionIds = reflections.stream().map(ReflectionEntity::getQuestionId).distinct().toList();
+        List<Long> userIds = reflections.stream().map(ReflectionEntity::getUserId).distinct().toList();
+
+        Map<Long, ReflectionQuestionEntity> questionMap = reflectionQuestionRepository.findAllById(questionIds)
+                .stream().collect(Collectors.toMap(q -> q.getId(), q -> q));
+        Map<Long, UserEntity> userMap = userRepository.findAllById(userIds)
+                .stream().collect(Collectors.toMap(u -> u.getId(), u -> u));
+
+        Comparator<ReflectionEntity> comparator = switch (sort) {
+            case STREAK -> Comparator.comparingInt((ReflectionEntity r) -> {
+                UserEntity u = userMap.get(r.getUserId());
+                return u != null ? u.getStreakDays() : 0;
+            }).reversed();
+            case TOTAL -> Comparator.comparingInt((ReflectionEntity r) -> {
+                UserEntity u = userMap.get(r.getUserId());
+                return u != null ? u.getTotalDays() : 0;
+            }).reversed();
+            default -> Comparator.comparing(ReflectionEntity::getCreatedAt, Comparator.reverseOrder());
+        };
+
+        return reflections.stream()
+                .sorted(comparator)
+                .map(r -> {
+                    ReflectionQuestionEntity question = questionMap.get(r.getQuestionId());
+                    UserEntity user = userMap.get(r.getUserId());
+                    return new GroupTodayReflectionItem(
+                            r.getUserId(),
+                            user != null ? user.getNickname() : null,
+                            question != null ? question.getContent() : null,
+                            question != null ? question.getCategory() : null,
+                            r.getAnswerText(),
+                            user != null ? user.getStreakDays() : 0,
+                            user != null ? user.getTotalDays() : 0
+                    );
+                })
+                .toList();
+    }
+
     private void handleOwnerLeave(Long groupId, GroupMemberEntity ownerMember) {
         long count = groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
         if (count == 1) {
@@ -140,6 +225,15 @@ public class GroupService {
                     .findTopByGroupIdAndRoleAndDeletedAtIsNullOrderByCreatedAtAsc(groupId, GroupMemberRole.MEMBER)
                     .ifPresent(GroupMemberEntity::promoteToOwner);
             ownerMember.softDelete();
+        }
+    }
+
+    private void validateCategoryForType(GroupType type, boolean hasCategory) {
+        if (type == GroupType.CHARACTER && !hasCategory) {
+            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
+        }
+        if (type == GroupType.FRIEND && hasCategory) {
+            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
         }
     }
 
