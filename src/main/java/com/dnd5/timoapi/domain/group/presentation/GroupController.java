@@ -4,8 +4,8 @@ import com.dnd5.timoapi.domain.group.application.service.GroupService;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
-import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import jakarta.validation.Valid;
@@ -32,12 +32,12 @@ public class GroupController {
     }
 
     @GetMapping
-    public List<GroupSummaryResponse> getMyGroups() {
+    public List<GroupResponse> getMyGroups() {
         return groupService.getMyGroups();
     }
 
     @GetMapping("/{groupId}")
-    public GroupResponse getGroup(
+    public GroupDetailResponse getGroup(
             @Positive @PathVariable Long groupId,
             @RequestParam(required = false) String code) {
         return groupService.getGroup(groupId, code);

@@ -11,8 +11,8 @@ import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
-import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
@@ -138,7 +138,7 @@ class GroupServiceTest {
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
 
-            List<GroupSummaryResponse> result = groupService.getMyGroups();
+            List<GroupResponse> result = groupService.getMyGroups();
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).memberCount()).isEqualTo(3);
@@ -167,7 +167,7 @@ class GroupServiceTest {
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
 
-            GroupResponse response = groupService.getGroup(groupId, null);
+            GroupDetailResponse response = groupService.getGroup(groupId, null);
 
             assertThat(response.isMember()).isTrue();
             assertThat(response.myRole()).isEqualTo(GroupMemberRole.MEMBER);
@@ -194,7 +194,7 @@ class GroupServiceTest {
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
 
-            GroupResponse response = groupService.getGroup(groupId, code);
+            GroupDetailResponse response = groupService.getGroup(groupId, code);
 
             assertThat(response.isMember()).isFalse();
             assertThat(response.myRole()).isNull();

@@ -13,8 +13,8 @@ import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
-import com.dnd5.timoapi.domain.group.presentation.response.GroupSummaryResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
@@ -58,20 +58,20 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupSummaryResponse> getMyGroups() {
+    public List<GroupResponse> getMyGroups() {
         Long userId = SecurityUtil.getCurrentUserId();
         List<GroupMemberEntity> myMemberships = groupMemberRepository.findAllByUserIdAndDeletedAtIsNull(userId);
         return myMemberships.stream()
                 .map(member -> {
                     GroupEntity groupEntity = getGroupEntity(member.getGroupId());
                     int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupEntity.getId());
-                    return GroupSummaryResponse.of(groupEntity.toModel(), memberCount, member.getRole());
+                    return GroupResponse.of(groupEntity.toModel(), memberCount, member.getRole());
                 })
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public GroupResponse getGroup(Long groupId, String code) {
+    public GroupDetailResponse getGroup(Long groupId, String code) {
         Long userId = SecurityUtil.getCurrentUserId();
         GroupEntity groupEntity = getGroupEntity(groupId);
 
@@ -97,7 +97,7 @@ public class GroupService {
         }
 
         int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
-        return GroupResponse.of(groupEntity.toModel(), memberCount, isMember, myRole);
+        return GroupDetailResponse.of(groupEntity.toModel(), memberCount, isMember, myRole);
     }
 
     public void updateGroup(Long groupId, GroupUpdateRequest request) {
