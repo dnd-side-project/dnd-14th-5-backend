@@ -50,6 +50,6 @@ public class TestEntity extends BaseEntity {
     }
 
     public int getMaxQuestionCount() {
-        return getType().getMaxQuestionCount();
+        return getType() != null ? getType().getMaxQuestionCount() : 0;
     }
 }
