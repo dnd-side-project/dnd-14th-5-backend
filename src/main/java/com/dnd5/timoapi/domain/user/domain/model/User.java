@@ -16,10 +16,11 @@ public record User(
         ZtpiCategory category,
         Boolean isOnboarded,
         Integer streakDays,
+        Integer totalDays,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
     public static User create(String email, String nickname, String timezone, OAuthProvider provider) {
-        return new User(null, email, nickname, timezone, provider, UserRole.USER, null,false, 0, null, null);
+        return new User(null, email, nickname, timezone, provider, UserRole.USER, null, false, 0, 0, null, null);
     }
 }

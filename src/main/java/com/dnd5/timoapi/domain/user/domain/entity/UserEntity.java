@@ -49,12 +49,15 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false)
     private Integer streakDays = 0;
 
+    @Column(nullable = false)
+    private Integer totalDays = 0;
+
     public static UserEntity from(User model) {
-        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.category(), model.isOnboarded(), model.streakDays());
+        return new UserEntity(model.email(), model.nickname(), model.timezone(), model.provider(), model.role(), model.category(), model.isOnboarded(), model.streakDays(), model.totalDays());
     }
 
     public User toModel() {
-        return new User(getId(), email, nickname, timezone, provider, role, category, isOnboarded, streakDays, getCreatedAt(), getUpdatedAt());
+        return new User(getId(), email, nickname, timezone, provider, role, category, isOnboarded, streakDays, totalDays, getCreatedAt(), getUpdatedAt());
     }
 
     public void update(String nickname) {
@@ -79,5 +82,9 @@ public class UserEntity extends BaseEntity {
 
     public void resetStreakDays() {
         this.streakDays = 0;
+    }
+
+    public void incrementTotalDays() {
+        this.totalDays++;
     }
 }

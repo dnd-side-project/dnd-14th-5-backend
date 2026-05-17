@@ -93,6 +93,9 @@ public class SecurityConfig {
                         // 알림
                         .requestMatchers("/notifications/**").authenticated()
 
+                        // 그룹
+                        .requestMatchers("/groups/**").authenticated()
+
                         // 테스트 (유저)
                         .requestMatchers(HttpMethod.GET, "/tests").authenticated()
                         .requestMatchers(HttpMethod.GET, "/tests/*/questions").authenticated()
