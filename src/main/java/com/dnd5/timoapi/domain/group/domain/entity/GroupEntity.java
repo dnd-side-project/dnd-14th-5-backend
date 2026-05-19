@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-@Table(name = "groups")
+@Table(name = "user_groups")
 public class GroupEntity extends BaseEntity {
 
     @Column(nullable = false, unique = true)

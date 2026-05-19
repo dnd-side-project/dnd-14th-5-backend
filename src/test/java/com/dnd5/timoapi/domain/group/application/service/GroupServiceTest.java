@@ -64,7 +64,7 @@ class GroupServiceTest {
     @Test
     void createGroup_FRIEND_성공_코드_자동_생성() {
         Long userId = 1L;
-        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null, null);
+        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null);
 
         GroupEntity savedGroup = mock(GroupEntity.class);
         when(savedGroup.getId()).thenReturn(10L);
@@ -90,22 +90,8 @@ class GroupServiceTest {
     }
 
     @Test
-    void createGroup_CHARACTER_category_없으면_400() {
-        GroupCreateRequest request = new GroupCreateRequest("캐릭터그룹", GroupType.CHARACTER, null, null);
-
-        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
-            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);
-
-            assertThatThrownBy(() -> groupService.createGroup(request))
-                    .isInstanceOf(BusinessException.class)
-                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
-                            .isEqualTo(GroupErrorCode.GROUP_INVALID_CATEGORY));
-        }
-    }
-
-    @Test
-    void createGroup_FRIEND_category_있으면_400() {
-        GroupCreateRequest request = new GroupCreateRequest("팀A", GroupType.FRIEND, null, ZtpiCategory.FUTURE);
+    void createGroup_CHARACTER_타입이면_400() {
+        GroupCreateRequest request = new GroupCreateRequest("캐릭터그룹", GroupType.CHARACTER, null);
 
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(1L);

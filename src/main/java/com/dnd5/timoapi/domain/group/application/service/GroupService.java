@@ -47,10 +47,12 @@ public class GroupService {
     private final UserRepository userRepository;
 
     public GroupCreateResponse createGroup(GroupCreateRequest request) {
-        validateCategoryForType(request.type(), request.category() != null);
+        if (request.type() == GroupType.CHARACTER) {
+            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
+        }
         Long userId = SecurityUtil.getCurrentUserId();
         String code = generateUniqueCode();
-        Group group = Group.create(code, request.name(), request.type(), request.image(), request.category());
+        Group group = Group.create(code, request.name(), request.type(), request.image(), null);
         GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
         GroupMember ownerMember = GroupMember.create(savedGroup.getId(), userId, GroupMemberRole.OWNER);
         groupMemberRepository.save(GroupMemberEntity.from(ownerMember));
@@ -225,15 +227,6 @@ public class GroupService {
                     .findTopByGroupIdAndRoleAndDeletedAtIsNullOrderByCreatedAtAsc(groupId, GroupMemberRole.MEMBER)
                     .ifPresent(GroupMemberEntity::promoteToOwner);
             ownerMember.softDelete();
-        }
-    }
-
-    private void validateCategoryForType(GroupType type, boolean hasCategory) {
-        if (type == GroupType.CHARACTER && !hasCategory) {
-            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
-        }
-        if (type == GroupType.FRIEND && hasCategory) {
-            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
         }
     }
 
