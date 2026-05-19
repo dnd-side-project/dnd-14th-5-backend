@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(
-        name = "group_members",
+        name = "user_group_members",
         uniqueConstraints = @UniqueConstraint(columnNames = {"group_id", "user_id"})
 )
 public class GroupMemberEntity extends BaseEntity {
