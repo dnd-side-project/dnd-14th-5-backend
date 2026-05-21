@@ -226,9 +226,7 @@ public class GroupService {
     }
 
     public void seedDummyGroups() {
-        List<Long> userIds = userRepository.findAll().stream()
-                .map(u -> u.getId())
-                .toList();
+        List<Long> userIds = List.of(1L, 2L, 3L, 4L, 5L);
 
         for (int i = 1; i <= 10; i++) {
             String code = generateUniqueCode();
