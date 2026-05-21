@@ -226,10 +226,21 @@ public class GroupService {
     }
 
     public void seedDummyGroups() {
+        List<Long> userIds = userRepository.findAll().stream()
+                .map(u -> u.getId())
+                .toList();
+
         for (int i = 1; i <= 10; i++) {
             String code = generateUniqueCode();
             Group group = Group.create(code, "테스트 그룹 " + i, GroupType.FRIEND, null, null);
-            groupRepository.save(GroupEntity.from(group));
+            GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
+
+            for (int j = 0; j < userIds.size(); j++) {
+                GroupMemberRole role = (j == 0) ? GroupMemberRole.OWNER : GroupMemberRole.MEMBER;
+                groupMemberRepository.save(GroupMemberEntity.from(
+                        GroupMember.create(savedGroup.getId(), userIds.get(j), role)
+                ));
+            }
         }
     }
 
