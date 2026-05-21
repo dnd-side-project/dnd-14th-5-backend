@@ -218,6 +218,21 @@ public class GroupService {
                 .toList();
     }
 
+    public GroupCreateResponse adminCreateGroup(GroupCreateRequest request) {
+        String code = generateUniqueCode();
+        Group group = Group.create(code, request.name(), request.type(), request.image(), null);
+        GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
+        return GroupCreateResponse.from(savedGroup.toModel());
+    }
+
+    public void seedDummyGroups() {
+        for (int i = 1; i <= 10; i++) {
+            String code = generateUniqueCode();
+            Group group = Group.create(code, "테스트 그룹 " + i, GroupType.FRIEND, null, null);
+            groupRepository.save(GroupEntity.from(group));
+        }
+    }
+
     private void handleOwnerLeave(Long groupId, GroupMemberEntity ownerMember) {
         long count = groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
         if (count == 1) {
