@@ -207,6 +207,7 @@ public class GroupService {
                     return new GroupTodayReflectionItem(
                             r.getUserId(),
                             user != null ? user.getNickname() : null,
+                            user != null ? user.getCategory() : null,
                             question != null ? question.getContent() : null,
                             question != null ? question.getCategory() : null,
                             r.getAnswerText(),

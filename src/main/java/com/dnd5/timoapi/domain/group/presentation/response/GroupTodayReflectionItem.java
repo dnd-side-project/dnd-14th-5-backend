@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 public record GroupTodayReflectionItem(
         Long userId,
         String nickname,
+        ZtpiCategory userCategory,
         String questionContent,
         ZtpiCategory questionCategory,
         String answerText,
