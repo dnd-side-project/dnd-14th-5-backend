@@ -73,7 +73,7 @@ class ReflectionFeedbackServiceTest {
         when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflectionEntity));
         when(reflectionFeedbackRepository.findByReflectionId(reflectionId)).thenReturn(Optional.empty());
 
-        ReflectionFeedbackEntity processingFeedback = new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING);
+        ReflectionFeedbackEntity processingFeedback = new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING, null, null, null, null, null);
         when(reflectionFeedbackRepository.save(any())).thenReturn(processingFeedback);
 
         try (MockedStatic<SecurityUtil> securityMocked = Mockito.mockStatic(SecurityUtil.class);
@@ -96,7 +96,7 @@ class ReflectionFeedbackServiceTest {
         when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflectionEntity));
 
         ReflectionFeedbackEntity failedFeedback = spy(
-                new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.FAILED)
+                new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.FAILED, null, null, null, null, null)
         );
         when(reflectionFeedbackRepository.findByReflectionId(reflectionId))
                 .thenReturn(Optional.of(failedFeedback));
@@ -123,7 +123,7 @@ class ReflectionFeedbackServiceTest {
         ReflectionEntity reflectionEntity = new ReflectionEntity(1L, 3L, LocalDate.now(), "회고 내용");
         when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflectionEntity));
 
-        ReflectionFeedbackEntity processingFeedback = new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING);
+        ReflectionFeedbackEntity processingFeedback = new ReflectionFeedbackEntity(reflectionId, 0, null, FeedbackStatus.PROCESSING, null, null, null, null, null);
         when(reflectionFeedbackRepository.findByReflectionId(reflectionId))
                 .thenReturn(Optional.of(processingFeedback));
 
@@ -146,7 +146,7 @@ class ReflectionFeedbackServiceTest {
         ReflectionEntity reflectionEntity = new ReflectionEntity(1L, 3L, LocalDate.now(), "회고 내용");
         when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflectionEntity));
 
-        ReflectionFeedbackEntity completedFeedback = new ReflectionFeedbackEntity(reflectionId, 80, "피드백", FeedbackStatus.COMPLETED);
+        ReflectionFeedbackEntity completedFeedback = new ReflectionFeedbackEntity(reflectionId, 80, "피드백", FeedbackStatus.COMPLETED, null, null, null, null, null);
         when(reflectionFeedbackRepository.findByReflectionId(reflectionId))
                 .thenReturn(Optional.of(completedFeedback));
 
