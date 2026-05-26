@@ -218,6 +218,30 @@ public class GroupService {
                 .toList();
     }
 
+    public GroupCreateResponse adminCreateGroup(GroupCreateRequest request) {
+        String code = generateUniqueCode();
+        Group group = Group.create(code, request.name(), request.type(), request.image(), null);
+        GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
+        return GroupCreateResponse.from(savedGroup.toModel());
+    }
+
+    public void seedDummyGroups() {
+        List<Long> userIds = List.of(1L, 2L, 3L, 4L, 5L);
+
+        for (int i = 1; i <= 10; i++) {
+            String code = generateUniqueCode();
+            Group group = Group.create(code, "테스트 그룹 " + i, GroupType.FRIEND, null, null);
+            GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
+
+            for (int j = 0; j < userIds.size(); j++) {
+                GroupMemberRole role = (j == 0) ? GroupMemberRole.OWNER : GroupMemberRole.MEMBER;
+                groupMemberRepository.save(GroupMemberEntity.from(
+                        GroupMember.create(savedGroup.getId(), userIds.get(j), role)
+                ));
+            }
+        }
+    }
+
     private void handleOwnerLeave(Long groupId, GroupMemberEntity ownerMember) {
         long count = groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
         if (count == 1) {
