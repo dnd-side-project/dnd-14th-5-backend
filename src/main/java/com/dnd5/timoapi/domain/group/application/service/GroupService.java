@@ -155,26 +155,15 @@ public class GroupService {
         GroupEntity groupEntity = getGroupEntity(groupId);
         LocalDate today = LocalDate.now();
 
-        List<ReflectionEntity> reflections;
-
         if (groupEntity.getType() == GroupType.CHARACTER) {
-            reflections = reflectionRepository.findAllByDateAndQuestionCategory(today, groupEntity.getCategory());
-        } else {
-            List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)
-                    .stream()
-                    .map(GroupMemberEntity::getUserId)
-                    .toList();
-
-            if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
-                throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
-            }
-
-            if (memberUserIds.isEmpty()) {
-                return List.of();
-            }
-            reflections = reflectionRepository.findAllByDateAndUserIdIn(today, memberUserIds);
+            return getTodayReflectionsForCharacterGroup(groupEntity, today, sort);
         }
+        return getTodayReflectionsForFriendGroup(groupId, userId, today, sort);
+    }
 
+    private List<GroupTodayReflectionItem> getTodayReflectionsForCharacterGroup(
+            GroupEntity groupEntity, LocalDate today, GroupReflectionSort sort) {
+        List<ReflectionEntity> reflections = reflectionRepository.findAllByDateAndQuestionCategory(today, groupEntity.getCategory());
         if (reflections.isEmpty()) {
             return List.of();
         }
@@ -183,9 +172,9 @@ public class GroupService {
         List<Long> userIds = reflections.stream().map(ReflectionEntity::getUserId).distinct().toList();
 
         Map<Long, ReflectionQuestionEntity> questionMap = reflectionQuestionRepository.findAllById(questionIds)
-                .stream().collect(Collectors.toMap(q -> q.getId(), q -> q));
+                .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
         Map<Long, UserEntity> userMap = userRepository.findAllById(userIds)
-                .stream().collect(Collectors.toMap(u -> u.getId(), u -> u));
+                .stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
 
         Comparator<ReflectionEntity> comparator = switch (sort) {
             case STREAK -> Comparator.comparingInt((ReflectionEntity r) -> {
@@ -211,6 +200,72 @@ public class GroupService {
                             question != null ? question.getContent() : null,
                             question != null ? question.getCategory() : null,
                             r.getAnswerText(),
+                            user != null ? user.getStreakDays() : 0,
+                            user != null ? user.getTotalDays() : 0
+                    );
+                })
+                .toList();
+    }
+
+    private List<GroupTodayReflectionItem> getTodayReflectionsForFriendGroup(
+            Long groupId, Long userId, LocalDate today, GroupReflectionSort sort) {
+        List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)
+                .stream()
+                .map(GroupMemberEntity::getUserId)
+                .toList();
+
+        if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
+            throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
+        }
+
+        if (memberUserIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, UserEntity> userMap = userRepository.findAllById(memberUserIds)
+                .stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
+
+        Map<Long, ReflectionEntity> reflectionByUserId = reflectionRepository.findAllByDateAndUserIdIn(today, memberUserIds)
+                .stream().collect(Collectors.toMap(ReflectionEntity::getUserId, r -> r));
+
+        List<Long> questionIds = reflectionByUserId.values().stream()
+                .map(ReflectionEntity::getQuestionId).distinct().toList();
+        Map<Long, ReflectionQuestionEntity> questionMap = questionIds.isEmpty() ? Map.of() :
+                reflectionQuestionRepository.findAllById(questionIds)
+                        .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
+
+        Comparator<Long> comparator = switch (sort) {
+            case STREAK -> Comparator.comparingInt((Long uid) -> {
+                UserEntity u = userMap.get(uid);
+                return u != null ? u.getStreakDays() : 0;
+            }).reversed();
+            case TOTAL -> Comparator.comparingInt((Long uid) -> {
+                UserEntity u = userMap.get(uid);
+                return u != null ? u.getTotalDays() : 0;
+            }).reversed();
+            default -> (a, b) -> {
+                ReflectionEntity ra = reflectionByUserId.get(a);
+                ReflectionEntity rb = reflectionByUserId.get(b);
+                if (ra == null && rb == null) return 0;
+                if (ra == null) return 1;
+                if (rb == null) return -1;
+                return rb.getCreatedAt().compareTo(ra.getCreatedAt());
+            };
+        };
+
+        return memberUserIds.stream()
+                .sorted(comparator)
+                .map(uid -> {
+                    UserEntity user = userMap.get(uid);
+                    ReflectionEntity reflection = reflectionByUserId.get(uid);
+                    ReflectionQuestionEntity question = reflection != null ? questionMap.get(reflection.getQuestionId()) : null;
+                    return new GroupTodayReflectionItem(
+                            uid,
+                            user != null ? user.getNickname() : null,
+                            user != null ? user.getCategory() : null,
+                            question != null ? question.getContent() : null,
+                            question != null ? question.getCategory() : null,
+                            reflection != null ? reflection.getAnswerText() : null,
                             user != null ? user.getStreakDays() : 0,
                             user != null ? user.getTotalDays() : 0
                     );

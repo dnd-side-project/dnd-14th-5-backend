@@ -334,6 +334,63 @@ class GroupServiceTest {
     }
 
     @Test
+    void getTodayReflections_FRIEND_회고_안한_멤버도_포함() {
+        Long userId = 1L;
+        Long groupId = 10L;
+
+        GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+
+        GroupMemberEntity member1 = mock(GroupMemberEntity.class);
+        when(member1.getUserId()).thenReturn(1L);
+        GroupMemberEntity member2 = mock(GroupMemberEntity.class);
+        when(member2.getUserId()).thenReturn(2L);
+        when(groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)).thenReturn(List.of(member1, member2));
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getUserId()).thenReturn(1L);
+        when(reflection.getQuestionId()).thenReturn(100L);
+        when(reflection.getAnswerText()).thenReturn("회고 내용");
+        when(reflectionRepository.findAllByDateAndUserIdIn(any(LocalDate.class), anyList()))
+                .thenReturn(List.of(reflection));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.getId()).thenReturn(100L);
+        when(question.getContent()).thenReturn("오늘의 질문");
+        when(question.getCategory()).thenReturn(ZtpiCategory.FUTURE);
+        when(reflectionQuestionRepository.findAllById(anyList())).thenReturn(List.of(question));
+
+        UserEntity user1 = mock(UserEntity.class);
+        when(user1.getId()).thenReturn(1L);
+        when(user1.getNickname()).thenReturn("유저1");
+        when(user1.getStreakDays()).thenReturn(5);
+        when(user1.getTotalDays()).thenReturn(10);
+
+        UserEntity user2 = mock(UserEntity.class);
+        when(user2.getId()).thenReturn(2L);
+        when(user2.getNickname()).thenReturn("유저2");
+        when(user2.getStreakDays()).thenReturn(3);
+        when(user2.getTotalDays()).thenReturn(7);
+
+        when(userRepository.findAllById(anyList())).thenReturn(List.of(user1, user2));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
+
+            List<GroupTodayReflectionItem> result = groupService.getTodayReflections(groupId, GroupReflectionSort.LATEST);
+
+            assertThat(result).hasSize(2);
+            GroupTodayReflectionItem withReflection = result.stream().filter(r -> r.userId().equals(1L)).findFirst().orElseThrow();
+            GroupTodayReflectionItem withoutReflection = result.stream().filter(r -> r.userId().equals(2L)).findFirst().orElseThrow();
+            assertThat(withReflection.answerText()).isEqualTo("회고 내용");
+            assertThat(withoutReflection.answerText()).isNull();
+            assertThat(withoutReflection.questionContent()).isNull();
+        }
+    }
+
+    @Test
     void getTodayReflections_FRIEND_비멤버_403() {
         Long userId = 1L;
         Long groupId = 10L;
