@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.reflection.domain.entity;
 
 import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionFeedback;
 import com.dnd5.timoapi.domain.reflection.domain.model.enums.FeedbackStatus;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,12 +33,28 @@ public class ReflectionFeedbackEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private FeedbackStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private ZtpiCategory category;
+
+    private Boolean isIncreased;
+
+    private Double changedScore;
+
+    private Double beforeScore;
+
+    private Double afterScore;
+
     public static ReflectionFeedbackEntity from(ReflectionFeedback model) {
         return new ReflectionFeedbackEntity(
                 model.reflectionId(),
                 model.score(),
                 model.content(),
-                model.status()
+                model.status(),
+                model.category(),
+                model.isIncreased(),
+                model.changedScore(),
+                model.beforeScore(),
+                model.afterScore()
         );
     }
 
@@ -48,14 +65,24 @@ public class ReflectionFeedbackEntity extends BaseEntity {
                 getScore(),
                 getContent(),
                 getStatus(),
+                getCategory(),
+                getIsIncreased(),
+                getChangedScore(),
+                getBeforeScore(),
+                getAfterScore(),
                 getCreatedAt()
         );
     }
 
-    public void complete(int score, String content) {
+    public void complete(int score, String content, ZtpiCategory category, Boolean isIncreased, Double changedScore, Double beforeScore, Double afterScore) {
         this.score = score;
         this.content = content;
         this.status = FeedbackStatus.COMPLETED;
+        this.category = category;
+        this.isIncreased = isIncreased;
+        this.changedScore = changedScore;
+        this.beforeScore = beforeScore;
+        this.afterScore = afterScore;
     }
 
     public void fail() {
@@ -66,5 +93,10 @@ public class ReflectionFeedbackEntity extends BaseEntity {
         this.score = 0;
         this.content = null;
         this.status = FeedbackStatus.PROCESSING;
+        this.category = null;
+        this.isIncreased = null;
+        this.changedScore = null;
+        this.beforeScore = null;
+        this.afterScore = null;
     }
 }

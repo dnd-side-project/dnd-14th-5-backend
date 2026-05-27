@@ -6,10 +6,17 @@ import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.reflection.domain.model.enums.FeedbackStatus;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.ai.FeedbackGenerator;
 import com.dnd5.timoapi.domain.reflection.infrastructure.ai.FeedbackResult;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
+import com.dnd5.timoapi.domain.user.domain.repository.UserTestResultRepository;
+import com.dnd5.timoapi.domain.user.exception.UserTestRecordErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import java.time.LocalDateTime;
+import java.util.List;
 import com.dnd5.timoapi.global.analytics.event.FeedbackReceivedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +37,7 @@ public class ReflectionFeedbackAsyncProcessor {
     private final ReflectionRepository reflectionRepository;
     private final ReflectionFeedbackRepository reflectionFeedbackRepository;
     private final ReflectionQuestionRepository reflectionQuestionRepository;
+    private final UserTestResultRepository userTestResultRepository;
     private final FeedbackGenerator feedbackGenerator;
 
     @Async("feedbackTaskExecutor")
@@ -54,9 +62,39 @@ public class ReflectionFeedbackAsyncProcessor {
                     reflectionEntity.getAnswerText()
             );
             validateScore(feedbackResult.score());
-            feedbackEntity.complete(feedbackResult.score(), feedbackResult.content());
+
+            ZtpiCategory category = questionEntity.getCategory();
 
             Long userId = reflectionEntity.getUserId();
+            UserTestResultEntity latestTestResult = userTestResultRepository
+                    .findFirstByUserTestRecord_User_IdAndCategoryAndDeletedAtIsNullOrderByCreatedAtDesc(userId, category)
+                    .orElseThrow(() -> new BusinessException(UserTestRecordErrorCode.USER_TEST_RESULT_NOT_FOUND));
+
+            double testScore = latestTestResult.getScore();
+            LocalDateTime latestTestDate = latestTestResult.getCreatedAt();
+
+            List<Integer> previousReflectionFeedbackScores = reflectionFeedbackRepository
+                    .findScoresByUserAndCategoryAfter(userId, category, FeedbackStatus.COMPLETED, latestTestDate, reflectionId);
+
+            List<Integer> nonZeroPreviousScores = previousReflectionFeedbackScores.stream()
+                    .filter(s -> s != 0)
+                    .toList();
+
+            double scoreSum = testScore + nonZeroPreviousScores.stream().mapToInt(Integer::intValue).sum();
+            int count = 1 + nonZeroPreviousScores.size();
+
+            double beforeScore = scoreSum / count;
+
+            int currentScore = feedbackResult.score();
+            double afterScore = currentScore == 0
+                    ? beforeScore
+                    : (scoreSum + currentScore) / (count + 1);
+
+            boolean isIncreased = beforeScore < afterScore;
+            double changedScore = Math.abs(afterScore - beforeScore);
+
+            feedbackEntity.complete(feedbackResult.score(), feedbackResult.content(), category, isIncreased, changedScore, beforeScore, afterScore);
+
             eventPublisher.publishEvent(new FeedbackReceivedEvent(userId, reflectionId, feedbackResult.score()));
         } catch (Exception e) {
             log.error("Feedback generation failed for reflectionId={}", reflectionId, e);
