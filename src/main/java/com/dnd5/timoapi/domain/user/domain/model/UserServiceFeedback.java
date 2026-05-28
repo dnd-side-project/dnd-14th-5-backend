@@ -13,12 +13,13 @@ public record UserServiceFeedback(
         LocalDateTime updatedAt
 ) {
     public static UserServiceFeedback create(
+            Long userId,
             Long serviceRating,
             String serviceFeedback
     ) {
         return new UserServiceFeedback(
                 null,
-                getCurrentUserId(),
+                userId,
                 serviceRating,
                 serviceFeedback,
                 null,

@@ -38,11 +38,12 @@ public class UserServiceFeedbackService {
             throw new BusinessException(UserServiceFeedbackErrorCode.ALREADY_EXISTS);
         }
 
-        UserServiceFeedback model = request.toModel();
+        UserServiceFeedback model = request.toModel(userId);
 
         userServiceFeedbackRepository.save(UserServiceFeedbackEntity.from(userEntity, model.serviceRating(), model.serviceFeedback()));
     }
 
+    @Transactional(readOnly = true)
     public List<UserServiceFeedbackResponse> findAll() {
         return userServiceFeedbackRepository.findByDeletedAtIsNull().stream()
                 .map(UserServiceFeedbackEntity::toModel)
@@ -52,7 +53,7 @@ public class UserServiceFeedbackService {
 
     @Transactional(readOnly = true)
     public UserServiceFeedbackDetailResponse findById(Long feedbackId) {
-        UserServiceFeedbackEntity userServiceFeedbackEntity = userServiceFeedbackRepository.findById(feedbackId)
+        UserServiceFeedbackEntity userServiceFeedbackEntity = userServiceFeedbackRepository.findByIdAndDeletedAtIsNull(feedbackId)
                 .orElseThrow(() -> new BusinessException(UserServiceFeedbackErrorCode.USER_SERVICE_FEEDBACK_NOT_FOUND));
 
         return UserServiceFeedbackDetailResponse.of(
@@ -62,7 +63,7 @@ public class UserServiceFeedbackService {
 
     @Transactional
     public void delete(Long feedbackId) {
-        UserServiceFeedbackEntity userServiceFeedbackEntity = userServiceFeedbackRepository.findById(feedbackId)
+        UserServiceFeedbackEntity userServiceFeedbackEntity = userServiceFeedbackRepository.findByIdAndDeletedAtIsNull(feedbackId)
                 .orElseThrow(() -> new BusinessException(UserServiceFeedbackErrorCode.USER_SERVICE_FEEDBACK_NOT_FOUND));
 
         userServiceFeedbackEntity.softDelete();

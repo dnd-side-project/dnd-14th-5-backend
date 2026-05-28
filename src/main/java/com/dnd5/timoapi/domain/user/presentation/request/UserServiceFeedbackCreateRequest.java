@@ -4,13 +4,13 @@ import com.dnd5.timoapi.domain.user.domain.model.UserServiceFeedback;
 import jakarta.validation.constraints.*;
 
 public record UserServiceFeedbackCreateRequest(
-        @Positive @NotNull
+        @NotNull
         @Min(value=0) @Max(value=5)
         Long serviceRating,
         @NotEmpty
         String serviceFeedback
 ) {
-    public UserServiceFeedback toModel() {
-        return UserServiceFeedback.create(serviceRating, serviceFeedback);
+    public UserServiceFeedback toModel(Long userId) {
+        return UserServiceFeedback.create(userId, serviceRating, serviceFeedback);
     }
 }
