@@ -1,21 +1,19 @@
 package com.dnd5.timoapi.domain.user.presentation.response;
 
-import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
-import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
-import java.time.LocalDateTime;
+import com.dnd5.timoapi.domain.user.domain.model.UserServiceFeedback;
 
-public record UserTestRecordResponse(
+public record UserServiceFeedbackResponse(
         Long id,
-        Long testId,
-        UserTestRecordStatus status,
-        LocalDateTime createdAt
+        Long userId,
+        Long serviceRating,
+        String serviceFeedback
 ) {
-    public static UserTestRecordResponse from(UserTestRecord model) {
-        return new UserTestRecordResponse(
+    public static UserServiceFeedbackResponse from(UserServiceFeedback model) {
+        return new UserServiceFeedbackResponse(
                 model.id(),
-                model.testId(),
-                model.status(),
-                model.createdAt()
+                model.userId(),
+                model.serviceRating(),
+                model.serviceFeedback()
         );
     }
 }

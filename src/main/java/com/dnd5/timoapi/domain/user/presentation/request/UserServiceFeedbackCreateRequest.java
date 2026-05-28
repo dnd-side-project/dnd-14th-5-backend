@@ -1,15 +1,16 @@
 package com.dnd5.timoapi.domain.user.presentation.request;
 
-import com.dnd5.timoapi.domain.user.domain.model.UserTestRecord;
-import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import com.dnd5.timoapi.domain.user.domain.model.UserServiceFeedback;
+import jakarta.validation.constraints.*;
 
-public record UserTestRecordCreateRequest(
+public record UserServiceFeedbackCreateRequest(
         @Positive @NotNull
-        Long testId
+        @Min(value=0) @Max(value=5)
+        Long serviceRating,
+        @NotEmpty
+        String serviceFeedback
 ) {
-    public UserTestRecord toModel() {
-        return UserTestRecord.create(testId, UserTestRecordStatus.IN_PROGRESS);
+    public UserServiceFeedback toModel() {
+        return UserServiceFeedback.create(serviceRating, serviceFeedback);
     }
 }
