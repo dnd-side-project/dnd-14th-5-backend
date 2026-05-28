@@ -1,11 +1,8 @@
 package com.dnd5.timoapi.domain.user.presentation;
 
 import com.dnd5.timoapi.domain.user.application.service.UserServiceFeedbackService;
-import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
-import com.dnd5.timoapi.domain.user.presentation.request.UserServiceFeedbackCreateRequest;
-import com.dnd5.timoapi.domain.user.presentation.request.UserTestRecordCreateRequest;
-import com.dnd5.timoapi.domain.user.presentation.response.*;
-import jakarta.validation.Valid;
+import com.dnd5.timoapi.domain.user.presentation.response.UserServiceFeedbackDetailResponse;
+import com.dnd5.timoapi.domain.user.presentation.response.UserServiceFeedbackResponse;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,20 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/service-feedbacks")
+@RequestMapping("/admin/service-feedbacks")
 @RequiredArgsConstructor
 @Validated
-public class UserServiceFeedbackController {
+public class AdminUserServiceFeedbackController {
 
     private final UserServiceFeedbackService userServiceFeedbackService;
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public void create(
-            @Valid @RequestBody UserServiceFeedbackCreateRequest request
-    ) {
-        userServiceFeedbackService.create(request);
-    }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

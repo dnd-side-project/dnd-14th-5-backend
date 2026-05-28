@@ -1,70 +1,28 @@
 package com.dnd5.timoapi.domain.user.presentation;
 
-import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
-import com.dnd5.timoapi.domain.user.presentation.request.UserTestRecordCreateRequest;
-import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordCreateResponse;
-import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordDetailResponse;
-import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordResponse;
+import com.dnd5.timoapi.domain.user.application.service.UserServiceFeedbackService;
+import com.dnd5.timoapi.domain.user.presentation.request.UserServiceFeedbackCreateRequest;
+import com.dnd5.timoapi.domain.user.presentation.response.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/test-records")
+@RequestMapping("/service-feedbacks")
 @RequiredArgsConstructor
 @Validated
-public class UserTestRecordController {
+public class UserServiceFeedbackController {
 
-    private final UserTestRecordService userTestRecordService;
+    private final UserServiceFeedbackService userServiceFeedbackService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserTestRecordCreateResponse create(
-            @Valid @RequestBody UserTestRecordCreateRequest request
+    public void create(
+            @Valid @RequestBody UserServiceFeedbackCreateRequest request
     ) {
-        return userTestRecordService.create(request);
-    }
-
-    @PatchMapping("/{testRecordId}/complete")
-    public UserTestRecordDetailResponse complete(
-            @Positive @PathVariable Long testRecordId
-    ) {
-        return userTestRecordService.complete(testRecordId);
-    }
-
-    @GetMapping("/me")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserTestRecordResponse> findAll() {
-        return userTestRecordService.findAll();
-    }
-
-    @GetMapping("/{testRecordId}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserTestRecordDetailResponse findById(
-            @Positive @PathVariable Long testRecordId
-    ) {
-        return userTestRecordService.findById(testRecordId);
-    }
-
-    @DeleteMapping("/{testRecordId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
-            @Positive @PathVariable Long testRecordId
-    ) {
-        userTestRecordService.delete(testRecordId);
+        userServiceFeedbackService.create(request);
     }
 
 }
