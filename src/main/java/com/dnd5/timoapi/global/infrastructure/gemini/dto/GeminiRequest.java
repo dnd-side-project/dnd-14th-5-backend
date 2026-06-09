@@ -5,16 +5,32 @@ import java.util.List;
 
 public record GeminiRequest(
         @JsonProperty("system_instruction") SystemInstruction systemInstruction,
-        List<Content> contents
+        List<Content> contents,
+        @JsonProperty("generationConfig") GenerationConfig generationConfig
 ) {
     public static GeminiRequest of(String systemPrompt, String userPrompt) {
         SystemInstruction systemInstruction = new SystemInstruction(List.of(new Part(systemPrompt)));
         Content userContent = new Content("user", List.of(new Part(userPrompt)));
+        GenerationConfig config = new GenerationConfig(
+                0.7,
+                "application/json",
+                new ThinkingConfig(0)
+        );
 
-        return new GeminiRequest(systemInstruction, List.of(userContent));
+        return new GeminiRequest(systemInstruction, List.of(userContent), config);
     }
 
     public record SystemInstruction(List<Part> parts) {}
     public record Content(String role, List<Part> parts) {}
     public record Part(String text) {}
+
+    public record GenerationConfig(
+            double temperature,
+            @JsonProperty("responseMimeType") String responseMimeType,
+            @JsonProperty("thinkingConfig") ThinkingConfig thinkingConfig
+    ) {}
+
+    public record ThinkingConfig(
+            @JsonProperty("thinkingBudget") int thinkingBudget
+    ) {}
 }
