@@ -128,3 +128,8 @@ cookie:
   same-site: ${COOKIE_SAME_SITE:None}
   domain: ${COOKIE_DOMAIN:}
   path: ${COOKIE_PATH:/}
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:/home/server/uploads}
+    base-url: ${UPLOAD_BASE_URL}
