@@ -106,6 +106,12 @@ fcm:
   enabled: ${FCM_ENABLED:false}
   credentials-path: ${FCM_CREDENTIALS_PATH:}
 
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
 app:
   upload:
     dir: ${UPLOAD_DIR:./uploads}
