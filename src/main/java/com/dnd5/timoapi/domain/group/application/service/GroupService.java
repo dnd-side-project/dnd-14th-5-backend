@@ -61,6 +61,22 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
+    public GroupResponse getGroupByCode(String code) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        GroupEntity groupEntity = groupRepository.findByCodeAndDeletedAtIsNull(code)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        Long groupId = groupEntity.getId();
+        GroupMemberRole myRole = groupMemberRepository
+                .findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)
+                .map(GroupMemberEntity::getRole)
+                .orElse(null);
+
+        int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
+        return GroupResponse.of(groupEntity.toModel(), memberCount, myRole);
+    }
+
+    @Transactional(readOnly = true)
     public List<GroupResponse> getMyGroups() {
         Long userId = SecurityUtil.getCurrentUserId();
         List<GroupMemberEntity> myMemberships = groupMemberRepository.findAllByUserIdAndDeletedAtIsNull(userId);
