@@ -96,10 +96,13 @@ public class SecurityConfig {
                         // 그룹
                         .requestMatchers("/groups/**").authenticated()
 
+                        // 이미지 업로드
+                        .requestMatchers(HttpMethod.POST, "/images").authenticated()
+
                         // 테스트 (유저)
                         .requestMatchers(HttpMethod.GET, "/tests").authenticated()
                         .requestMatchers(HttpMethod.GET, "/tests/*/questions").authenticated()
-                        
+
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth -> oauth

@@ -105,3 +105,8 @@ notification:
 fcm:
   enabled: ${FCM_ENABLED:false}
   credentials-path: ${FCM_CREDENTIALS_PATH:}
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+    base-url: ${UPLOAD_BASE_URL:http://localhost:8080}
