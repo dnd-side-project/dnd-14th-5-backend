@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -60,16 +61,44 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
+    public GroupResponse getGroupByCode(String code) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        GroupEntity groupEntity = groupRepository.findByCodeAndDeletedAtIsNull(code)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        Long groupId = groupEntity.getId();
+        GroupMemberRole myRole = groupMemberRepository
+                .findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)
+                .map(GroupMemberEntity::getRole)
+                .orElse(null);
+
+        int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupId);
+        return GroupResponse.of(groupEntity.toModel(), memberCount, myRole);
+    }
+
+    @Transactional(readOnly = true)
     public List<GroupResponse> getMyGroups() {
         Long userId = SecurityUtil.getCurrentUserId();
         List<GroupMemberEntity> myMemberships = groupMemberRepository.findAllByUserIdAndDeletedAtIsNull(userId);
-        return myMemberships.stream()
+        Set<Long> myGroupIds = myMemberships.stream().map(GroupMemberEntity::getGroupId).collect(Collectors.toSet());
+
+        List<GroupResponse> myGroups = myMemberships.stream()
                 .map(member -> {
                     GroupEntity groupEntity = getGroupEntity(member.getGroupId());
                     int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(groupEntity.getId());
                     return GroupResponse.of(groupEntity.toModel(), memberCount, member.getRole());
                 })
-                .toList();
+                .collect(Collectors.toList());
+
+        groupRepository.findAllByTypeAndDeletedAtIsNull(GroupType.CHARACTER).stream()
+                .filter(g -> !myGroupIds.contains(g.getId()))
+                .map(g -> {
+                    int memberCount = (int) groupMemberRepository.countByGroupIdAndDeletedAtIsNull(g.getId());
+                    return GroupResponse.of(g.toModel(), memberCount, null);
+                })
+                .forEach(myGroups::add);
+
+        return myGroups;
     }
 
     @Transactional(readOnly = true)
@@ -163,43 +192,58 @@ public class GroupService {
 
     private List<GroupTodayReflectionItem> getTodayReflectionsForCharacterGroup(
             GroupEntity groupEntity, LocalDate today, GroupReflectionSort sort) {
-        List<ReflectionEntity> reflections = reflectionRepository.findAllByDateAndQuestionCategory(today, groupEntity.getCategory());
-        if (reflections.isEmpty()) {
+        List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupEntity.getId())
+                .stream().map(GroupMemberEntity::getUserId).toList();
+
+        if (memberUserIds.isEmpty()) {
             return List.of();
         }
 
-        List<Long> questionIds = reflections.stream().map(ReflectionEntity::getQuestionId).distinct().toList();
-        List<Long> userIds = reflections.stream().map(ReflectionEntity::getUserId).distinct().toList();
-
-        Map<Long, ReflectionQuestionEntity> questionMap = reflectionQuestionRepository.findAllById(questionIds)
-                .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
-        Map<Long, UserEntity> userMap = userRepository.findAllById(userIds)
+        Map<Long, UserEntity> userMap = userRepository.findAllById(memberUserIds)
                 .stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
 
-        Comparator<ReflectionEntity> comparator = switch (sort) {
-            case STREAK -> Comparator.comparingInt((ReflectionEntity r) -> {
-                UserEntity u = userMap.get(r.getUserId());
+        Map<Long, ReflectionEntity> reflectionByUserId = reflectionRepository
+                .findAllByDateAndUserIdIn(today, memberUserIds)
+                .stream().collect(Collectors.toMap(ReflectionEntity::getUserId, r -> r));
+
+        List<Long> questionIds = reflectionByUserId.values().stream()
+                .map(ReflectionEntity::getQuestionId).distinct().toList();
+        Map<Long, ReflectionQuestionEntity> questionMap = questionIds.isEmpty() ? Map.of() :
+                reflectionQuestionRepository.findAllById(questionIds)
+                        .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
+
+        Comparator<Long> comparator = switch (sort) {
+            case STREAK -> Comparator.comparingInt((Long uid) -> {
+                UserEntity u = userMap.get(uid);
                 return u != null ? u.getStreakDays() : 0;
             }).reversed();
-            case TOTAL -> Comparator.comparingInt((ReflectionEntity r) -> {
-                UserEntity u = userMap.get(r.getUserId());
+            case TOTAL -> Comparator.comparingInt((Long uid) -> {
+                UserEntity u = userMap.get(uid);
                 return u != null ? u.getTotalDays() : 0;
             }).reversed();
-            default -> Comparator.comparing(ReflectionEntity::getCreatedAt, Comparator.reverseOrder());
+            default -> (a, b) -> {
+                ReflectionEntity ra = reflectionByUserId.get(a);
+                ReflectionEntity rb = reflectionByUserId.get(b);
+                if (ra == null && rb == null) return 0;
+                if (ra == null) return 1;
+                if (rb == null) return -1;
+                return rb.getCreatedAt().compareTo(ra.getCreatedAt());
+            };
         };
 
-        return reflections.stream()
+        return memberUserIds.stream()
                 .sorted(comparator)
-                .map(r -> {
-                    ReflectionQuestionEntity question = questionMap.get(r.getQuestionId());
-                    UserEntity user = userMap.get(r.getUserId());
+                .map(uid -> {
+                    UserEntity user = userMap.get(uid);
+                    ReflectionEntity reflection = reflectionByUserId.get(uid);
+                    ReflectionQuestionEntity question = reflection != null ? questionMap.get(reflection.getQuestionId()) : null;
                     return new GroupTodayReflectionItem(
-                            r.getUserId(),
+                            uid,
                             user != null ? user.getNickname() : null,
                             user != null ? user.getCategory() : null,
                             question != null ? question.getContent() : null,
                             question != null ? question.getCategory() : null,
-                            r.getAnswerText(),
+                            reflection != null ? reflection.getAnswerText() : null,
                             user != null ? user.getStreakDays() : 0,
                             user != null ? user.getTotalDays() : 0
                     );
@@ -271,30 +315,6 @@ public class GroupService {
                     );
                 })
                 .toList();
-    }
-
-    public GroupCreateResponse adminCreateGroup(GroupCreateRequest request) {
-        String code = generateUniqueCode();
-        Group group = Group.create(code, request.name(), request.type(), request.image(), null);
-        GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
-        return GroupCreateResponse.from(savedGroup.toModel());
-    }
-
-    public void seedDummyGroups() {
-        List<Long> userIds = List.of(1L, 2L, 3L, 4L, 5L);
-
-        for (int i = 1; i <= 10; i++) {
-            String code = generateUniqueCode();
-            Group group = Group.create(code, "테스트 그룹 " + i, GroupType.FRIEND, null, null);
-            GroupEntity savedGroup = groupRepository.save(GroupEntity.from(group));
-
-            for (int j = 0; j < userIds.size(); j++) {
-                GroupMemberRole role = (j == 0) ? GroupMemberRole.OWNER : GroupMemberRole.MEMBER;
-                groupMemberRepository.save(GroupMemberEntity.from(
-                        GroupMember.create(savedGroup.getId(), userIds.get(j), role)
-                ));
-            }
-        }
     }
 
     private void handleOwnerLeave(Long groupId, GroupMemberEntity ownerMember) {

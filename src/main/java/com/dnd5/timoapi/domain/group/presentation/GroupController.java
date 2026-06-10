@@ -32,7 +32,10 @@ public class GroupController {
     }
 
     @GetMapping
-    public List<GroupResponse> getMyGroups() {
+    public List<GroupResponse> getGroups(@RequestParam(required = false) String code) {
+        if (code != null) {
+            return List.of(groupService.getGroupByCode(code));
+        }
         return groupService.getMyGroups();
     }
 

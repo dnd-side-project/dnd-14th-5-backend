@@ -54,4 +54,5 @@ public interface ReflectionRepository extends JpaRepository<ReflectionEntity, Lo
     List<ReflectionEntity> findAllByDateAndUserIdIn(
             @Param("date") LocalDate date,
             @Param("userIds") List<Long> userIds);
+
 }
