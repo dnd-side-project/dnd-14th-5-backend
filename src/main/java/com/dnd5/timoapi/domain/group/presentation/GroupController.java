@@ -3,11 +3,14 @@ package com.dnd5.timoapi.domain.group.presentation;
 import com.dnd5.timoapi.domain.group.application.service.GroupService;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
+import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
+import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
+import com.dnd5.timoapi.global.exception.BusinessException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -60,10 +63,18 @@ public class GroupController {
         groupService.deleteGroup(groupId);
     }
 
-    @PostMapping("/{groupId}/members")
+    @PostMapping("/members")
     @ResponseStatus(HttpStatus.CREATED)
-    public void joinGroup(@Positive @PathVariable Long groupId) {
-        groupService.joinGroup(groupId);
+    public void joinGroup(
+            @RequestParam(required = false) GroupType type,
+            @RequestParam(required = false) String code) {
+        if (type == GroupType.FRIEND && code != null) {
+            groupService.joinGroupByCode(code);
+        } else if (type == GroupType.CHARACTER) {
+            groupService.joinCharacterGroup();
+        } else {
+            throw new BusinessException(GroupErrorCode.GROUP_TYPE_REQUIRED);
+        }
     }
 
     @DeleteMapping("/{groupId}/members")

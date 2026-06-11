@@ -14,6 +14,8 @@ public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
 
     Optional<GroupEntity> findByCodeAndDeletedAtIsNull(String code);
 
+    Optional<GroupEntity> findByTypeAndCategoryAndDeletedAtIsNull(GroupType type, ZtpiCategory category);
+
     boolean existsByCodeAndDeletedAtIsNull(String code);
 
     boolean existsByTypeAndCategoryAndDeletedAtIsNull(GroupType type, ZtpiCategory category);

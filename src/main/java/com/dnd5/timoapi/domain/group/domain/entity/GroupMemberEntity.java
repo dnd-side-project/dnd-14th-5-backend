@@ -45,4 +45,9 @@ public class GroupMemberEntity extends BaseEntity {
     public void promoteToOwner() {
         this.role = GroupMemberRole.OWNER;
     }
+
+    public void restoreAsMember() {
+        this.role = GroupMemberRole.MEMBER;
+        restore();
+    }
 }

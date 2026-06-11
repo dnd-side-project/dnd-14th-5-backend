@@ -257,6 +257,10 @@ class GroupServiceTest {
         Long userId = 1L;
         Long groupId = 10L;
 
+        GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+
         GroupMemberEntity member = mock(GroupMemberEntity.class);
         when(member.getRole()).thenReturn(GroupMemberRole.MEMBER);
         when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(Optional.of(member));
@@ -272,18 +276,21 @@ class GroupServiceTest {
     }
 
     @Test
-    void joinGroup_이미_참여중이면_409() {
+    void joinGroupByCode_이미_참여중이면_409() {
         Long userId = 1L;
+        String code = "ABCD1234";
         Long groupId = 10L;
 
         GroupEntity groupEntity = mock(GroupEntity.class);
-        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupEntity.getId()).thenReturn(groupId);
+        when(groupRepository.findByCodeAndDeletedAtIsNull(code)).thenReturn(Optional.of(groupEntity));
         when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(true);
 
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
 
-            assertThatThrownBy(() -> groupService.joinGroup(groupId))
+            assertThatThrownBy(() -> groupService.joinGroupByCode(code))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
                             .isEqualTo(GroupErrorCode.GROUP_ALREADY_JOINED));
@@ -291,23 +298,26 @@ class GroupServiceTest {
     }
 
     @Test
-    void joinGroup_탈퇴후_재가입시_restore() {
+    void joinGroupByCode_탈퇴후_재가입시_restore() {
         Long userId = 1L;
+        String code = "ABCD1234";
         Long groupId = 10L;
 
         GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupEntity.getId()).thenReturn(groupId);
         GroupMemberEntity softDeletedMember = mock(GroupMemberEntity.class);
 
-        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+        when(groupRepository.findByCodeAndDeletedAtIsNull(code)).thenReturn(Optional.of(groupEntity));
         when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(false);
         when(groupMemberRepository.findByGroupIdAndUserId(groupId, userId)).thenReturn(Optional.of(softDeletedMember));
 
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
 
-            groupService.joinGroup(groupId);
+            groupService.joinGroupByCode(code);
 
-            verify(softDeletedMember).restore();
+            verify(softDeletedMember).restoreAsMember();
             verify(groupMemberRepository, never()).save(any());
         }
     }
@@ -425,9 +435,6 @@ class GroupServiceTest {
         when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
         when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
 
-        GroupMemberEntity member = mock(GroupMemberEntity.class);
-        when(member.getUserId()).thenReturn(2L);
-        when(groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)).thenReturn(List.of(member));
         when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(false);
 
         try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
