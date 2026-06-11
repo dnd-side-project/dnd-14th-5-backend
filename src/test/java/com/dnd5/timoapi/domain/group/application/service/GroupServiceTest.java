@@ -317,7 +317,7 @@ class GroupServiceTest {
 
             groupService.joinGroupByCode(code);
 
-            verify(softDeletedMember).restore();
+            verify(softDeletedMember).restoreAsMember();
             verify(groupMemberRepository, never()).save(any());
         }
     }

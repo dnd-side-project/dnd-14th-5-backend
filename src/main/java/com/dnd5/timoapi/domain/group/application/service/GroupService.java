@@ -168,7 +168,7 @@ public class GroupService {
         }
         groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
                 .ifPresentOrElse(
-                        GroupMemberEntity::restore,
+                        GroupMemberEntity::restoreAsMember,
                         () -> groupMemberRepository.save(
                                 GroupMemberEntity.from(GroupMember.create(groupId, userId, GroupMemberRole.MEMBER))
                         )
@@ -191,7 +191,7 @@ public class GroupService {
         }
         groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
                 .ifPresentOrElse(
-                        GroupMemberEntity::restore,
+                        GroupMemberEntity::restoreAsMember,
                         () -> groupMemberRepository.save(
                                 GroupMemberEntity.from(GroupMember.create(groupId, userId, GroupMemberRole.MEMBER))
                         )
