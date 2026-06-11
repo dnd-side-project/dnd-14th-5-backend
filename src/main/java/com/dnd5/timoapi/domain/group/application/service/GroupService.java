@@ -20,6 +20,7 @@ import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.global.exception.BusinessException;
@@ -133,34 +134,64 @@ public class GroupService {
 
     public void updateGroup(Long groupId, GroupUpdateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
+        GroupEntity groupEntity = getGroupEntity(groupId);
+        if (groupEntity.getType() == GroupType.CHARACTER) {
+            throw new BusinessException(GroupErrorCode.GROUP_CHARACTER_IMMUTABLE);
+        }
         GroupMemberEntity member = getGroupMember(groupId, userId);
         assertOwner(member);
-        GroupEntity groupEntity = getGroupEntity(groupId);
         groupEntity.update(request.name(), request.image());
     }
 
     public void deleteGroup(Long groupId) {
         Long userId = SecurityUtil.getCurrentUserId();
+        GroupEntity groupEntity = getGroupEntity(groupId);
+        if (groupEntity.getType() == GroupType.CHARACTER) {
+            throw new BusinessException(GroupErrorCode.GROUP_CHARACTER_IMMUTABLE);
+        }
         GroupMemberEntity member = getGroupMember(groupId, userId);
         assertOwner(member);
-        GroupEntity groupEntity = getGroupEntity(groupId);
         groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId).forEach(GroupMemberEntity::softDelete);
         groupEntity.softDelete();
     }
 
-    public void joinGroup(Long groupId) {
+    public void joinGroupByCode(String code) {
         Long userId = SecurityUtil.getCurrentUserId();
-        getGroupEntity(groupId);
-
+        GroupEntity groupEntity = groupRepository.findByCodeAndDeletedAtIsNull(code)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_NOT_FOUND));
+        if (groupEntity.getType() == GroupType.CHARACTER) {
+            throw new BusinessException(GroupErrorCode.GROUP_INVALID_CATEGORY);
+        }
+        Long groupId = groupEntity.getId();
         if (groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
             throw new BusinessException(GroupErrorCode.GROUP_ALREADY_JOINED);
         }
-
         groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
                 .ifPresentOrElse(
-                        existing -> {
-                            existing.restore();
-                        },
+                        GroupMemberEntity::restore,
+                        () -> groupMemberRepository.save(
+                                GroupMemberEntity.from(GroupMember.create(groupId, userId, GroupMemberRole.MEMBER))
+                        )
+                );
+    }
+
+    public void joinCharacterGroup() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_MEMBER_NOT_FOUND));
+        ZtpiCategory category = user.getCategory();
+        if (category == null) {
+            throw new BusinessException(GroupErrorCode.GROUP_CATEGORY_NOT_SET);
+        }
+        GroupEntity groupEntity = groupRepository.findByTypeAndCategoryAndDeletedAtIsNull(GroupType.CHARACTER, category)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_NOT_FOUND));
+        Long groupId = groupEntity.getId();
+        if (groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
+            throw new BusinessException(GroupErrorCode.GROUP_ALREADY_JOINED);
+        }
+        groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
+                .ifPresentOrElse(
+                        GroupMemberEntity::restore,
                         () -> groupMemberRepository.save(
                                 GroupMemberEntity.from(GroupMember.create(groupId, userId, GroupMemberRole.MEMBER))
                         )
@@ -253,14 +284,14 @@ public class GroupService {
 
     private List<GroupTodayReflectionItem> getTodayReflectionsForFriendGroup(
             Long groupId, Long userId, LocalDate today, GroupReflectionSort sort) {
+        if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
+            throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
+        }
+
         List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)
                 .stream()
                 .map(GroupMemberEntity::getUserId)
                 .toList();
-
-        if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)) {
-            throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
-        }
 
         if (memberUserIds.isEmpty()) {
             return List.of();
