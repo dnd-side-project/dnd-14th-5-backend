@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -23,33 +21,36 @@ public class GeminiClient {
 
         GeminiRequest request = GeminiRequest.of(systemPrompt, userPrompt);
 
-        List<GeminiResponse> responses;
+        GeminiResponse response;
         try {
-            responses = geminiWebClient.post()
-                    .uri("/publishers/google/models/{model}:streamGenerateContent?key={apiKey}",
+            response = geminiWebClient.post()
+                    .uri("/models/{model}:generateContent?key={apiKey}",
                             properties.model(), properties.apiKey())
                     .bodyValue(request)
                     .retrieve()
-                    .bodyToFlux(GeminiResponse.class)
-                    .collectList()
+                    .bodyToMono(GeminiResponse.class)
                     .block();
+
         } catch (Exception e) {
             log.error("gemini_request_failed reason=exception latencyMs={}", System.currentTimeMillis() - startMs, e);
             throw e;
         }
 
-        if (responses == null || responses.isEmpty()) {
+        if (response == null) {
             log.error("gemini_request_failed reason=empty_response latencyMs={}", System.currentTimeMillis() - startMs);
             throw new RuntimeException("Gemini API response is empty");
         }
 
         StringBuilder result = new StringBuilder();
-        for (GeminiResponse response : responses) {
-            if (response.candidates() != null && !response.candidates().isEmpty()) {
-                var parts = response.candidates().get(0).content().parts();
-                if (parts != null && !parts.isEmpty()) {
-                    result.append(parts.get(0).text());
-                }
+        if (response.candidates() != null
+                && !response.candidates().isEmpty()) {
+
+            var parts = response.candidates().get(0)
+                    .content()
+                    .parts();
+
+            if (parts != null && !parts.isEmpty()) {
+                result.append(parts.get(0).text());
             }
         }
 
