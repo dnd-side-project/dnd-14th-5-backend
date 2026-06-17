@@ -11,14 +11,15 @@ import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestResultEntity;
 import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
+import com.dnd5.timoapi.domain.statistics.exception.StatisticsErrorCode;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestResultRepository;
+import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -113,14 +114,18 @@ public class StatisticsService {
     }
 
     private Map<ZtpiCategory, UserTestResultEntity> getLatestTestResultByCategory(Long userId) {
-        Optional<UserTestRecordEntity> latestRecord = userTestRecordRepository
-                .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, UserTestRecordStatus.COMPLETED);
+        UserTestRecordEntity latestRecord = userTestRecordRepository
+                .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, UserTestRecordStatus.COMPLETED)
+                .orElseThrow(() -> new BusinessException(StatisticsErrorCode.STATISTICS_TEST_NOT_COMPLETED));
 
-        return latestRecord
-                .map(record -> userTestResultRepository
-                        .findAllByUserTestRecordIdAndDeletedAtIsNull(record.getId())
-                        .stream()
-                        .collect(Collectors.toMap(UserTestResultEntity::getCategory, r -> r)))
-                .orElse(Map.of());
+        List<UserTestResultEntity> results = userTestResultRepository
+                .findAllByUserTestRecordIdAndDeletedAtIsNull(latestRecord.getId());
+
+        if (results.isEmpty()) {
+            throw new BusinessException(StatisticsErrorCode.STATISTICS_TEST_RESULT_NOT_FOUND);
+        }
+
+        return results.stream()
+                .collect(Collectors.toMap(UserTestResultEntity::getCategory, r -> r));
     }
 }
