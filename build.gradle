@@ -61,6 +61,10 @@ dependencies {
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // AWS S3
+    implementation platform('software.amazon.awssdk:bom:2.25.0')
+    implementation 'software.amazon.awssdk:s3'
+
     // Firebase
     implementation 'com.google.firebase:firebase-admin:9.4.2'
 
