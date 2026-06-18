@@ -33,4 +33,26 @@ public interface ReflectionFeedbackRepository extends
             @Param("afterDate") LocalDateTime afterDate,
             @Param("excludeReflectionId") Long excludeReflectionId
     );
+
+    @Query("""
+            SELECT rf FROM ReflectionFeedbackEntity rf
+            WHERE rf.reflectionId IN (SELECT r.id FROM ReflectionEntity r WHERE r.userId = :userId)
+            AND rf.status = 'COMPLETED'
+            AND rf.deletedAt IS NULL
+            ORDER BY rf.createdAt ASC
+            """)
+    List<ReflectionFeedbackEntity> findCompletedByUserIdOrderByCreatedAt(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT rf FROM ReflectionFeedbackEntity rf
+            WHERE rf.reflectionId IN (SELECT r.id FROM ReflectionEntity r WHERE r.userId = :userId)
+            AND rf.category = :category
+            AND rf.status = 'COMPLETED'
+            AND rf.deletedAt IS NULL
+            ORDER BY rf.createdAt ASC
+            """)
+    List<ReflectionFeedbackEntity> findCompletedByUserIdAndCategoryOrderByCreatedAt(
+            @Param("userId") Long userId,
+            @Param("category") ZtpiCategory category
+    );
 }
