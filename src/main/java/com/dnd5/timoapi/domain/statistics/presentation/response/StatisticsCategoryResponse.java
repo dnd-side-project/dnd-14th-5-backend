@@ -8,6 +8,9 @@ public record StatisticsCategoryResponse(
         String character,
         String personality,
         double idealScore,
+        Double changedScore,
+        Double proximityRate,
+        Boolean isCloserToIdeal,
         List<StatisticsScoreResponse> dataPoints
 ) {
 

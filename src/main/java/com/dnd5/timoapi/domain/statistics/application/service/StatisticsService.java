@@ -56,7 +56,8 @@ public class StatisticsService {
                         ));
                     }
 
-                    feedbacksByCategory.getOrDefault(category, List.of()).forEach(fb ->
+                    List<ReflectionFeedbackEntity> categoryFeedbacks = feedbacksByCategory.getOrDefault(category, List.of());
+                    categoryFeedbacks.forEach(fb ->
                             dataPoints.add(new StatisticsScoreResponse(
                                     fb.getAfterScore(),
                                     fb.getCreatedAt(),
@@ -64,11 +65,18 @@ public class StatisticsService {
                             ))
                     );
 
+                    ReflectionFeedbackEntity latestFeedback = categoryFeedbacks.isEmpty()
+                            ? null : categoryFeedbacks.get(categoryFeedbacks.size() - 1);
+                    ProximityInfo proximity = calculateProximity(latestFeedback, category.getIdealScore());
+
                     return new StatisticsCategoryResponse(
                             category,
                             category.getCharacter(),
                             category.getPersonality(),
                             category.getIdealScore(),
+                            proximity.changedScore(),
+                            proximity.proximityRate(),
+                            proximity.isCloserToIdeal(),
                             dataPoints
                     );
                 })
@@ -94,23 +102,50 @@ public class StatisticsService {
                         null
                 )));
 
-        reflectionFeedbackRepository
-                .findCompletedByUserIdAndCategoryOrderByCreatedAt(userId, category)
-                .forEach(fb -> dataPoints.add(new StatisticsScoreDetailResponse(
-                        fb.getAfterScore(),
-                        fb.getCreatedAt(),
-                        "REFLECTION",
-                        fb.getChangedScore(),
-                        fb.getIsIncreased()
-                )));
+        List<ReflectionFeedbackEntity> feedbacks = reflectionFeedbackRepository
+                .findCompletedByUserIdAndCategoryOrderByCreatedAt(userId, category);
+
+        feedbacks.forEach(fb -> dataPoints.add(new StatisticsScoreDetailResponse(
+                fb.getAfterScore(),
+                fb.getCreatedAt(),
+                "REFLECTION",
+                fb.getChangedScore(),
+                fb.getIsIncreased()
+        )));
+
+        ReflectionFeedbackEntity latestFeedback = feedbacks.isEmpty() ? null : feedbacks.get(feedbacks.size() - 1);
+        ProximityInfo proximity = calculateProximity(latestFeedback, category.getIdealScore());
 
         return new StatisticsCategoryDetailResponse(
                 category,
                 category.getCharacter(),
                 category.getPersonality(),
                 category.getIdealScore(),
+                proximity.changedScore(),
+                proximity.proximityRate(),
+                proximity.isCloserToIdeal(),
                 dataPoints
         );
+    }
+
+    private record ProximityInfo(Double changedScore, Double proximityRate, Boolean isCloserToIdeal) {}
+
+    private ProximityInfo calculateProximity(ReflectionFeedbackEntity feedback, double idealScore) {
+        if (feedback == null || feedback.getChangedScore() == null) {
+            return new ProximityInfo(null, null, null);
+        }
+
+        double previousDistance = Math.abs(idealScore - feedback.getBeforeScore());
+        double currentDistance = Math.abs(idealScore - feedback.getAfterScore());
+
+        if (previousDistance == 0) {
+            return new ProximityInfo(feedback.getChangedScore(), null, null);
+        }
+
+        double proximityRate = Math.abs(previousDistance - currentDistance) / previousDistance * 100;
+        boolean isCloserToIdeal = currentDistance < previousDistance;
+
+        return new ProximityInfo(feedback.getChangedScore(), proximityRate, isCloserToIdeal);
     }
 
     private Map<ZtpiCategory, UserTestResultEntity> getLatestTestResultByCategory(Long userId) {
