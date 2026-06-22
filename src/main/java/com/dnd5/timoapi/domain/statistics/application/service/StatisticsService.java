@@ -131,7 +131,7 @@ public class StatisticsService {
     private record ProximityInfo(Double changedScore, Double proximityRate, Boolean isCloserToIdeal) {}
 
     private ProximityInfo calculateProximity(ReflectionFeedbackEntity feedback, double idealScore) {
-        if (feedback == null || feedback.getChangedScore() == null) {
+        if (feedback == null || feedback.getChangedScore() == null || feedback.getBeforeScore() == null || feedback.getAfterScore() == null) {
             return new ProximityInfo(null, null, null);
         }
 
