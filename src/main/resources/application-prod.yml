@@ -140,7 +140,8 @@ cookie:
   domain: ${COOKIE_DOMAIN:}
   path: ${COOKIE_PATH:/}
 
-app:
-  upload:
-    dir: ${UPLOAD_DIR:/home/server/uploads}
-    base-url: ${UPLOAD_BASE_URL}
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
