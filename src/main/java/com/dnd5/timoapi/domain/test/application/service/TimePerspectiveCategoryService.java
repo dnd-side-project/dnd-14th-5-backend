@@ -42,7 +42,7 @@ public class TimePerspectiveCategoryService {
 
     public void update(@Positive Long categoryId, @Valid TimePerspectiveCategoryUpdateRequest request) {
         TimePerspectiveCategoryEntity timePerspectiveCategoryEntity = getTimePerspectiveCategoryEntity(categoryId);
-        timePerspectiveCategoryEntity.update(request.name(), request.englishName(), request.characterName(), request.personality(), request.description(), request.idealValue());
+        timePerspectiveCategoryEntity.update(request.name(), request.englishName(), request.characterName(), request.personality(), request.description(), request.idealScore());
     }
 
     public void delete(@Positive Long categoryId) {

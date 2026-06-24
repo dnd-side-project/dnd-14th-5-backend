@@ -9,7 +9,7 @@ public record TimePerspectiveCategory(
         String characterName,
         String personality,
         String description,
-        Double idealValue,
+        Double idealScore,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
