@@ -64,6 +64,9 @@ dependencies {
     // Firebase
     implementation 'com.google.firebase:firebase-admin:9.4.2'
 
+    // Swagger (SpringDoc OpenAPI)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
     // Test
     testImplementation 'com.h2database:h2'
 }
