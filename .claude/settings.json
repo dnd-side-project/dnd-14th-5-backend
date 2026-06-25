@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"${CLAUDE_TOOL_INPUT_FILE_PATH:-}\"; if [[ \"$FILE\" == *.java ]] && [ -f \"$FILE\" ]; then HITS=$(grep -nE \"TODO|FIXME|System\\.out\\.print\" \"$FILE\" 2>/dev/null); if [ -n \"$HITS\" ]; then echo \"[Timo 경고] $FILE\"; echo \"$HITS\"; fi; fi'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'CHANGED=$(git diff --name-only HEAD 2>/dev/null | grep \"\\.java$\" | wc -l | tr -d \" \"); [ \"$CHANGED\" -gt \"0\" ] && echo \"[Timo] Java 파일 ${CHANGED}개 미커밋 — /timo-git-committer 또는 /validate-before-commit 실행하세요.\"; RESULT=$(./gradlew compileJava 2>&1); echo \"$RESULT\" | grep -qE \"error:|BUILD FAILED\" && echo \"[Timo 컴파일 오류] Java 컴파일 실패 — ./gradlew compileJava 확인 필요\" || true'"
+          }
+        ]
+      }
+    ]
+  }
+}
