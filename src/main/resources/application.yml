@@ -106,6 +106,8 @@ notification:
   enabled: ${NOTIFICATION_ENABLED:true}
   discord:
     webhook-url: ${DISCORD_WEBHOOK_URL:}
+  swagger-diff:
+    webhook-url: ${SWAGGER_DIFF_DISCORD_WEBHOOK_URL:}
 
 fcm:
   enabled: ${FCM_ENABLED:false}
