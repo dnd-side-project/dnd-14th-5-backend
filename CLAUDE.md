@@ -8,6 +8,30 @@ Timo — 캐릭터 기반 회고 앱
 - JPA (Hibernate) + MySQL(주) + Redis(캐시) + Elasticsearch(검색)
 - 외부 연동: Gemini AI, Firebase FCM, Discord(에러 알림)
 
+## 기술 스택 버전
+
+| 항목 | 버전 |
+|---|---|
+| Java | 21 |
+| Spring Boot | 4.0.2 |
+| Gradle | 9.2.1 |
+
+## 빌드 및 실행 명령어
+
+```bash
+# 빌드
+./gradlew build
+
+# 애플리케이션 실행
+./gradlew bootRun
+
+# 전체 테스트 실행
+./gradlew test
+
+# 단일 테스트 클래스 실행
+./gradlew test --tests "com.dnd5.timoapi.domain.reflection.application.service.ReflectionServiceTest"
+```
+
 ## 패키지 구조
 
 ```
@@ -255,6 +279,21 @@ try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
 ## 프로젝트 규칙
 
 - 커밋 메시지는 한글로 작성
+
+### 커밋 컨벤션
+
+Husky + commitlint로 커밋 메시지가 자동 검증됩니다.
+
+- **형식**: `type: 제목` (scope 없음, 반드시 제외)
+- **제목**: 50자 이하, 마침표 금지, 한글 사용 가능
+- **body**: 작성 시 각 줄을 `-`로 시작, 빈 줄로 제목과 구분
+
+```
+feat: 회고 질문 가중치 선택 로직 추가
+
+- ZTPI 점수 편차 기반 질문 선택 구현
+- Redis 캐시 만료 시간 자정으로 설정
+```
 
 ## 캐릭터 그룹 참여 로직
 
