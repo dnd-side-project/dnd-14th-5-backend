@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.test.application.service.TestService;
 import com.dnd5.timoapi.domain.test.domain.model.enums.TestType;
 import com.dnd5.timoapi.domain.test.presentation.response.TestDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -22,16 +23,19 @@ public class TestController {
 
     private final TestService testService;
 
+    @Operation(summary = "테스트 목록 조회")
     @GetMapping
     public List<TestResponse> findAll() {
         return testService.findAll();
     }
 
+    @Operation(summary = "테스트 단건 조회")
     @GetMapping("/{testId}")
     public TestDetailResponse findById(@Positive @PathVariable Long testId) {
         return testService.findById(testId);
     }
 
+    @Operation(summary = "테스트 타입으로 조회")
     @GetMapping("/type/{testType}")
     public TestDetailResponse findByType(@PathVariable TestType testType) {
         return testService.findByType(testType);

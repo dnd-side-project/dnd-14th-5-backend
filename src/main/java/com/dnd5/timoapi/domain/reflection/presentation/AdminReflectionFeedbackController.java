@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionFeedbackService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ public class AdminReflectionFeedbackController {
 
     private final ReflectionFeedbackService reflectionFeedbackService;
 
+    @Operation(summary = "회고 피드백 삭제 (어드민)")
     @DeleteMapping("/{feedbackId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable Long feedbackId) {

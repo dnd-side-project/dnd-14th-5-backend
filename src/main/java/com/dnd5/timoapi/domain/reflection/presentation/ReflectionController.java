@@ -6,6 +6,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionCreate
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.time.YearMonth;
@@ -30,32 +31,38 @@ public class ReflectionController {
 
     private final ReflectionService reflectionService;
 
+    @Operation(summary = "회고 작성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ReflectionCreateResponse create(@Valid @RequestBody ReflectionCreateRequest request) {
         return reflectionService.create(request);
     }
 
+    @Operation(summary = "오늘의 회고 질문 조회")
     @GetMapping("/today/question")
     public ReflectionQuestionDetailResponse findQuestionToday() {
         return reflectionService.findQuestionToday();
     }
 
+    @Operation(summary = "오늘의 회고 질문 변경")
     @PostMapping("/today/question/change")
     public ReflectionQuestionDetailResponse changeQuestionToday() {
         return reflectionService.changeQuestionToday();
     }
 
+    @Operation(summary = "오늘의 회고 조회")
     @GetMapping("/today")
     public ReflectionDetailResponse findReflectionToday() {
         return reflectionService.findReflectionToday();
     }
 
+    @Operation(summary = "내 회고 목록 조회")
     @GetMapping("/me")
     public List<ReflectionResponse> findAllMy(@RequestParam YearMonth month) {
         return reflectionService.findAllMy(month);
     }
 
+    @Operation(summary = "회고 단건 조회")
     @GetMapping("/{reflectionId}")
     public ReflectionDetailResponse findById(@Positive @PathVariable Long reflectionId) {
         return reflectionService.findById(reflectionId);

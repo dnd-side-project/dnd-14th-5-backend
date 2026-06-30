@@ -3,7 +3,7 @@ package com.dnd5.timoapi.domain.test.presentation;
 import com.dnd5.timoapi.domain.test.application.service.TestQuestionService;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionDetailResponse;
 import com.dnd5.timoapi.domain.test.presentation.response.TestQuestionResponse;
-
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ public class TestQuestionController {
 
     private final TestQuestionService testQuestionService;
 
+    @Operation(summary = "테스트 문항 목록 조회")
     @GetMapping
     public List<TestQuestionResponse> findAll(
             @Positive @PathVariable Long testId
@@ -28,6 +29,7 @@ public class TestQuestionController {
         return testQuestionService.findAll(testId);
     }
 
+    @Operation(summary = "테스트 문항 단건 조회")
     @GetMapping("/{questionId}")
     public TestQuestionDetailResponse findById(
             @Positive @PathVariable Long testId,

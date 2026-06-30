@@ -6,6 +6,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionQuestio
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.global.common.response.PageResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,14 @@ public class AdminReflectionQuestionController {
 
     private final ReflectionQuestionService reflectionQuestionService;
 
+    @Operation(summary = "회고 질문 생성 (어드민)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@Valid @RequestBody ReflectionQuestionCreateRequest request) {
         reflectionQuestionService.create(request);
     }
 
+    @Operation(summary = "회고 질문 목록 조회 (어드민)")
     @GetMapping
     public PageResponse<ReflectionQuestionResponse> findAll(
             Pageable pageable,
@@ -46,6 +49,7 @@ public class AdminReflectionQuestionController {
         return reflectionQuestionService.findAll(pageable, keyword, category);
     }
 
+    @Operation(summary = "회고 질문 수정 (어드민)")
     @PatchMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
@@ -55,6 +59,7 @@ public class AdminReflectionQuestionController {
         reflectionQuestionService.update(questionId, request);
     }
 
+    @Operation(summary = "회고 질문 삭제 (어드민)")
     @DeleteMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable Long questionId) {

@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.user.presentation.request.UserTestRecordCreateReq
 import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordCreateResponse;
 import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordDetailResponse;
 import com.dnd5.timoapi.domain.user.presentation.response.UserTestRecordResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class UserTestRecordController {
 
     private final UserTestRecordService userTestRecordService;
 
+    @Operation(summary = "테스트 기록 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserTestRecordCreateResponse create(
@@ -38,6 +40,7 @@ public class UserTestRecordController {
         return userTestRecordService.create(request);
     }
 
+    @Operation(summary = "테스트 기록 완료")
     @PatchMapping("/{testRecordId}/complete")
     public UserTestRecordDetailResponse complete(
             @Positive @PathVariable Long testRecordId
@@ -45,12 +48,14 @@ public class UserTestRecordController {
         return userTestRecordService.complete(testRecordId);
     }
 
+    @Operation(summary = "내 테스트 기록 목록 조회")
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     public List<UserTestRecordResponse> findAll() {
         return userTestRecordService.findAll();
     }
 
+    @Operation(summary = "테스트 기록 단건 조회")
     @GetMapping("/{testRecordId}")
     @ResponseStatus(HttpStatus.OK)
     public UserTestRecordDetailResponse findById(
@@ -59,6 +64,7 @@ public class UserTestRecordController {
         return userTestRecordService.findById(testRecordId);
     }
 
+    @Operation(summary = "테스트 기록 삭제")
     @DeleteMapping("/{testRecordId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
