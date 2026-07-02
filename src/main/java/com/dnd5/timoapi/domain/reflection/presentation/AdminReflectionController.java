@@ -1,6 +1,7 @@
 package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ public class AdminReflectionController {
 
     private final ReflectionService reflectionService;
 
+    @Operation(summary = "회고 삭제 (어드민)")
     @DeleteMapping("/{reflectionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable Long reflectionId) {

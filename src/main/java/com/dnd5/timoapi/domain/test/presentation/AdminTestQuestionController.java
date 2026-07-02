@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.test.presentation;
 import com.dnd5.timoapi.domain.test.application.service.TestQuestionService;
 import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TestQuestionUpdateRequest;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class AdminTestQuestionController {
 
     private final TestQuestionService testQuestionService;
 
+    @Operation(summary = "테스트 문항 생성 (어드민)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(
@@ -27,6 +29,7 @@ public class AdminTestQuestionController {
         testQuestionService.create(testId, request);
     }
 
+    @Operation(summary = "테스트 문항 수정 (어드민)")
     @PatchMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
@@ -37,6 +40,7 @@ public class AdminTestQuestionController {
         testQuestionService.update(questionId, testId, request);
     }
 
+    @Operation(summary = "테스트 문항 삭제 (어드민)")
     @DeleteMapping("/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(

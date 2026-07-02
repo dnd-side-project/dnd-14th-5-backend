@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.test.application.service.TimePerspectiveCategoryS
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryCreateRequest;
 import com.dnd5.timoapi.domain.test.presentation.request.TimePerspectiveCategoryUpdateRequest;
 import com.dnd5.timoapi.domain.test.presentation.response.TimePerspectiveCategoryResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -28,18 +29,21 @@ public class AdminTimePerspectiveCategoryController {
 
     private final TimePerspectiveCategoryService timePerspectiveCategoryService;
 
+    @Operation(summary = "시간관 카테고리 생성 (어드민)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@Valid @RequestBody TimePerspectiveCategoryCreateRequest request) {
         timePerspectiveCategoryService.create(request);
     }
 
+    @Operation(summary = "시간관 카테고리 수정 (어드민)")
     @PatchMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable Long categoryId, @Valid @RequestBody TimePerspectiveCategoryUpdateRequest request) {
         timePerspectiveCategoryService.update(categoryId, request);
     }
 
+    @Operation(summary = "시간관 카테고리 삭제 (어드민)")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable Long categoryId) {

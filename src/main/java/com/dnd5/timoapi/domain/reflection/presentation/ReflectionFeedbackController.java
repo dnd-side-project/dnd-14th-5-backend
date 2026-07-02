@@ -2,6 +2,7 @@ package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionFeedbackService;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackDetailResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,14 @@ public class ReflectionFeedbackController {
 
     private final ReflectionFeedbackService reflectionFeedbackService;
 
+    @Operation(summary = "회고 AI 피드백 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ReflectionFeedbackDetailResponse create(@Positive @PathVariable Long reflectionId) {
         return reflectionFeedbackService.create(reflectionId);
     }
 
+    @Operation(summary = "회고 AI 피드백 조회")
     @GetMapping
     public ReflectionFeedbackDetailResponse findById(@Positive @PathVariable Long reflectionId) {
         return reflectionFeedbackService.findByReflectionId(reflectionId);

@@ -5,6 +5,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbac
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionFeedbackPromptUpdateRequest;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedbackPromptResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -29,18 +30,21 @@ public class AdminReflectionFeedbackPromptController {
 
     private final ReflectionFeedbackPromptService reflectionFeedbackPromptService;
 
+    @Operation(summary = "피드백 프롬프트 생성 (어드민)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@Valid @RequestBody ReflectionFeedbackPromptCreateRequest request) {
         reflectionFeedbackPromptService.create(request);
     }
 
+    @Operation(summary = "피드백 프롬프트 목록 조회 (어드민)")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ReflectionFeedbackPromptResponse> findAll() {
         return reflectionFeedbackPromptService.findAll();
     }
 
+    @Operation(summary = "피드백 프롬프트 버전 조회 (어드민)")
     @GetMapping("/{version}")
     public ReflectionFeedbackPromptDetailResponse findByVersion(
             @Positive @PathVariable int version
@@ -48,12 +52,14 @@ public class AdminReflectionFeedbackPromptController {
         return reflectionFeedbackPromptService.findByVersion(version);
     }
 
+    @Operation(summary = "피드백 프롬프트 수정 (어드민)")
     @PatchMapping("/{version}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Positive @PathVariable int version, @Valid @RequestBody ReflectionFeedbackPromptUpdateRequest request) {
         reflectionFeedbackPromptService.update(version, request);
     }
 
+    @Operation(summary = "피드백 프롬프트 삭제 (어드민)")
     @DeleteMapping("/{version}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable int version) {

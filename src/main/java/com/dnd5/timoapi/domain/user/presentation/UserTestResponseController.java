@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.user.application.service.UserTestResponseService;
 import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseCreateRequest;
 import com.dnd5.timoapi.domain.user.presentation.request.UserTestResponseUpdateRequest;
 import com.dnd5.timoapi.domain.user.presentation.response.UserTestResponseResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -28,6 +29,7 @@ public class UserTestResponseController {
 
     private final UserTestResponseService userTestResponseService;
 
+    @Operation(summary = "테스트 응답 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(
@@ -37,6 +39,7 @@ public class UserTestResponseController {
         userTestResponseService.create(testRecordId, request);
     }
 
+    @Operation(summary = "테스트 응답 수정")
     @PatchMapping("/{responseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
@@ -47,11 +50,13 @@ public class UserTestResponseController {
         userTestResponseService.update(testRecordId, responseId, request);
     }
 
+    @Operation(summary = "테스트 응답 목록 조회")
     @GetMapping
     public List<UserTestResponseResponse> findAll(@Positive @PathVariable Long testRecordId) {
         return userTestResponseService.findAll(testRecordId);
     }
 
+    @Operation(summary = "테스트 응답 단건 조회")
     @GetMapping("/{responseId}")
     public UserTestResponseResponse findById(
             @Positive @PathVariable Long testRecordId,
@@ -60,6 +65,7 @@ public class UserTestResponseController {
         return userTestResponseService.findById(testRecordId, responseId);
     }
 
+    @Operation(summary = "테스트 응답 삭제")
     @DeleteMapping("/{responseId}")
     public void delete(
             @Positive @PathVariable Long testRecordId,

@@ -3,6 +3,8 @@ package com.dnd5.timoapi.domain.user.domain.repository;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.user.domain.model.enums.UserTestRecordStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;

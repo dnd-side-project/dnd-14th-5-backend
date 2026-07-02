@@ -2,6 +2,7 @@ package com.dnd5.timoapi.global.presentation;
 
 import com.dnd5.timoapi.global.infrastructure.file.FileStorageService;
 import com.dnd5.timoapi.global.presentation.response.ImageUploadResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ public class ImageController {
 
     private final FileStorageService fileStorageService;
 
+    @Operation(summary = "이미지 업로드")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ImageUploadResponse upload(@RequestParam("file") MultipartFile file) {

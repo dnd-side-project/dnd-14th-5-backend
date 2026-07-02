@@ -11,6 +11,7 @@ import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
 import com.dnd5.timoapi.global.exception.BusinessException;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +29,14 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    @Operation(summary = "그룹 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public GroupCreateResponse createGroup(@Valid @RequestBody GroupCreateRequest request) {
         return groupService.createGroup(request);
     }
 
+    @Operation(summary = "그룹 목록 조회 / 코드로 그룹 검색")
     @GetMapping
     public List<GroupResponse> getGroups(@RequestParam(required = false) String code) {
         if (code != null) {
@@ -42,6 +45,7 @@ public class GroupController {
         return groupService.getMyGroups();
     }
 
+    @Operation(summary = "그룹 단건 조회")
     @GetMapping("/{groupId}")
     public GroupDetailResponse getGroup(
             @Positive @PathVariable Long groupId,
@@ -49,6 +53,7 @@ public class GroupController {
         return groupService.getGroup(groupId, code);
     }
 
+    @Operation(summary = "그룹 수정")
     @PatchMapping("/{groupId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateGroup(
@@ -57,12 +62,14 @@ public class GroupController {
         groupService.updateGroup(groupId, request);
     }
 
+    @Operation(summary = "그룹 삭제")
     @DeleteMapping("/{groupId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGroup(@Positive @PathVariable Long groupId) {
         groupService.deleteGroup(groupId);
     }
 
+    @Operation(summary = "그룹 참여")
     @PostMapping("/members")
     @ResponseStatus(HttpStatus.CREATED)
     public void joinGroup(
@@ -77,12 +84,14 @@ public class GroupController {
         }
     }
 
+    @Operation(summary = "그룹 탈퇴")
     @DeleteMapping("/{groupId}/members")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leaveGroup(@Positive @PathVariable Long groupId) {
         groupService.leaveGroup(groupId);
     }
 
+    @Operation(summary = "오늘의 그룹 회고 목록 조회")
     @GetMapping("/{groupId}/reflections/today")
     public List<GroupTodayReflectionItem> getTodayReflections(
             @Positive @PathVariable Long groupId,
