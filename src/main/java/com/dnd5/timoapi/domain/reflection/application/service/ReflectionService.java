@@ -20,6 +20,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionFeedba
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionDetailResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
+import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -48,6 +49,7 @@ public class ReflectionService {
     private final TodayQuestionCacheService todayQuestionCacheService;
     private final UserRepository userRepository;
     private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
+    private final CustomizationItemService customizationItemService;
 
     public ReflectionCreateResponse create(ReflectionCreateRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -76,6 +78,8 @@ public class ReflectionService {
         boolean wroteYesterday = isWroteYesterday(userId);
         userEntity.updateStreak(wroteYesterday);
         userEntity.incrementTotalDays();
+
+        customizationItemService.unlockEligibleItems(userId);
 
         return new ReflectionCreateResponse(saved.getId());
     }

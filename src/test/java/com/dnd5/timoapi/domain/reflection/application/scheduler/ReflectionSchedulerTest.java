@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
 import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
@@ -45,6 +46,9 @@ class ReflectionSchedulerTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private CustomizationItemService customizationItemService;
 
     @Test
     void processYesterdayReflections_탈퇴유저_제외조회_사용() {
