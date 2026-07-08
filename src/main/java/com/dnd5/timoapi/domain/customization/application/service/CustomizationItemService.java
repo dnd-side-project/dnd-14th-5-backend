@@ -4,6 +4,7 @@ import com.dnd5.timoapi.domain.customization.domain.entity.CustomizationItemEnti
 import com.dnd5.timoapi.domain.customization.domain.entity.CustomizationUserItemEntity;
 import com.dnd5.timoapi.domain.customization.domain.model.CustomizationItem;
 import com.dnd5.timoapi.domain.customization.domain.model.CustomizationUserItem;
+import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationItemType;
 import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationUnlockConditionType;
 import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationItemRepository;
 import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationUserItemRepository;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,6 +105,45 @@ public class CustomizationItemService {
     public void delete(Long customizationItemId) {
         CustomizationItemEntity entity = getCustomizationItemEntity(customizationItemId);
         entity.softDelete();
+    }
+
+    public void equip(Long userId, Long customizationItemId) {
+        CustomizationItemEntity item = getCustomizationItemEntity(customizationItemId);
+
+        CustomizationUserItemEntity userItem = customizationUserItemRepository
+                .findByUserIdAndCustomizationItemIdAndDeletedAtIsNull(userId, customizationItemId)
+                .orElseThrow(() -> new BusinessException(
+                        CustomizationItemErrorCode.CUSTOMIZATION_ITEM_NOT_UNLOCKED, customizationItemId));
+
+        if (!userItem.isUnlocked()) {
+            throw new BusinessException(CustomizationItemErrorCode.CUSTOMIZATION_ITEM_NOT_UNLOCKED, customizationItemId);
+        }
+
+        if (item.getType() == CustomizationItemType.THEME) {
+            customizationUserItemRepository.findAllByUserIdAndIsEquippedTrueAndDeletedAtIsNull(userId).stream()
+                    .filter(equipped -> !equipped.getCustomizationItemId().equals(customizationItemId))
+                    .map(equipped -> customizationItemRepository.findById(equipped.getCustomizationItemId()))
+                    .flatMap(Optional::stream)
+                    .filter(equippedItem -> equippedItem.getType() == CustomizationItemType.THEME)
+                    .findFirst()
+                    .ifPresent(equippedItem -> {
+                        throw new BusinessException(
+                                CustomizationItemErrorCode.CUSTOMIZATION_THEME_ALREADY_EQUIPPED, equippedItem.getId());
+                    });
+        }
+
+        userItem.equip();
+    }
+
+    public void unequip(Long userId, Long customizationItemId) {
+        getCustomizationItemEntity(customizationItemId);
+
+        CustomizationUserItemEntity userItem = customizationUserItemRepository
+                .findByUserIdAndCustomizationItemIdAndDeletedAtIsNull(userId, customizationItemId)
+                .orElseThrow(() -> new BusinessException(
+                        CustomizationItemErrorCode.CUSTOMIZATION_ITEM_NOT_UNLOCKED, customizationItemId));
+
+        userItem.unequip();
     }
 
     public void unlockEligibleItems(Long userId) {
