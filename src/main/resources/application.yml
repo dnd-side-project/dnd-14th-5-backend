@@ -113,7 +113,8 @@ fcm:
   enabled: ${FCM_ENABLED:false}
   credentials-path: ${FCM_CREDENTIALS_PATH:}
 
-app:
-  upload:
-    dir: ${UPLOAD_DIR:./uploads}
-    base-url: ${UPLOAD_BASE_URL:http://localhost:8080}
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
