@@ -108,6 +108,10 @@ notification:
     webhook-url: ${DISCORD_WEBHOOK_URL:}
   swagger-diff:
     webhook-url: ${SWAGGER_DIFF_DISCORD_WEBHOOK_URL:}
+  github-issue:
+    token: ${FRONTEND_GITHUB_TOKEN:}
+    owner: dnd-side-project
+    repo: dnd-14th-5-frontend
 
 fcm:
   enabled: ${FCM_ENABLED:false}
