@@ -15,11 +15,17 @@ public class GeminiClient {
     private final WebClient geminiWebClient;
     private final GeminiProperties properties;
 
-    public String generateContent(String systemPrompt, String userPrompt) {
-        log.info("gemini_request_start systemPromptLen={} userPromptLen={}", systemPrompt.length(), userPrompt.length());
-        long startMs = System.currentTimeMillis();
+    public String generatePlainText(String systemPrompt, String userPrompt) {
+        return generate(GeminiRequest.ofPlainText(systemPrompt, userPrompt));
+    }
 
-        GeminiRequest request = GeminiRequest.of(systemPrompt, userPrompt);
+    public String generateContent(String systemPrompt, String userPrompt) {
+        return generate(GeminiRequest.of(systemPrompt, userPrompt));
+    }
+
+    private String generate(GeminiRequest request) {
+        log.info("gemini_request_start");
+        long startMs = System.currentTimeMillis();
 
         GeminiResponse response;
         try {

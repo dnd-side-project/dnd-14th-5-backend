@@ -21,6 +21,7 @@ public class SwaggerDiffEventListener {
 
     private final SwaggerDiffService swaggerDiffService;
     private final SwaggerDiffDiscordNotifier discordNotifier;
+    private final SwaggerDiffGithubIssueCreator githubIssueCreator;
 
     @Async
     @EventListener
@@ -37,7 +38,10 @@ public class SwaggerDiffEventListener {
 
             swaggerDiffService.compareAndSave(spec)
                     .filter(SwaggerDiffResult::hasChanges)
-                    .ifPresent(discordNotifier::notify);
+                    .ifPresent(result -> {
+                        discordNotifier.notify(result);
+                        githubIssueCreator.createIssue(result);
+                    });
 
         } catch (Exception e) {
             log.warn("Swagger diff 감지 실패: {}", e.getMessage());

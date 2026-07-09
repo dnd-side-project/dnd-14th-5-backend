@@ -6,8 +6,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record NotificationProperties(
         boolean enabled,
         Discord discord,
-        SwaggerDiff swaggerDiff
+        SwaggerDiff swaggerDiff,
+        GithubIssue githubIssue
 ) {
     public record Discord(String webhookUrl) {}
     public record SwaggerDiff(String webhookUrl) {}
+    public record GithubIssue(String token, String owner, String repo) {}
 }
