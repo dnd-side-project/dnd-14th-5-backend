@@ -1,5 +1,6 @@
 package com.dnd5.timoapi.domain.reflection.application.scheduler;
 
+import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
 import com.dnd5.timoapi.domain.reflection.application.support.TodayQuestionResolver;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
@@ -8,6 +9,7 @@ import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRe
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +32,7 @@ public class ReflectionScheduler {
     private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
     private final UserRepository userRepository;
     private final TodayQuestionResolver todayQuestionResolver;
+    private final CustomizationItemService customizationItemService;
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -51,7 +54,14 @@ public class ReflectionScheduler {
         Set<Long> activeUserIds = yesterdayReflections.stream()
                 .map(ReflectionEntity::getUserId)
                 .collect(Collectors.toSet());
+
+        List<Long> resetUserIds = userRepository.findAllByStreakDaysGreaterThanAndDeletedAtIsNull(0).stream()
+                .map(UserEntity::getId)
+                .filter(userId -> !activeUserIds.contains(userId))
+                .toList();
+
         userRepository.resetStreakForInactiveUsers(activeUserIds);
+        customizationItemService.revokeStreakUnlocksFor(resetUserIds);
 
         log.info("Reflection scheduler completed");
     }

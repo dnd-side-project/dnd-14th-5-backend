@@ -98,6 +98,9 @@ public class SecurityConfig {
                         // 그룹
                         .requestMatchers("/groups/**").authenticated()
 
+                        // 커스터마이징
+                        .requestMatchers("/customizations/**").authenticated()
+
                         // 이미지 업로드
                         .requestMatchers(HttpMethod.POST, "/images").authenticated()
 

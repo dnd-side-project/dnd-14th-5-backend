@@ -83,6 +83,7 @@ com.dnd5.timoapi
 | introduction | 자기소개 |
 | notification | FCM 푸시, 알림 이력 |
 | test | ZTPI 성격 검사 문항 |
+| customization | 캐릭터 커스터마이징 아이템(테마/장식) 관리, 회고 활동 기반 해금 |
 
 ## 핵심 코드 패턴
 

@@ -1,6 +1,8 @@
 package com.dnd5.timoapi.domain.user.application.service;
 
 import com.dnd5.timoapi.domain.auth.domain.repository.RefreshTokenRepository;
+import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
+import com.dnd5.timoapi.domain.customization.presentation.response.EquippedCustomizationResponse;
 import com.dnd5.timoapi.domain.user.application.service.UserTestRecordService;
 import com.dnd5.timoapi.domain.user.domain.entity.UserTestRecordEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserTestRecordRepository;
@@ -26,11 +28,14 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final UserTestRecordService userTestRecordService;
+    private final CustomizationItemService customizationItemService;
 
     @Transactional(readOnly = true)
     public UserResponse getMe() {
         UserEntity user = getCurrentUserEntity();
-        return UserResponse.from(user.toModel());
+        List<EquippedCustomizationResponse> equippedCustomizations =
+                customizationItemService.findEquippedItems(user.getId());
+        return UserResponse.from(user.toModel(), equippedCustomizations);
     }
 
     public void updateMe(UpdateMeRequest request) {
