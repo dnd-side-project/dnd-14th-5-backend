@@ -21,6 +21,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuesti
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
 import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
+import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -79,9 +80,10 @@ public class ReflectionService {
         userEntity.updateStreak(wroteYesterday);
         userEntity.incrementTotalDays();
 
-        customizationItemService.unlockEligibleItems(userId);
+        List<UnlockedCustomizationItemResponse> unlockedCustomizations =
+                customizationItemService.unlockEligibleItems(userId);
 
-        return new ReflectionCreateResponse(saved.getId());
+        return new ReflectionCreateResponse(saved.getId(), unlockedCustomizations);
     }
 
     @Transactional(readOnly = true)

@@ -14,6 +14,7 @@ import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationI
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemDetailResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.EquippedCustomizationResponse;
+import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -146,7 +148,7 @@ public class CustomizationItemService {
         userItem.unequip();
     }
 
-    public void unlockEligibleItems(Long userId) {
+    public List<UnlockedCustomizationItemResponse> unlockEligibleItems(Long userId) {
         UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
@@ -154,19 +156,31 @@ public class CustomizationItemService {
                 .findAllByUserIdAndDeletedAtIsNull(userId).stream()
                 .collect(Collectors.toMap(CustomizationUserItemEntity::getCustomizationItemId, Function.identity()));
 
-        customizationItemRepository.findAllByDeletedAtIsNull().stream()
-                .filter(item -> isUnlockConditionMet(item, user))
-                .forEach(item -> {
-                    CustomizationUserItemEntity userItem = userItemsByItemId.get(item.getId());
-                    if (userItem == null) {
-                        CustomizationUserItemEntity newUserItem = CustomizationUserItemEntity.from(
-                                CustomizationUserItem.create(userId, item.getId()));
-                        newUserItem.unlock();
-                        customizationUserItemRepository.save(newUserItem);
-                    } else if (!userItem.isUnlocked()) {
-                        userItem.unlock();
-                    }
-                });
+        List<UnlockedCustomizationItemResponse> newlyUnlocked = new ArrayList<>();
+
+        for (CustomizationItemEntity item : customizationItemRepository.findAllByDeletedAtIsNull()) {
+            if (!isUnlockConditionMet(item, user)) {
+                continue;
+            }
+
+            CustomizationUserItemEntity userItem = userItemsByItemId.get(item.getId());
+            if (userItem != null && userItem.isUnlocked()) {
+                continue;
+            }
+
+            if (userItem == null) {
+                CustomizationUserItemEntity newUserItem = CustomizationUserItemEntity.from(
+                        CustomizationUserItem.create(userId, item.getId()));
+                newUserItem.unlock();
+                customizationUserItemRepository.save(newUserItem);
+            } else {
+                userItem.unlock();
+            }
+
+            newlyUnlocked.add(UnlockedCustomizationItemResponse.from(item.toModel()));
+        }
+
+        return newlyUnlocked;
     }
 
     public void revokeStreakUnlocksFor(List<Long> userIds) {
