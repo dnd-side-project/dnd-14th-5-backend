@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.customization.presentation;
 import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemDetailResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemResponse;
+import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
@@ -37,6 +38,12 @@ public class CustomizationController {
     @GetMapping("/{customizationItemId}")
     public CustomizationItemDetailResponse getCustomization(@Positive @PathVariable Long customizationItemId) {
         return customizationItemService.findById(customizationItemId);
+    }
+
+    @Operation(summary = "가장 최근 활동으로 해금된 커스터마이징 아이템 조회")
+    @GetMapping("/recently-unlocked")
+    public List<UnlockedCustomizationItemResponse> getRecentlyUnlocked() {
+        return customizationItemService.findRecentlyUnlockedItems(SecurityUtil.getCurrentUserId());
     }
 
     @Operation(summary = "커스터마이징 아이템 장착")
