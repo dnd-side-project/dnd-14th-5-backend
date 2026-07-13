@@ -183,6 +183,26 @@ public class CustomizationItemService {
         return newlyUnlocked;
     }
 
+    @Transactional(readOnly = true)
+    public List<UnlockedCustomizationItemResponse> findRecentlyUnlockedItems(Long userId) {
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        List<Long> unlockedItemIds = customizationUserItemRepository
+                .findAllByUserIdAndIsUnlockedTrueAndDeletedAtIsNull(userId).stream()
+                .map(CustomizationUserItemEntity::getCustomizationItemId)
+                .toList();
+
+        if (unlockedItemIds.isEmpty()) {
+            return List.of();
+        }
+
+        return customizationItemRepository.findAllById(unlockedItemIds).stream()
+                .filter(item -> isUnlockConditionJustMet(item, user))
+                .map(item -> UnlockedCustomizationItemResponse.from(item.toModel()))
+                .toList();
+    }
+
     public void revokeStreakUnlocksFor(List<Long> userIds) {
         if (userIds.isEmpty()) {
             return;
@@ -211,6 +231,13 @@ public class CustomizationItemService {
         return switch (item.getUnlockConditionType()) {
             case TOTAL_COUNT -> item.getUnlockConditionCount() <= user.getTotalDays();
             case STREAK_COUNT -> item.getUnlockConditionCount() <= user.getStreakDays();
+        };
+    }
+
+    private boolean isUnlockConditionJustMet(CustomizationItemEntity item, UserEntity user) {
+        return switch (item.getUnlockConditionType()) {
+            case TOTAL_COUNT -> item.getUnlockConditionCount().equals(user.getTotalDays());
+            case STREAK_COUNT -> item.getUnlockConditionCount().equals(user.getStreakDays());
         };
     }
 

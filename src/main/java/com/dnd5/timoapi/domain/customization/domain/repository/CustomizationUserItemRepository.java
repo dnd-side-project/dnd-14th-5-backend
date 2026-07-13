@@ -16,6 +16,8 @@ public interface CustomizationUserItemRepository extends JpaRepository<Customiza
 
     List<CustomizationUserItemEntity> findAllByUserIdAndIsEquippedTrueAndDeletedAtIsNull(Long userId);
 
+    List<CustomizationUserItemEntity> findAllByUserIdAndIsUnlockedTrueAndDeletedAtIsNull(Long userId);
+
     List<CustomizationUserItemEntity> findAllByUserIdInAndCustomizationItemIdInAndIsUnlockedTrueAndDeletedAtIsNull(
             Collection<Long> userIds, Collection<Long> customizationItemIds);
 }
