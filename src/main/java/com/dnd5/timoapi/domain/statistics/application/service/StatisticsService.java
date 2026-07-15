@@ -41,6 +41,7 @@ public class StatisticsService {
         List<ReflectionFeedbackEntity> feedbacks = reflectionFeedbackRepository
                 .findCompletedByUserIdOrderByCreatedAt(userId);
         Map<ZtpiCategory, List<ReflectionFeedbackEntity>> feedbacksByCategory = feedbacks.stream()
+                .filter(fb -> fb.getCategory() != null)
                 .collect(Collectors.groupingBy(ReflectionFeedbackEntity::getCategory));
 
         List<StatisticsCategoryResponse> categories = Arrays.stream(ZtpiCategory.values())
@@ -57,13 +58,15 @@ public class StatisticsService {
                     }
 
                     List<ReflectionFeedbackEntity> categoryFeedbacks = feedbacksByCategory.getOrDefault(category, List.of());
-                    categoryFeedbacks.forEach(fb ->
-                            dataPoints.add(new StatisticsScoreResponse(
-                                    fb.getAfterScore(),
-                                    fb.getCreatedAt(),
-                                    "REFLECTION"
-                            ))
-                    );
+                    categoryFeedbacks.stream()
+                            .filter(fb -> fb.getAfterScore() != null)
+                            .forEach(fb ->
+                                    dataPoints.add(new StatisticsScoreResponse(
+                                            fb.getAfterScore(),
+                                            fb.getCreatedAt(),
+                                            "REFLECTION"
+                                    ))
+                            );
 
                     ReflectionFeedbackEntity latestFeedback = categoryFeedbacks.isEmpty()
                             ? null : categoryFeedbacks.get(categoryFeedbacks.size() - 1);
@@ -105,13 +108,15 @@ public class StatisticsService {
         List<ReflectionFeedbackEntity> feedbacks = reflectionFeedbackRepository
                 .findCompletedByUserIdAndCategoryOrderByCreatedAt(userId, category);
 
-        feedbacks.forEach(fb -> dataPoints.add(new StatisticsScoreDetailResponse(
-                fb.getAfterScore(),
-                fb.getCreatedAt(),
-                "REFLECTION",
-                fb.getChangedScore(),
-                fb.getIsIncreased()
-        )));
+        feedbacks.stream()
+                .filter(fb -> fb.getAfterScore() != null)
+                .forEach(fb -> dataPoints.add(new StatisticsScoreDetailResponse(
+                        fb.getAfterScore(),
+                        fb.getCreatedAt(),
+                        "REFLECTION",
+                        fb.getChangedScore(),
+                        fb.getIsIncreased()
+                )));
 
         ReflectionFeedbackEntity latestFeedback = feedbacks.isEmpty() ? null : feedbacks.get(feedbacks.size() - 1);
         ProximityInfo proximity = calculateProximity(latestFeedback, category.getIdealScore());
