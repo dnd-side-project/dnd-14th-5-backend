@@ -20,6 +20,7 @@ import com.dnd5.timoapi.domain.customization.presentation.response.Customization
 import com.dnd5.timoapi.domain.customization.presentation.response.EquippedCustomizationResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
+import com.dnd5.timoapi.domain.test.domain.repository.TimePerspectiveCategoryRepository;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +48,7 @@ public class CustomizationItemService {
     private final CustomizationItemImageRepository customizationItemImageRepository;
     private final CustomizationUserItemRepository customizationUserItemRepository;
     private final UserRepository userRepository;
+    private final TimePerspectiveCategoryRepository timePerspectiveCategoryRepository;
 
     @Transactional(readOnly = true)
     public List<CustomizationItemResponse> findAll() {
@@ -58,8 +61,7 @@ public class CustomizationItemService {
                 .collect(Collectors.toMap(CustomizationUserItemEntity::getCustomizationItemId, Function.identity()));
 
         List<CustomizationItemEntity> items = customizationItemRepository.findAllByDeletedAtIsNull();
-        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(
-                items.stream().map(CustomizationItemEntity::getId).toList(), user.getCategory());
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(items, user.getCategory());
 
         return items.stream()
                 .map(itemEntity -> {
@@ -93,7 +95,7 @@ public class CustomizationItemService {
 
         Map<Long, CustomizationItemEntity> itemsById = customizationItemRepository.findAllById(itemIds).stream()
                 .collect(Collectors.toMap(CustomizationItemEntity::getId, Function.identity()));
-        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(itemIds, user.getCategory());
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(itemsById.values(), user.getCategory());
 
         return equippedUserItems.stream()
                 .map(userItem -> itemsById.get(userItem.getCustomizationItemId()))
@@ -113,7 +115,7 @@ public class CustomizationItemService {
         UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         CustomizationItemEntity entity = getCustomizationItemEntity(customizationItemId);
-        CustomizationItemImage image = resolveImage(customizationItemId, user.getCategory());
+        CustomizationItemImage image = resolveImage(entity, user.getCategory());
         return CustomizationItemDetailResponse.from(
                 entity.toModel(),
                 image != null ? image.image() : null,
@@ -233,7 +235,7 @@ public class CustomizationItemService {
                 userItem.unlock();
             }
 
-            CustomizationItemImage image = resolveImage(item.getId(), user.getCategory());
+            CustomizationItemImage image = resolveImage(item, user.getCategory());
             newlyUnlocked.add(UnlockedCustomizationItemResponse.from(
                     item.toModel(),
                     image != null ? image.image() : null,
@@ -261,8 +263,7 @@ public class CustomizationItemService {
                 .filter(item -> isUnlockConditionJustMet(item, user))
                 .toList();
 
-        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(
-                justMetItems.stream().map(CustomizationItemEntity::getId).toList(), user.getCategory());
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(justMetItems, user.getCategory());
 
         return justMetItems.stream()
                 .map(item -> {
@@ -313,23 +314,64 @@ public class CustomizationItemService {
         };
     }
 
-    private CustomizationItemImage resolveImage(Long customizationItemId, ZtpiCategory category) {
+    private static final String CHARACTER_PET_ITEM_NAME = "나의 캐릭터 펫";
+
+    private boolean usesCharacterImage(CustomizationItemEntity item) {
+        return CHARACTER_PET_ITEM_NAME.equals(item.getName());
+    }
+
+    private CustomizationItemImage resolveImage(CustomizationItemEntity item, ZtpiCategory category) {
         if (category == null) {
             return null;
         }
+        if (usesCharacterImage(item)) {
+            return resolveCharacterImage(item.getId(), category);
+        }
         return customizationItemImageRepository
-                .findByCustomizationItemIdAndCategoryAndDeletedAtIsNull(customizationItemId, category)
+                .findByCustomizationItemIdAndCategoryAndDeletedAtIsNull(item.getId(), category)
                 .map(CustomizationItemImageEntity::toModel)
                 .orElse(null);
     }
 
-    private Map<Long, CustomizationItemImage> resolveImages(Collection<Long> customizationItemIds, ZtpiCategory category) {
-        if (category == null || customizationItemIds.isEmpty()) {
+    private Map<Long, CustomizationItemImage> resolveImages(Collection<CustomizationItemEntity> items, ZtpiCategory category) {
+        if (category == null || items.isEmpty()) {
             return Map.of();
         }
-        return customizationItemImageRepository
-                .findAllByCustomizationItemIdInAndCategoryAndDeletedAtIsNull(customizationItemIds, category).stream()
-                .collect(Collectors.toMap(CustomizationItemImageEntity::getCustomizationItemId, CustomizationItemImageEntity::toModel));
+
+        Map<Long, CustomizationItemImage> result = new HashMap<>();
+
+        List<Long> uploadedImageItemIds = items.stream()
+                .filter(item -> !usesCharacterImage(item))
+                .map(CustomizationItemEntity::getId)
+                .toList();
+        if (!uploadedImageItemIds.isEmpty()) {
+            customizationItemImageRepository
+                    .findAllByCustomizationItemIdInAndCategoryAndDeletedAtIsNull(uploadedImageItemIds, category)
+                    .forEach(entity -> result.put(entity.getCustomizationItemId(), entity.toModel()));
+        }
+
+        List<CustomizationItemEntity> characterImageItems = items.stream()
+                .filter(this::usesCharacterImage)
+                .toList();
+        if (!characterImageItems.isEmpty()) {
+            CustomizationItemImage characterImage = resolveCharacterImage(null, category);
+            if (characterImage != null) {
+                characterImageItems.forEach(item -> result.put(item.getId(), characterImage));
+            }
+        }
+
+        return result;
+    }
+
+    private CustomizationItemImage resolveCharacterImage(Long customizationItemId, ZtpiCategory category) {
+        return timePerspectiveCategoryRepository
+                .findAllByEnglishNameAndDeletedAtIsNull(category.name())
+                .stream()
+                .findFirst()
+                .map(tpc -> new CustomizationItemImage(
+                        null, customizationItemId, category, tpc.getImage(), null,
+                        tpc.getCreatedAt(), tpc.getUpdatedAt(), null))
+                .orElse(null);
     }
 
     private CustomizationItemEntity getCustomizationItemEntity(Long customizationItemId) {
