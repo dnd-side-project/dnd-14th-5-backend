@@ -10,6 +10,7 @@ public record TimePerspectiveCategoryUpdateRequest(
         String personality,
         @NotBlank
         String description,
-        Double idealValue
+        Double idealValue,
+        String image
 ) {
 }

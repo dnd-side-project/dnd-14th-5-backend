@@ -11,9 +11,10 @@ public record TimePerspectiveCategoryCreateRequest(
         String personality,
         @NotBlank
         String description,
-        Double idealValue
+        Double idealValue,
+        String image
 ) {
     public TimePerspectiveCategory toModel() {
-        return TimePerspectiveCategory.create(name, englishName, characterName, personality, description, idealValue);
+        return TimePerspectiveCategory.create(name, englishName, characterName, personality, description, idealValue, image);
     }
 }

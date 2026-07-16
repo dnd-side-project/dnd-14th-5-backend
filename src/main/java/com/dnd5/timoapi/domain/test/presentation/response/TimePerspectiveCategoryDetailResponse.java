@@ -11,6 +11,7 @@ public record TimePerspectiveCategoryDetailResponse(
         String personality,
         String description,
         Double idealValue,
+        String image,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -23,6 +24,7 @@ public record TimePerspectiveCategoryDetailResponse(
                 model.personality(),
                 model.description(),
                 model.idealValue(),
+                model.image(),
                 model.createdAt(),
                 model.updatedAt()
         );

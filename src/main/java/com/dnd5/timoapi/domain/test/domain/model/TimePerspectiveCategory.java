@@ -10,10 +10,11 @@ public record TimePerspectiveCategory(
         String personality,
         String description,
         Double idealValue,
+        String image,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static TimePerspectiveCategory create(String name, String englishName, String characterName, String personality, String description, Double idealValue) {
-        return new TimePerspectiveCategory(null, name, englishName, characterName, personality, description, idealValue, null, null);
+    public static TimePerspectiveCategory create(String name, String englishName, String characterName, String personality, String description, Double idealValue, String image) {
+        return new TimePerspectiveCategory(null, name, englishName, characterName, personality, description, idealValue, image, null, null);
     }
 }
