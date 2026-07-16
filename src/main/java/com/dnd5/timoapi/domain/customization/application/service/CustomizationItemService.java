@@ -1,20 +1,25 @@
 package com.dnd5.timoapi.domain.customization.application.service;
 
 import com.dnd5.timoapi.domain.customization.domain.entity.CustomizationItemEntity;
+import com.dnd5.timoapi.domain.customization.domain.entity.CustomizationItemImageEntity;
 import com.dnd5.timoapi.domain.customization.domain.entity.CustomizationUserItemEntity;
 import com.dnd5.timoapi.domain.customization.domain.model.CustomizationItem;
+import com.dnd5.timoapi.domain.customization.domain.model.CustomizationItemImage;
 import com.dnd5.timoapi.domain.customization.domain.model.CustomizationUserItem;
 import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationItemType;
 import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationUnlockConditionType;
+import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationItemImageRepository;
 import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationItemRepository;
 import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationUserItemRepository;
 import com.dnd5.timoapi.domain.customization.exception.CustomizationItemErrorCode;
 import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemCreateRequest;
+import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemImageRequest;
 import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemUpdateRequest;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemDetailResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.EquippedCustomizationResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
+import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
@@ -25,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,29 +43,43 @@ import java.util.stream.Collectors;
 public class CustomizationItemService {
 
     private final CustomizationItemRepository customizationItemRepository;
+    private final CustomizationItemImageRepository customizationItemImageRepository;
     private final CustomizationUserItemRepository customizationUserItemRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<CustomizationItemResponse> findAll() {
         Long userId = SecurityUtil.getCurrentUserId();
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         Map<Long, CustomizationUserItemEntity> userItemsByItemId = customizationUserItemRepository
                 .findAllByUserIdAndDeletedAtIsNull(userId).stream()
                 .collect(Collectors.toMap(CustomizationUserItemEntity::getCustomizationItemId, Function.identity()));
 
-        return customizationItemRepository.findAllByDeletedAtIsNull().stream()
+        List<CustomizationItemEntity> items = customizationItemRepository.findAllByDeletedAtIsNull();
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(
+                items.stream().map(CustomizationItemEntity::getId).toList(), user.getCategory());
+
+        return items.stream()
                 .map(itemEntity -> {
                     CustomizationUserItemEntity userItem = userItemsByItemId.get(itemEntity.getId());
                     boolean isUnlocked = userItem != null && userItem.isUnlocked();
                     boolean isEquipped = userItem != null && userItem.isEquipped();
-                    return CustomizationItemResponse.from(itemEntity.toModel(), isUnlocked, isEquipped);
+                    CustomizationItemImage image = imagesByItemId.get(itemEntity.getId());
+                    return CustomizationItemResponse.from(
+                            itemEntity.toModel(), isUnlocked, isEquipped,
+                            image != null ? image.image() : null,
+                            image != null ? image.imageWithoutBackground() : null);
                 })
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<EquippedCustomizationResponse> findEquippedItems(Long userId) {
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
         List<CustomizationUserItemEntity> equippedUserItems = customizationUserItemRepository
                 .findAllByUserIdAndIsEquippedTrueAndDeletedAtIsNull(userId);
 
@@ -73,23 +93,44 @@ public class CustomizationItemService {
 
         Map<Long, CustomizationItemEntity> itemsById = customizationItemRepository.findAllById(itemIds).stream()
                 .collect(Collectors.toMap(CustomizationItemEntity::getId, Function.identity()));
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(itemIds, user.getCategory());
 
         return equippedUserItems.stream()
                 .map(userItem -> itemsById.get(userItem.getCustomizationItemId()))
                 .filter(item -> item != null)
-                .map(item -> EquippedCustomizationResponse.from(item.toModel()))
+                .map(item -> {
+                    CustomizationItemImage image = imagesByItemId.get(item.getId());
+                    return EquippedCustomizationResponse.from(
+                            item.toModel(),
+                            image != null ? image.image() : null,
+                            image != null ? image.imageWithoutBackground() : null);
+                })
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CustomizationItemDetailResponse findById(Long customizationItemId) {
+    public CustomizationItemDetailResponse findById(Long userId, Long customizationItemId) {
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         CustomizationItemEntity entity = getCustomizationItemEntity(customizationItemId);
-        return CustomizationItemDetailResponse.from(entity.toModel());
+        CustomizationItemImage image = resolveImage(customizationItemId, user.getCategory());
+        return CustomizationItemDetailResponse.from(
+                entity.toModel(),
+                image != null ? image.image() : null,
+                image != null ? image.imageWithoutBackground() : null);
     }
 
     public void create(CustomizationItemCreateRequest request) {
         CustomizationItem model = request.toModel();
-        customizationItemRepository.save(CustomizationItemEntity.from(model));
+        CustomizationItemEntity savedItem = customizationItemRepository.save(CustomizationItemEntity.from(model));
+
+        List<CustomizationItemImageEntity> images = request.images().stream()
+                .map(imageRequest -> CustomizationItemImageEntity.from(
+                        CustomizationItemImage.create(
+                                savedItem.getId(), imageRequest.category(),
+                                imageRequest.image(), imageRequest.imageWithoutBackground())))
+                .toList();
+        customizationItemImageRepository.saveAll(images);
     }
 
     public void update(Long customizationItemId, CustomizationItemUpdateRequest request) {
@@ -99,9 +140,24 @@ public class CustomizationItemService {
                 request.type(),
                 request.description(),
                 request.unlockConditionType(),
-                request.unlockConditionCount(),
-                request.image()
+                request.unlockConditionCount()
         );
+
+        if (request.images() != null) {
+            for (CustomizationItemImageRequest imageRequest : request.images()) {
+                CustomizationItemImageEntity existing = customizationItemImageRepository
+                        .findByCustomizationItemIdAndCategoryAndDeletedAtIsNull(customizationItemId, imageRequest.category())
+                        .orElse(null);
+                if (existing == null) {
+                    customizationItemImageRepository.save(CustomizationItemImageEntity.from(
+                            CustomizationItemImage.create(
+                                    customizationItemId, imageRequest.category(),
+                                    imageRequest.image(), imageRequest.imageWithoutBackground())));
+                } else {
+                    existing.updateImage(imageRequest.image(), imageRequest.imageWithoutBackground());
+                }
+            }
+        }
     }
 
     public void delete(Long customizationItemId) {
@@ -177,7 +233,11 @@ public class CustomizationItemService {
                 userItem.unlock();
             }
 
-            newlyUnlocked.add(UnlockedCustomizationItemResponse.from(item.toModel()));
+            CustomizationItemImage image = resolveImage(item.getId(), user.getCategory());
+            newlyUnlocked.add(UnlockedCustomizationItemResponse.from(
+                    item.toModel(),
+                    image != null ? image.image() : null,
+                    image != null ? image.imageWithoutBackground() : null));
         }
 
         return newlyUnlocked;
@@ -197,9 +257,21 @@ public class CustomizationItemService {
             return List.of();
         }
 
-        return customizationItemRepository.findAllById(unlockedItemIds).stream()
+        List<CustomizationItemEntity> justMetItems = customizationItemRepository.findAllById(unlockedItemIds).stream()
                 .filter(item -> isUnlockConditionJustMet(item, user))
-                .map(item -> UnlockedCustomizationItemResponse.from(item.toModel()))
+                .toList();
+
+        Map<Long, CustomizationItemImage> imagesByItemId = resolveImages(
+                justMetItems.stream().map(CustomizationItemEntity::getId).toList(), user.getCategory());
+
+        return justMetItems.stream()
+                .map(item -> {
+                    CustomizationItemImage image = imagesByItemId.get(item.getId());
+                    return UnlockedCustomizationItemResponse.from(
+                            item.toModel(),
+                            image != null ? image.image() : null,
+                            image != null ? image.imageWithoutBackground() : null);
+                })
                 .toList();
     }
 
@@ -239,6 +311,25 @@ public class CustomizationItemService {
             case TOTAL_COUNT -> item.getUnlockConditionCount().equals(user.getTotalDays());
             case STREAK_COUNT -> item.getUnlockConditionCount().equals(user.getStreakDays());
         };
+    }
+
+    private CustomizationItemImage resolveImage(Long customizationItemId, ZtpiCategory category) {
+        if (category == null) {
+            return null;
+        }
+        return customizationItemImageRepository
+                .findByCustomizationItemIdAndCategoryAndDeletedAtIsNull(customizationItemId, category)
+                .map(CustomizationItemImageEntity::toModel)
+                .orElse(null);
+    }
+
+    private Map<Long, CustomizationItemImage> resolveImages(Collection<Long> customizationItemIds, ZtpiCategory category) {
+        if (category == null || customizationItemIds.isEmpty()) {
+            return Map.of();
+        }
+        return customizationItemImageRepository
+                .findAllByCustomizationItemIdInAndCategoryAndDeletedAtIsNull(customizationItemIds, category).stream()
+                .collect(Collectors.toMap(CustomizationItemImageEntity::getCustomizationItemId, CustomizationItemImageEntity::toModel));
     }
 
     private CustomizationItemEntity getCustomizationItemEntity(Long customizationItemId) {

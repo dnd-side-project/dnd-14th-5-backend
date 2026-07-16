@@ -37,7 +37,7 @@ public class CustomizationController {
     @Operation(summary = "커스터마이징 아이템 단건 조회")
     @GetMapping("/{customizationItemId}")
     public CustomizationItemDetailResponse getCustomization(@Positive @PathVariable Long customizationItemId) {
-        return customizationItemService.findById(customizationItemId);
+        return customizationItemService.findById(SecurityUtil.getCurrentUserId(), customizationItemId);
     }
 
     @Operation(summary = "가장 최근 활동으로 해금된 커스터마이징 아이템 조회")

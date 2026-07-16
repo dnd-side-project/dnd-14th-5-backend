@@ -11,9 +11,10 @@ public record UnlockedCustomizationItemResponse(
         String description,
         CustomizationUnlockConditionType unlockConditionType,
         Integer unlockConditionCount,
-        String image
+        String image,
+        String imageWithoutBackground
 ) {
-    public static UnlockedCustomizationItemResponse from(CustomizationItem model) {
+    public static UnlockedCustomizationItemResponse from(CustomizationItem model, String image, String imageWithoutBackground) {
         return new UnlockedCustomizationItemResponse(
                 model.id(),
                 model.name(),
@@ -21,7 +22,8 @@ public record UnlockedCustomizationItemResponse(
                 model.description(),
                 model.unlockConditionType(),
                 model.unlockConditionCount(),
-                model.image()
+                image,
+                imageWithoutBackground
         );
     }
 }
