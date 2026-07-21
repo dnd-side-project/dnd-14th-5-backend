@@ -13,7 +13,7 @@ import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationItem
 import com.dnd5.timoapi.domain.customization.domain.repository.CustomizationUserItemRepository;
 import com.dnd5.timoapi.domain.customization.exception.CustomizationItemErrorCode;
 import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemCreateRequest;
-import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemImageRequest;
+import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemImageCreateRequest;
 import com.dnd5.timoapi.domain.customization.presentation.request.CustomizationItemUpdateRequest;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemDetailResponse;
 import com.dnd5.timoapi.domain.customization.presentation.response.CustomizationItemResponse;
@@ -146,7 +146,7 @@ public class CustomizationItemService {
         );
 
         if (request.images() != null) {
-            for (CustomizationItemImageRequest imageRequest : request.images()) {
+            for (CustomizationItemImageCreateRequest imageRequest : request.images()) {
                 CustomizationItemImageEntity existing = customizationItemImageRepository
                         .findByCustomizationItemIdAndCategoryAndDeletedAtIsNull(customizationItemId, imageRequest.category())
                         .orElse(null);

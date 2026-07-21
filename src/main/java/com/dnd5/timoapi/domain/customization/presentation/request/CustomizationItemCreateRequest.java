@@ -24,7 +24,7 @@ public record CustomizationItemCreateRequest(
         Integer unlockConditionCount,
         @NotEmpty
         @Valid
-        List<CustomizationItemImageRequest> images
+        List<CustomizationItemImageCreateRequest> images
 ) {
     public CustomizationItem toModel() {
         return CustomizationItem.create(name, type, description, unlockConditionType, unlockConditionCount);

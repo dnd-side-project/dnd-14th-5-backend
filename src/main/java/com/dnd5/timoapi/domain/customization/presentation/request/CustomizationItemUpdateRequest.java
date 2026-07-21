@@ -15,6 +15,6 @@ public record CustomizationItemUpdateRequest(
         @Positive
         Integer unlockConditionCount,
         @Valid
-        List<CustomizationItemImageRequest> images
+        List<CustomizationItemImageCreateRequest> images
 ) {
 }
