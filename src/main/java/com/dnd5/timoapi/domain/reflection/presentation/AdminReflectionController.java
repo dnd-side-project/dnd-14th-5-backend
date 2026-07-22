@@ -1,16 +1,16 @@
 package com.dnd5.timoapi.domain.reflection.presentation;
 
 import com.dnd5.timoapi.domain.reflection.application.service.ReflectionService;
+import com.dnd5.timoapi.domain.reflection.domain.model.Reflection;
+import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/reflections")
@@ -19,6 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminReflectionController {
 
     private final ReflectionService reflectionService;
+
+    @Operation(summary = "오늘 전체 회고 조회")
+    @GetMapping("/today")
+    public List<ReflectionResponse> getAllReflectionsToday() {
+        return reflectionService.findAllToday();
+    }
 
     @Operation(summary = "회고 삭제 (어드민)")
     @DeleteMapping("/{reflectionId}")
