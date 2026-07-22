@@ -161,6 +161,29 @@ public class ReflectionService {
     }
 
     @Transactional(readOnly = true)
+    public List<ReflectionResponse> findAllToday() {
+        LocalDate today = LocalDate.now();
+
+        List<ReflectionEntity> reflections =
+                reflectionRepository.findAllByDate(today);
+
+        return reflections.stream()
+                .map(entity -> {
+                    ReflectionQuestionEntity questionEntity =
+                            reflectionQuestionRepository.findById(entity.getQuestionId())
+                                    .orElseThrow(() -> new BusinessException(
+                                            ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND
+                                    ));
+
+                    return toResponse(
+                            entity.toModel(),
+                            questionEntity.toModel()
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<ReflectionResponse> findAllMy(YearMonth month) {
         Long userId = SecurityUtil.getCurrentUserId();
 
