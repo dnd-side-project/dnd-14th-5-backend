@@ -10,7 +10,9 @@ import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupRepository;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
+import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,18 @@ public class AdminGroupService {
                 ));
             }
         }
+    }
+
+    public List<GroupResponse> getGroups() {
+        return groupRepository.findAllByDeletedAtIsNull().stream()
+                .map(GroupEntity::toModel)
+                .map(m -> GroupResponse.of(m, 0, GroupMemberRole.OWNER))
+                .toList();
+    }
+
+    public void updateGroup(Long groupId, GroupUpdateRequest request) {
+        GroupEntity groupEntity = getGroupEntity(groupId);
+        groupEntity.update(request.name(), request.image());
     }
 
     public void deleteGroup(Long groupId) {
