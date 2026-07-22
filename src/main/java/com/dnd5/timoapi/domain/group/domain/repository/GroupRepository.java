@@ -22,5 +22,5 @@ public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
 
     List<GroupEntity> findAllByTypeAndDeletedAtIsNull(GroupType type);
 
-    List<GroupEntity> findAllDeletedAtIsNull();
+    List<GroupEntity> findAllByDeletedAtIsNull();
 }
