@@ -14,7 +14,6 @@ public record CustomizationItemUpdateRequest(
         CustomizationUnlockConditionType unlockConditionType,
         @Positive
         Integer unlockConditionCount,
-        Boolean usesCharacterImage,
         @Valid
         List<CustomizationItemImageCreateRequest> images
 ) {

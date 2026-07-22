@@ -12,7 +12,6 @@ public record CustomizationItem(
         String description,
         CustomizationUnlockConditionType unlockConditionType,
         Integer unlockConditionCount,
-        boolean usesCharacterImage,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime deletedAt
@@ -22,9 +21,8 @@ public record CustomizationItem(
             CustomizationItemType type,
             String description,
             CustomizationUnlockConditionType unlockConditionType,
-            Integer unlockConditionCount,
-            boolean usesCharacterImage
+            Integer unlockConditionCount
     ) {
-        return new CustomizationItem(null, name, type, description, unlockConditionType, unlockConditionCount, usesCharacterImage, null, null, null);
+        return new CustomizationItem(null, name, type, description, unlockConditionType, unlockConditionCount, null, null, null);
     }
 }

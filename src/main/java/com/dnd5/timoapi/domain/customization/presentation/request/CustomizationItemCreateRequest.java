@@ -22,13 +22,11 @@ public record CustomizationItemCreateRequest(
         @NotNull
         @Positive
         Integer unlockConditionCount,
-        @NotNull
-        Boolean usesCharacterImage,
         @NotEmpty
         @Valid
         List<CustomizationItemImageCreateRequest> images
 ) {
     public CustomizationItem toModel() {
-        return CustomizationItem.create(name, type, description, unlockConditionType, unlockConditionCount, usesCharacterImage);
+        return CustomizationItem.create(name, type, description, unlockConditionType, unlockConditionCount);
     }
 }

@@ -142,8 +142,7 @@ public class CustomizationItemService {
                 request.type(),
                 request.description(),
                 request.unlockConditionType(),
-                request.unlockConditionCount(),
-                request.usesCharacterImage()
+                request.unlockConditionCount()
         );
 
         if (request.images() != null) {
@@ -315,11 +314,17 @@ public class CustomizationItemService {
         };
     }
 
+    private static final String CHARACTER_PET_ITEM_NAME = "나의 캐릭터 펫";
+
+    private boolean usesCharacterImage(CustomizationItemEntity item) {
+        return CHARACTER_PET_ITEM_NAME.equals(item.getName());
+    }
+
     private CustomizationItemImage resolveImage(CustomizationItemEntity item, ZtpiCategory category) {
         if (category == null) {
             return null;
         }
-        if (item.isUsesCharacterImage()) {
+        if (usesCharacterImage(item)) {
             return resolveCharacterImage(item.getId(), category);
         }
         return customizationItemImageRepository
@@ -336,7 +341,7 @@ public class CustomizationItemService {
         Map<Long, CustomizationItemImage> result = new HashMap<>();
 
         List<Long> uploadedImageItemIds = items.stream()
-                .filter(item -> !item.isUsesCharacterImage())
+                .filter(item -> !usesCharacterImage(item))
                 .map(CustomizationItemEntity::getId)
                 .toList();
         if (!uploadedImageItemIds.isEmpty()) {
@@ -346,7 +351,7 @@ public class CustomizationItemService {
         }
 
         List<CustomizationItemEntity> characterImageItems = items.stream()
-                .filter(CustomizationItemEntity::isUsesCharacterImage)
+                .filter(this::usesCharacterImage)
                 .toList();
         if (!characterImageItems.isEmpty()) {
             CustomizationItemImage characterImage = resolveCharacterImage(null, category);
