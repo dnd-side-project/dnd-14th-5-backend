@@ -38,17 +38,13 @@ public class CustomizationItemEntity extends BaseEntity {
     @Column(nullable = false)
     private Integer unlockConditionCount;
 
-    @Column(columnDefinition = "TEXT")
-    private String image;
-
     public static CustomizationItemEntity from(CustomizationItem model) {
         return new CustomizationItemEntity(
                 model.name(),
                 model.type(),
                 model.description(),
                 model.unlockConditionType(),
-                model.unlockConditionCount(),
-                model.image()
+                model.unlockConditionCount()
         );
     }
 
@@ -60,7 +56,6 @@ public class CustomizationItemEntity extends BaseEntity {
                 getDescription(),
                 getUnlockConditionType(),
                 getUnlockConditionCount(),
-                getImage(),
                 getCreatedAt(),
                 getUpdatedAt(),
                 getDeletedAt()
@@ -72,14 +67,12 @@ public class CustomizationItemEntity extends BaseEntity {
             CustomizationItemType type,
             String description,
             CustomizationUnlockConditionType unlockConditionType,
-            Integer unlockConditionCount,
-            String image
+            Integer unlockConditionCount
     ) {
         if (name != null) this.name = name;
         if (type != null) this.type = type;
         if (description != null) this.description = description;
         if (unlockConditionType != null) this.unlockConditionType = unlockConditionType;
         if (unlockConditionCount != null) this.unlockConditionCount = unlockConditionCount;
-        if (image != null) this.image = image;
     }
 }

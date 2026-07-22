@@ -2,7 +2,10 @@ package com.dnd5.timoapi.domain.customization.presentation.request;
 
 import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationItemType;
 import com.dnd5.timoapi.domain.customization.domain.model.enums.CustomizationUnlockConditionType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+
+import java.util.List;
 
 public record CustomizationItemUpdateRequest(
         String name,
@@ -11,6 +14,7 @@ public record CustomizationItemUpdateRequest(
         CustomizationUnlockConditionType unlockConditionType,
         @Positive
         Integer unlockConditionCount,
-        String image
+        @Valid
+        List<CustomizationItemImageCreateRequest> images
 ) {
 }

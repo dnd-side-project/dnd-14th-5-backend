@@ -7,9 +7,10 @@ public record EquippedCustomizationResponse(
         Long id,
         String name,
         CustomizationItemType type,
-        String image
+        String image,
+        String imageWithoutBackground
 ) {
-    public static EquippedCustomizationResponse from(CustomizationItem model) {
-        return new EquippedCustomizationResponse(model.id(), model.name(), model.type(), model.image());
+    public static EquippedCustomizationResponse from(CustomizationItem model, String image, String imageWithoutBackground) {
+        return new EquippedCustomizationResponse(model.id(), model.name(), model.type(), image, imageWithoutBackground);
     }
 }

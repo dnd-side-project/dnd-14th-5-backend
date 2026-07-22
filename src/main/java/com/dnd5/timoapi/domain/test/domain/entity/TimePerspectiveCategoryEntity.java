@@ -35,21 +35,25 @@ public class TimePerspectiveCategoryEntity extends BaseEntity {
     @Column(name = "ideal_value", nullable = false)
     private Double idealValue;
 
+    @Column(columnDefinition = "TEXT")
+    private String image;
+
     public static TimePerspectiveCategoryEntity from(TimePerspectiveCategory model) {
-        return new TimePerspectiveCategoryEntity(model.name(), model.englishName(), model.characterName(), model.personality(), model.description(), model.idealValue());
+        return new TimePerspectiveCategoryEntity(model.name(), model.englishName(), model.characterName(), model.personality(), model.description(), model.idealValue(), model.image());
     }
 
     public TimePerspectiveCategory toModel() {
-        return new TimePerspectiveCategory(getId(), getName(), getEnglishName(), getCharacterName(), getPersonality(), getDescription(), getIdealValue(), getCreatedAt(), getUpdatedAt());
+        return new TimePerspectiveCategory(getId(), getName(), getEnglishName(), getCharacterName(), getPersonality(), getDescription(), getIdealValue(), getImage(), getCreatedAt(), getUpdatedAt());
     }
 
-    public void update(String name, String englishName, String characterName, String personality, String description, Double idealValue) {
+    public void update(String name, String englishName, String characterName, String personality, String description, Double idealValue, String image) {
         if (name != null) this.name = name;
         if (englishName != null) this.englishName = englishName;
         if (characterName != null) this.characterName = characterName;
         if (personality != null) this.personality = personality;
         if (description != null) this.description = description;
         if (idealValue != null) this.idealValue = idealValue;
+        if (image != null) this.image = image;
     }
 
 }

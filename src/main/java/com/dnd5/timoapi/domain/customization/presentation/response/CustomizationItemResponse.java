@@ -8,9 +8,13 @@ public record CustomizationItemResponse(
         String name,
         CustomizationItemType type,
         boolean isUnlocked,
-        boolean isEquipped
+        boolean isEquipped,
+        String image,
+        String imageWithoutBackground
 ) {
-    public static CustomizationItemResponse from(CustomizationItem model, boolean isUnlocked, boolean isEquipped) {
-        return new CustomizationItemResponse(model.id(), model.name(), model.type(), isUnlocked, isEquipped);
+    public static CustomizationItemResponse from(
+            CustomizationItem model, boolean isUnlocked, boolean isEquipped, String image, String imageWithoutBackground) {
+        return new CustomizationItemResponse(
+                model.id(), model.name(), model.type(), isUnlocked, isEquipped, image, imageWithoutBackground);
     }
 }
