@@ -10,7 +10,7 @@ public record TimePerspectiveCategoryResponse(
         String characterName,
         String personality,
         String description,
-        Double idealValue,
+        Double idealScore,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -22,7 +22,7 @@ public record TimePerspectiveCategoryResponse(
                 model.characterName(),
                 model.personality(),
                 model.description(),
-                model.idealValue(),
+                model.idealScore(),
                 model.createdAt(),
                 model.updatedAt()
         );
