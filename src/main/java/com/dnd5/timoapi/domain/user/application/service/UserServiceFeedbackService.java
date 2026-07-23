@@ -34,10 +34,6 @@ public class UserServiceFeedbackService {
         UserEntity userEntity = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        if (userServiceFeedbackRepository.existsByUserIdAndDeletedAtIsNull(userId)) {
-            throw new BusinessException(UserServiceFeedbackErrorCode.ALREADY_EXISTS);
-        }
-
         UserServiceFeedback model = request.toModel(userId);
 
         userServiceFeedbackRepository.save(UserServiceFeedbackEntity.from(userEntity, model.serviceRating(), model.serviceFeedback()));

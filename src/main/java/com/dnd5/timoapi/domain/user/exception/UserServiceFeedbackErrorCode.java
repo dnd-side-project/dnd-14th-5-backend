@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 public enum UserServiceFeedbackErrorCode implements ErrorCode {
 
     USER_SERVICE_FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "유저의 서비스 피드백을 찾을 수 없습니다."),
-    ALREADY_EXISTS(HttpStatus.CONFLICT, "유저의 서비스 피드백이 이미 존재합니다.")
     ;
 
     private final HttpStatus status;
