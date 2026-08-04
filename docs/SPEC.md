@@ -99,7 +99,7 @@ provider: `google`, `naver`, `kakao`
 |---|---|---|---|
 | POST | `/reflections` | 회고 작성 (`content` max 10,000자) | 인증 |
 | GET | `/reflections/today/question` | 오늘의 질문 조회 | 인증 |
-| POST | `/reflections/today/question/change` | 오늘의 질문 변경 (하루 5회) | 인증 |
+| POST | `/reflections/today/question/change` | 오늘의 질문 변경 (일일 후보 5개 순환) | 인증 |
 | GET | `/reflections/today` | 오늘 작성한 회고 조회 | 인증 |
 | GET | `/reflections/me` | 내 회고 목록 (`?month=YYYY-MM`) | 인증 |
 | GET | `/reflections/{reflectionId}` | 회고 상세 | 인증 |
@@ -345,7 +345,7 @@ provider: `google`, `naver`, `kakao`
 |---|---|---|
 | `refresh_token:{userId}` | refreshToken | 고정 TTL |
 | `reflection:question:today:{userId}` | questionId | 자정까지 |
-| `reflection:question:skip:count:{userId}` | 변경 횟수 (max 5) | 자정까지 |
+| `reflection:question:pool:{userId}` | 오늘의 후보 questionId 목록 (최대 5개, 순환) | 자정까지 |
 
 ---
 

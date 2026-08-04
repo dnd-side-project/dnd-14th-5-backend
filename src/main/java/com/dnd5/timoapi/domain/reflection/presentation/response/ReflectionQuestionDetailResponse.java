@@ -11,10 +11,13 @@ public record ReflectionQuestionDetailResponse(
         String content,
         String createdBy,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        String themeImage,
+        String themeImageWithoutBackground
 ) {
 
-    public static ReflectionQuestionDetailResponse from(ReflectionQuestion model) {
+    public static ReflectionQuestionDetailResponse from(
+            ReflectionQuestion model, String themeImage, String themeImageWithoutBackground) {
         return new ReflectionQuestionDetailResponse(
                 model.id(),
                 model.sequence(),
@@ -22,7 +25,9 @@ public record ReflectionQuestionDetailResponse(
                 model.content(),
                 model.createdBy(),
                 model.createdAt(),
-                model.updatedAt()
+                model.updatedAt(),
+                themeImage,
+                themeImageWithoutBackground
         );
     }
 }

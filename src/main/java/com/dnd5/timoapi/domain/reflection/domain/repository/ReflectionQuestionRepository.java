@@ -3,6 +3,7 @@ package com.dnd5.timoapi.domain.reflection.domain.repository;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import java.util.Optional;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,8 @@ public interface ReflectionQuestionRepository extends
     );
 
     Optional<ReflectionQuestionEntity> findByIdAndDeletedAtIsNull(Long id);
+
+    List<ReflectionQuestionEntity> findAllByDeletedAtIsNull();
 
     boolean existsBySequenceAndCategory(Long sequence, ZtpiCategory category);
 

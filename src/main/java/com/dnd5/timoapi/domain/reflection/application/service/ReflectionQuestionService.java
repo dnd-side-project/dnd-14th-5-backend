@@ -58,7 +58,7 @@ public class ReflectionQuestionService {
     @Transactional(readOnly = true)
     public ReflectionQuestionDetailResponse findById(Long questionId) {
         ReflectionQuestionEntity questionEntity = getQuestionEntity(questionId);
-        return ReflectionQuestionDetailResponse.from(questionEntity.toModel());
+        return ReflectionQuestionDetailResponse.from(questionEntity.toModel(), null, null);
     }
 
     public void update(Long questionId, ReflectionQuestionUpdateRequest request) {

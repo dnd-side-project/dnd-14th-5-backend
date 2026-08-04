@@ -10,7 +10,6 @@ import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionQuestion;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionFeedbackRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
-import com.dnd5.timoapi.domain.reflection.domain.repository.UserReflectionQuestionOrderRepository;
 import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.reflection.infrastructure.cache.TodayQuestionCacheService;
 import com.dnd5.timoapi.domain.reflection.presentation.request.ReflectionCreateRequest;
@@ -21,6 +20,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuesti
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
 import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
+import com.dnd5.timoapi.domain.customization.domain.model.CustomizationItemImage;
 import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
@@ -49,7 +49,6 @@ public class ReflectionService {
     private final TodayQuestionResolver todayQuestionResolver;
     private final TodayQuestionCacheService todayQuestionCacheService;
     private final UserRepository userRepository;
-    private final UserReflectionQuestionOrderRepository userReflectionQuestionOrderRepository;
     private final CustomizationItemService customizationItemService;
 
     public ReflectionCreateResponse create(ReflectionCreateRequest request) {
@@ -89,7 +88,12 @@ public class ReflectionService {
     @Transactional(readOnly = true)
     public ReflectionQuestionDetailResponse findQuestionToday() {
         Long userId = SecurityUtil.getCurrentUserId();
-        return ReflectionQuestionDetailResponse.from(findTodayQuestionEntity(userId).toModel());
+        ReflectionQuestion question = findTodayQuestionEntity(userId).toModel();
+        CustomizationItemImage themeImage = customizationItemService.findEquippedThemeImage(userId, question.category());
+        return ReflectionQuestionDetailResponse.from(
+                question,
+                themeImage != null ? themeImage.image() : null,
+                themeImage != null ? themeImage.imageWithoutBackground() : null);
     }
 
     public ReflectionQuestionDetailResponse changeQuestionToday() {
@@ -99,48 +103,18 @@ public class ReflectionService {
             throw new BusinessException(ReflectionErrorCode.TODAY_REFLECTION_ALREADY_EXISTS);
         }
 
-        if (todayQuestionCacheService.getSkipCount(userId) >= 5) {
-            throw new BusinessException(ReflectionErrorCode.QUESTION_CHANGE_LIMIT_EXCEEDED);
-        }
-
-        Long currentQuestionId = todayQuestionCacheService.getQuestionId(userId);
-        ReflectionQuestionEntity currentQuestion = null;
-        if (currentQuestionId != null) {
-            currentQuestion = reflectionQuestionRepository.findById(currentQuestionId).orElse(null);
-        }
-
-        todayQuestionCacheService.evict(userId);
-
-        ZtpiCategory newCategory = todayQuestionResolver.resolveTodayCategory(userId);
-        Long newSequence;
-
-        if (currentQuestion != null && currentQuestion.getCategory().equals(newCategory)) {
-            newSequence = currentQuestion.getSequence() + 1;
-            Long maxSequence = reflectionQuestionRepository.findMaxSequenceByCategory(newCategory);
-            if (newSequence > maxSequence) {
-                newSequence = 1L;
-            }
-        } else {
-            newSequence = todayQuestionResolver.resolveTodaySequence(userId, newCategory);
-        }
-
+        Long newQuestionId = todayQuestionResolver.change(userId);
         ReflectionQuestionEntity newQuestion = reflectionQuestionRepository
-                .findBySequenceAndCategory(newSequence, newCategory)
+                .findByIdAndDeletedAtIsNull(newQuestionId)
                 .orElseThrow(() -> new BusinessException(
                         ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
 
-        todayQuestionCacheService.setQuestionId(userId, newQuestion.getId());
-
-        if (currentQuestion != null && currentQuestion.getCategory().equals(newCategory)) {
-            Long finalNewSequence = newSequence;
-            userReflectionQuestionOrderRepository
-                    .findByUserIdAndCategory(userId, newCategory)
-                    .ifPresent(order -> order.updateSequence(finalNewSequence));
-        }
-
-        todayQuestionCacheService.incrementSkipCount(userId);
-
-        return ReflectionQuestionDetailResponse.from(newQuestion.toModel());
+        ReflectionQuestion questionModel = newQuestion.toModel();
+        CustomizationItemImage themeImage = customizationItemService.findEquippedThemeImage(userId, questionModel.category());
+        return ReflectionQuestionDetailResponse.from(
+                questionModel,
+                themeImage != null ? themeImage.image() : null,
+                themeImage != null ? themeImage.imageWithoutBackground() : null);
     }
 
     @Transactional(readOnly = true)
