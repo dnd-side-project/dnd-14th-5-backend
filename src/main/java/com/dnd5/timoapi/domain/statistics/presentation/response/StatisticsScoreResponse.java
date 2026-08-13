@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 public record StatisticsScoreResponse(
         double score,
         LocalDateTime createdAt,
-        String type
+        String type,
+        Double proximityRate,
+        Boolean isCloserToIdeal
 ) {
 
 }

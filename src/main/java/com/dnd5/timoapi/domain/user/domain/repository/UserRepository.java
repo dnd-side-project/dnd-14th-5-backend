@@ -15,6 +15,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmailAndDeletedAtIsNull(String email);
     boolean existsByEmailAndDeletedAtIsNull(String email);
     List<UserEntity> findAllByStreakDaysGreaterThanAndDeletedAtIsNull(Integer streakDays);
+    List<UserEntity> findAllByDeletedAtIsNull();
 
     @Modifying
     @Query("UPDATE UserEntity u SET u.streakDays = 0 WHERE u.streakDays > 0 AND u.deletedAt IS NULL AND u.id NOT IN :activeUserIds")

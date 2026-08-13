@@ -2,11 +2,15 @@ package com.dnd5.timoapi.domain.group.application.service;
 
 import com.dnd5.timoapi.domain.group.domain.entity.GroupEntity;
 import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberEntity;
+import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberReflectionPrivateEntity;
 import com.dnd5.timoapi.domain.group.domain.model.Group;
 import com.dnd5.timoapi.domain.group.domain.model.GroupMember;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupMemberRole;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionCommentRepository;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionLikeRepository;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionPrivateRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupRepository;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
@@ -14,12 +18,16 @@ import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
+import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -47,6 +55,9 @@ public class GroupService {
     private final ReflectionRepository reflectionRepository;
     private final ReflectionQuestionRepository reflectionQuestionRepository;
     private final UserRepository userRepository;
+    private final GroupMemberReflectionPrivateRepository groupMemberReflectionPrivateRepository;
+    private final GroupMemberReflectionLikeRepository groupMemberReflectionLikeRepository;
+    private final GroupMemberReflectionCommentRepository groupMemberReflectionCommentRepository;
 
     public GroupCreateResponse createGroup(GroupCreateRequest request) {
         if (request.type() == GroupType.CHARACTER) {
@@ -216,13 +227,100 @@ public class GroupService {
         LocalDate today = LocalDate.now();
 
         if (groupEntity.getType() == GroupType.CHARACTER) {
-            return getTodayReflectionsForCharacterGroup(groupEntity, today, sort);
+            return getTodayReflectionsForCharacterGroup(groupEntity, userId, today, sort);
         }
         return getTodayReflectionsForFriendGroup(groupId, userId, today, sort);
     }
 
+    @Transactional(readOnly = true)
+    public GroupMemberReflectionDetailResponse getMemberReflection(Long groupId, Long reflectionId) {
+        Long viewerId = SecurityUtil.getCurrentUserId();
+        if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)) {
+            throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
+        }
+
+        ReflectionEntity reflectionEntity = reflectionRepository.findById(reflectionId)
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+
+        GroupMemberEntity authorMember = groupMemberRepository
+                .findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, reflectionEntity.getUserId())
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+
+        if (reflectionEntity.getDate().isBefore(authorMember.getCreatedAt().toLocalDate())) {
+            throw new BusinessException(ReflectionErrorCode.REFLECTION_NOT_FOUND);
+        }
+
+        ReflectionQuestionEntity questionEntity = reflectionQuestionRepository.findById(reflectionEntity.getQuestionId())
+                .orElseThrow(() -> new BusinessException(ReflectionErrorCode.REFLECTION_QUESTION_NOT_FOUND));
+
+        boolean isPrivate = groupMemberReflectionPrivateRepository
+                .existsByGroupIdAndReflectionId(groupId, reflectionId);
+        boolean isOwner = reflectionEntity.getUserId().equals(viewerId);
+        String content = (isPrivate && !isOwner) ? null : reflectionEntity.getAnswerText();
+
+        long likeCount = groupMemberReflectionLikeRepository.countByGroupIdAndReflectionId(groupId, reflectionId);
+        long commentCount = groupMemberReflectionCommentRepository
+                .countByGroupIdAndReflectionIdAndDeletedAtIsNull(groupId, reflectionId);
+
+        return new GroupMemberReflectionDetailResponse(
+                reflectionEntity.getId(),
+                ReflectionQuestionResponse.from(questionEntity.toModel()),
+                content,
+                reflectionEntity.getDate(),
+                likeCount,
+                commentCount
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupMemberReflectionResponse> getMemberCalendar(Long groupId, Long userId) {
+        Long viewerId = SecurityUtil.getCurrentUserId();
+        if (!groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)) {
+            throw new BusinessException(GroupErrorCode.GROUP_ACCESS_DENIED);
+        }
+
+        GroupMemberEntity targetMember = groupMemberRepository
+                .findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)
+                .orElseThrow(() -> new BusinessException(GroupErrorCode.GROUP_MEMBER_NOT_FOUND));
+
+        LocalDate joinedDate = targetMember.getCreatedAt().toLocalDate();
+        List<ReflectionEntity> reflections = reflectionRepository
+                .findAllByUserIdAndDateBetween(userId, joinedDate, LocalDate.now());
+
+        if (reflections.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> questionIds = reflections.stream().map(ReflectionEntity::getQuestionId).distinct().toList();
+        Map<Long, ReflectionQuestionEntity> questionMap = reflectionQuestionRepository.findAllById(questionIds)
+                .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
+
+        List<Long> reflectionIds = reflections.stream().map(ReflectionEntity::getId).toList();
+        Set<Long> privateReflectionIds = groupMemberReflectionPrivateRepository
+                .findAllByGroupIdAndReflectionIdIn(groupId, reflectionIds)
+                .stream().map(GroupMemberReflectionPrivateEntity::getReflectionId).collect(Collectors.toSet());
+
+        boolean isOwner = userId.equals(viewerId);
+
+        return reflections.stream()
+                .sorted(Comparator.comparing(ReflectionEntity::getDate))
+                .map(reflection -> {
+                    boolean isPrivate = privateReflectionIds.contains(reflection.getId());
+                    ReflectionQuestionEntity question = questionMap.get(reflection.getQuestionId());
+                    String content = (isPrivate && !isOwner) ? null : reflection.getAnswerText();
+                    return new GroupMemberReflectionResponse(
+                            reflection.getId(),
+                            question != null ? ReflectionQuestionResponse.from(question.toModel()) : null,
+                            content,
+                            !isPrivate,
+                            reflection.getDate()
+                    );
+                })
+                .toList();
+    }
+
     private List<GroupTodayReflectionItem> getTodayReflectionsForCharacterGroup(
-            GroupEntity groupEntity, LocalDate today, GroupReflectionSort sort) {
+            GroupEntity groupEntity, Long viewerId, LocalDate today, GroupReflectionSort sort) {
         List<Long> memberUserIds = groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupEntity.getId())
                 .stream().map(GroupMemberEntity::getUserId).toList();
 
@@ -242,6 +340,8 @@ public class GroupService {
         Map<Long, ReflectionQuestionEntity> questionMap = questionIds.isEmpty() ? Map.of() :
                 reflectionQuestionRepository.findAllById(questionIds)
                         .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
+
+        Set<Long> privateReflectionIds = getPrivateReflectionIds(groupEntity.getId(), reflectionByUserId);
 
         Comparator<Long> comparator = switch (sort) {
             case STREAK -> Comparator.comparingInt((Long uid) -> {
@@ -268,13 +368,17 @@ public class GroupService {
                     UserEntity user = userMap.get(uid);
                     ReflectionEntity reflection = reflectionByUserId.get(uid);
                     ReflectionQuestionEntity question = reflection != null ? questionMap.get(reflection.getQuestionId()) : null;
+                    boolean isPrivate = reflection != null && privateReflectionIds.contains(reflection.getId());
+                    boolean isOwner = uid.equals(viewerId);
                     return new GroupTodayReflectionItem(
                             uid,
+                            reflection != null ? reflection.getId() : null,
                             user != null ? user.getNickname() : null,
                             user != null ? user.getCategory() : null,
                             question != null ? question.getContent() : null,
                             question != null ? question.getCategory() : null,
-                            reflection != null ? reflection.getAnswerText() : null,
+                            reflection != null && !(isPrivate && !isOwner) ? reflection.getAnswerText() : null,
+                            !isPrivate,
                             user != null ? user.getStreakDays() : 0,
                             user != null ? user.getTotalDays() : 0
                     );
@@ -309,6 +413,8 @@ public class GroupService {
                 reflectionQuestionRepository.findAllById(questionIds)
                         .stream().collect(Collectors.toMap(ReflectionQuestionEntity::getId, q -> q));
 
+        Set<Long> privateReflectionIds = getPrivateReflectionIds(groupId, reflectionByUserId);
+
         Comparator<Long> comparator = switch (sort) {
             case STREAK -> Comparator.comparingInt((Long uid) -> {
                 UserEntity u = userMap.get(uid);
@@ -334,18 +440,31 @@ public class GroupService {
                     UserEntity user = userMap.get(uid);
                     ReflectionEntity reflection = reflectionByUserId.get(uid);
                     ReflectionQuestionEntity question = reflection != null ? questionMap.get(reflection.getQuestionId()) : null;
+                    boolean isPrivate = reflection != null && privateReflectionIds.contains(reflection.getId());
+                    boolean isOwner = uid.equals(userId);
                     return new GroupTodayReflectionItem(
                             uid,
+                            reflection != null ? reflection.getId() : null,
                             user != null ? user.getNickname() : null,
                             user != null ? user.getCategory() : null,
                             question != null ? question.getContent() : null,
                             question != null ? question.getCategory() : null,
-                            reflection != null ? reflection.getAnswerText() : null,
+                            reflection != null && !(isPrivate && !isOwner) ? reflection.getAnswerText() : null,
+                            !isPrivate,
                             user != null ? user.getStreakDays() : 0,
                             user != null ? user.getTotalDays() : 0
                     );
                 })
                 .toList();
+    }
+
+    private Set<Long> getPrivateReflectionIds(Long groupId, Map<Long, ReflectionEntity> reflectionByUserId) {
+        List<Long> reflectionIds = reflectionByUserId.values().stream().map(ReflectionEntity::getId).toList();
+        if (reflectionIds.isEmpty()) {
+            return Set.of();
+        }
+        return groupMemberReflectionPrivateRepository.findAllByGroupIdAndReflectionIdIn(groupId, reflectionIds)
+                .stream().map(GroupMemberReflectionPrivateEntity::getReflectionId).collect(Collectors.toSet());
     }
 
     private void handleOwnerLeave(Long groupId, GroupMemberEntity ownerMember) {

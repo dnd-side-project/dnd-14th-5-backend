@@ -10,6 +10,8 @@ import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
 import com.dnd5.timoapi.domain.user.exception.UserErrorCode;
 import com.dnd5.timoapi.domain.user.presentation.request.UpdateMeRequest;
+import com.dnd5.timoapi.domain.user.presentation.response.AdminUserDetailResponse;
+import com.dnd5.timoapi.domain.user.presentation.response.AdminUserResponse;
 import com.dnd5.timoapi.domain.user.presentation.response.UserResponse;
 import com.dnd5.timoapi.global.exception.BusinessException;
 import com.dnd5.timoapi.global.security.context.SecurityUtil;
@@ -36,6 +38,22 @@ public class UserService {
         List<EquippedCustomizationResponse> equippedCustomizations =
                 customizationItemService.findEquippedItems(user.getId());
         return UserResponse.from(user.toModel(), equippedCustomizations);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> findAllForAdmin() {
+        return userRepository.findAllByDeletedAtIsNull().stream()
+                .map(user -> AdminUserResponse.from(user.toModel()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AdminUserDetailResponse findByIdForAdmin(Long userId) {
+        UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        List<EquippedCustomizationResponse> equippedCustomizations =
+                customizationItemService.findEquippedItems(user.getId());
+        return AdminUserDetailResponse.from(user.toModel(), equippedCustomizations);
     }
 
     public void updateMe(UpdateMeRequest request) {

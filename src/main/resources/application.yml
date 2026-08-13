@@ -109,9 +109,9 @@ notification:
   swagger-diff:
     webhook-url: ${SWAGGER_DIFF_DISCORD_WEBHOOK_URL:}
   github-issue:
-    token: ${FRONTEND_GITHUB_TOKEN:}
-    owner: dnd-side-project
-    repo: dnd-14th-5-frontend
+    token: ${TIMO_GITHUB_TOKEN:}
+    owner: ${TIMO_GITHUB_OWNER:timo-side-project}
+    repo: ${TIMO_GITHUB_FRONTEND_REPO:timo-frontend}
 
 fcm:
   enabled: ${FCM_ENABLED:false}

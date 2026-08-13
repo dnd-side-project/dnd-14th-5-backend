@@ -7,7 +7,9 @@ public record StatisticsScoreDetailResponse(
         LocalDateTime createdAt,
         String type,
         Double changedScore,
-        Boolean isIncreased
+        Boolean isIncreased,
+        Double proximityRate,
+        Boolean isCloserToIdeal
 ) {
 
 }

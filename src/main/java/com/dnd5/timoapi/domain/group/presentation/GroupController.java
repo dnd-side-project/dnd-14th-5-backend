@@ -6,6 +6,8 @@ import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
@@ -97,5 +99,21 @@ public class GroupController {
             @Positive @PathVariable Long groupId,
             @RequestParam(defaultValue = "LATEST") GroupReflectionSort sort) {
         return groupService.getTodayReflections(groupId, sort);
+    }
+
+    @Operation(summary = "그룹 멤버 회고 상세 조회")
+    @GetMapping("/{groupId}/reflections/{reflectionId}")
+    public GroupMemberReflectionDetailResponse getMemberReflection(
+            @Positive @PathVariable Long groupId,
+            @Positive @PathVariable Long reflectionId) {
+        return groupService.getMemberReflection(groupId, reflectionId);
+    }
+
+    @Operation(summary = "그룹 멤버 캘린더 조회")
+    @GetMapping("/{groupId}/members/{userId}/calendar")
+    public List<GroupMemberReflectionResponse> getMemberCalendar(
+            @Positive @PathVariable Long groupId,
+            @Positive @PathVariable Long userId) {
+        return groupService.getMemberCalendar(groupId, userId);
     }
 }

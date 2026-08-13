@@ -114,6 +114,21 @@ public class CustomizationItemService {
     }
 
     @Transactional(readOnly = true)
+    public CustomizationItemImage findEquippedThemeImage(Long userId, ZtpiCategory category) {
+        if (category == null) {
+            return null;
+        }
+
+        return customizationUserItemRepository.findAllByUserIdAndIsEquippedTrueAndDeletedAtIsNull(userId).stream()
+                .map(userItem -> customizationItemRepository.findByIdAndDeletedAtIsNull(userItem.getCustomizationItemId()))
+                .flatMap(Optional::stream)
+                .filter(item -> item.getType() == CustomizationItemType.THEME)
+                .findFirst()
+                .map(item -> resolveImage(item, category))
+                .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
     public CustomizationItemDetailResponse findById(Long userId, Long customizationItemId) {
         UserEntity user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

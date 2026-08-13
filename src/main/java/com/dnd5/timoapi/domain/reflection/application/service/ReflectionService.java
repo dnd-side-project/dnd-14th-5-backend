@@ -21,6 +21,7 @@ import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuesti
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionQuestionResponse;
 import com.dnd5.timoapi.domain.reflection.presentation.response.ReflectionResponse;
 import com.dnd5.timoapi.domain.customization.application.service.CustomizationItemService;
+import com.dnd5.timoapi.domain.customization.domain.model.CustomizationItemImage;
 import com.dnd5.timoapi.domain.customization.presentation.response.UnlockedCustomizationItemResponse;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
@@ -89,7 +90,12 @@ public class ReflectionService {
     @Transactional(readOnly = true)
     public ReflectionQuestionDetailResponse findQuestionToday() {
         Long userId = SecurityUtil.getCurrentUserId();
-        return ReflectionQuestionDetailResponse.from(findTodayQuestionEntity(userId).toModel());
+        ReflectionQuestion question = findTodayQuestionEntity(userId).toModel();
+        CustomizationItemImage themeImage = customizationItemService.findEquippedThemeImage(userId, question.category());
+        return ReflectionQuestionDetailResponse.from(
+                question,
+                themeImage != null ? themeImage.image() : null,
+                themeImage != null ? themeImage.imageWithoutBackground() : null);
     }
 
     public ReflectionQuestionDetailResponse changeQuestionToday() {
@@ -140,7 +146,12 @@ public class ReflectionService {
 
         todayQuestionCacheService.incrementSkipCount(userId);
 
-        return ReflectionQuestionDetailResponse.from(newQuestion.toModel());
+        ReflectionQuestion questionModel = newQuestion.toModel();
+        CustomizationItemImage themeImage = customizationItemService.findEquippedThemeImage(userId, questionModel.category());
+        return ReflectionQuestionDetailResponse.from(
+                questionModel,
+                themeImage != null ? themeImage.image() : null,
+                themeImage != null ? themeImage.imageWithoutBackground() : null);
     }
 
     @Transactional(readOnly = true)

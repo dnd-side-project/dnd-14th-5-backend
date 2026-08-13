@@ -5,19 +5,27 @@ import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberEntity;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupMemberRole;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupType;
 import com.dnd5.timoapi.domain.group.domain.model.enums.GroupReflectionSort;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionCommentRepository;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionLikeRepository;
+import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberReflectionPrivateRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupMemberRepository;
 import com.dnd5.timoapi.domain.group.domain.repository.GroupRepository;
 import com.dnd5.timoapi.domain.group.exception.GroupErrorCode;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupCreateRequest;
 import com.dnd5.timoapi.domain.group.presentation.request.GroupUpdateRequest;
+import com.dnd5.timoapi.domain.group.domain.entity.GroupMemberReflectionPrivateEntity;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupCreateResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionDetailResponse;
+import com.dnd5.timoapi.domain.group.presentation.response.GroupMemberReflectionResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupResponse;
 import com.dnd5.timoapi.domain.group.presentation.response.GroupTodayReflectionItem;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionEntity;
 import com.dnd5.timoapi.domain.reflection.domain.entity.ReflectionQuestionEntity;
+import com.dnd5.timoapi.domain.reflection.domain.model.ReflectionQuestion;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionQuestionRepository;
 import com.dnd5.timoapi.domain.reflection.domain.repository.ReflectionRepository;
+import com.dnd5.timoapi.domain.reflection.exception.ReflectionErrorCode;
 import com.dnd5.timoapi.domain.test.domain.model.enums.ZtpiCategory;
 import com.dnd5.timoapi.domain.user.domain.entity.UserEntity;
 import com.dnd5.timoapi.domain.user.domain.repository.UserRepository;
@@ -32,6 +40,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +69,15 @@ class GroupServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private GroupMemberReflectionPrivateRepository groupMemberReflectionPrivateRepository;
+
+    @Mock
+    private GroupMemberReflectionLikeRepository groupMemberReflectionLikeRepository;
+
+    @Mock
+    private GroupMemberReflectionCommentRepository groupMemberReflectionCommentRepository;
 
     @Test
     void createGroup_FRIEND_성공_코드_자동_생성() {
@@ -550,6 +568,376 @@ class GroupServiceTest {
             assertThat(withReflection.answerText()).isEqualTo("회고 내용");
             assertThat(withoutReflection.answerText()).isNull();
             assertThat(withoutReflection.questionContent()).isNull();
+        }
+    }
+
+    @Test
+    void getTodayReflections_FRIEND_비공개_회고는_타인에게_content_null() {
+        Long viewerId = 99L;
+        Long groupId = 10L;
+        Long authorId = 1L;
+        Long reflectionId = 500L;
+
+        GroupEntity groupEntity = mock(GroupEntity.class);
+        when(groupEntity.getType()).thenReturn(GroupType.FRIEND);
+        when(groupRepository.findByIdAndDeletedAtIsNull(groupId)).thenReturn(Optional.of(groupEntity));
+
+        GroupMemberEntity member = mock(GroupMemberEntity.class);
+        when(member.getUserId()).thenReturn(authorId);
+        when(groupMemberRepository.findAllByGroupIdAndDeletedAtIsNull(groupId)).thenReturn(List.of(member));
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getId()).thenReturn(reflectionId);
+        when(reflection.getUserId()).thenReturn(authorId);
+        when(reflection.getQuestionId()).thenReturn(100L);
+        when(reflectionRepository.findAllByDateAndUserIdIn(any(LocalDate.class), anyList()))
+                .thenReturn(List.of(reflection));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.getId()).thenReturn(100L);
+        when(question.getContent()).thenReturn("오늘의 질문");
+        when(question.getCategory()).thenReturn(ZtpiCategory.FUTURE);
+        when(reflectionQuestionRepository.findAllById(anyList())).thenReturn(List.of(question));
+
+        UserEntity user = mock(UserEntity.class);
+        when(user.getId()).thenReturn(authorId);
+        when(user.getNickname()).thenReturn("작성자");
+        when(user.getStreakDays()).thenReturn(1);
+        when(user.getTotalDays()).thenReturn(1);
+        when(userRepository.findAllById(anyList())).thenReturn(List.of(user));
+
+        GroupMemberReflectionPrivateEntity privateEntity = mock(GroupMemberReflectionPrivateEntity.class);
+        when(privateEntity.getReflectionId()).thenReturn(reflectionId);
+        when(groupMemberReflectionPrivateRepository.findAllByGroupIdAndReflectionIdIn(eq(groupId), anyList()))
+                .thenReturn(List.of(privateEntity));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            List<GroupTodayReflectionItem> result = groupService.getTodayReflections(groupId, GroupReflectionSort.LATEST);
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).reflectionId()).isEqualTo(reflectionId);
+            assertThat(result.get(0).isPublic()).isFalse();
+            assertThat(result.get(0).answerText()).isNull();
+        }
+    }
+
+    @Test
+    void getMemberReflection_공개_회고는_타인도_content_조회_가능() {
+        Long viewerId = 1L;
+        Long authorId = 2L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getId()).thenReturn(reflectionId);
+        when(reflection.getUserId()).thenReturn(authorId);
+        when(reflection.getQuestionId()).thenReturn(200L);
+        when(reflection.getAnswerText()).thenReturn("공개 회고 내용");
+        when(reflection.getDate()).thenReturn(LocalDate.of(2026, 8, 1));
+        when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflection));
+
+        GroupMemberEntity authorMember = mock(GroupMemberEntity.class);
+        when(authorMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, authorId))
+                .thenReturn(Optional.of(authorMember));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.toModel()).thenReturn(
+                new ReflectionQuestion(200L, 1L, ZtpiCategory.FUTURE, "질문", "admin", null, null));
+        when(reflectionQuestionRepository.findById(200L)).thenReturn(Optional.of(question));
+
+        when(groupMemberReflectionPrivateRepository.existsByGroupIdAndReflectionId(groupId, reflectionId)).thenReturn(false);
+        when(groupMemberReflectionLikeRepository.countByGroupIdAndReflectionId(groupId, reflectionId)).thenReturn(3L);
+        when(groupMemberReflectionCommentRepository.countByGroupIdAndReflectionIdAndDeletedAtIsNull(groupId, reflectionId))
+                .thenReturn(2L);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            GroupMemberReflectionDetailResponse response = groupService.getMemberReflection(groupId, reflectionId);
+
+            assertThat(response.content()).isEqualTo("공개 회고 내용");
+            assertThat(response.likes()).isEqualTo(3L);
+            assertThat(response.comments()).isEqualTo(2L);
+        }
+    }
+
+    @Test
+    void getMemberReflection_비공개_회고는_타인에게_content_null() {
+        Long viewerId = 1L;
+        Long authorId = 2L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getId()).thenReturn(reflectionId);
+        when(reflection.getUserId()).thenReturn(authorId);
+        when(reflection.getQuestionId()).thenReturn(200L);
+        when(reflection.getDate()).thenReturn(LocalDate.of(2026, 8, 1));
+        when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflection));
+
+        GroupMemberEntity authorMember = mock(GroupMemberEntity.class);
+        when(authorMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, authorId))
+                .thenReturn(Optional.of(authorMember));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.toModel()).thenReturn(
+                new ReflectionQuestion(200L, 1L, ZtpiCategory.FUTURE, "질문", "admin", null, null));
+        when(reflectionQuestionRepository.findById(200L)).thenReturn(Optional.of(question));
+
+        when(groupMemberReflectionPrivateRepository.existsByGroupIdAndReflectionId(groupId, reflectionId)).thenReturn(true);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            GroupMemberReflectionDetailResponse response = groupService.getMemberReflection(groupId, reflectionId);
+
+            assertThat(response.content()).isNull();
+        }
+    }
+
+    @Test
+    void getMemberReflection_본인_비공개_회고는_content_노출() {
+        Long userId = 2L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getId()).thenReturn(reflectionId);
+        when(reflection.getUserId()).thenReturn(userId);
+        when(reflection.getQuestionId()).thenReturn(200L);
+        when(reflection.getAnswerText()).thenReturn("내 비공개 회고");
+        when(reflection.getDate()).thenReturn(LocalDate.of(2026, 8, 1));
+        when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflection));
+
+        GroupMemberEntity authorMember = mock(GroupMemberEntity.class);
+        when(authorMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId))
+                .thenReturn(Optional.of(authorMember));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.toModel()).thenReturn(
+                new ReflectionQuestion(200L, 1L, ZtpiCategory.FUTURE, "질문", "admin", null, null));
+        when(reflectionQuestionRepository.findById(200L)).thenReturn(Optional.of(question));
+
+        when(groupMemberReflectionPrivateRepository.existsByGroupIdAndReflectionId(groupId, reflectionId)).thenReturn(true);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
+
+            GroupMemberReflectionDetailResponse response = groupService.getMemberReflection(groupId, reflectionId);
+
+            assertThat(response.content()).isEqualTo("내 비공개 회고");
+        }
+    }
+
+    @Test
+    void getMemberReflection_비멤버_조회시_403() {
+        Long viewerId = 1L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(false);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            assertThatThrownBy(() -> groupService.getMemberReflection(groupId, reflectionId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_ACCESS_DENIED));
+        }
+    }
+
+    @Test
+    void getMemberReflection_존재하지_않는_회고면_404() {
+        Long viewerId = 1L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+        when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.empty());
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            assertThatThrownBy(() -> groupService.getMemberReflection(groupId, reflectionId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+        }
+    }
+
+    @Test
+    void getMemberReflection_작성자_그룹_가입일_이전_회고면_404() {
+        Long viewerId = 1L;
+        Long authorId = 2L;
+        Long groupId = 10L;
+        Long reflectionId = 100L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+
+        ReflectionEntity reflection = mock(ReflectionEntity.class);
+        when(reflection.getUserId()).thenReturn(authorId);
+        when(reflection.getDate()).thenReturn(LocalDate.of(2026, 6, 1));
+        when(reflectionRepository.findById(reflectionId)).thenReturn(Optional.of(reflection));
+
+        GroupMemberEntity authorMember = mock(GroupMemberEntity.class);
+        when(authorMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, authorId))
+                .thenReturn(Optional.of(authorMember));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            assertThatThrownBy(() -> groupService.getMemberReflection(groupId, reflectionId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(ReflectionErrorCode.REFLECTION_NOT_FOUND));
+        }
+    }
+
+    @Test
+    void getMemberCalendar_가입일_이후_회고만_비공개_마스킹해_반환() {
+        Long viewerId = 1L;
+        Long targetUserId = 2L;
+        Long groupId = 10L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+
+        GroupMemberEntity targetMember = mock(GroupMemberEntity.class);
+        when(targetMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, targetUserId))
+                .thenReturn(Optional.of(targetMember));
+
+        ReflectionEntity publicReflection = mock(ReflectionEntity.class);
+        when(publicReflection.getId()).thenReturn(1L);
+        when(publicReflection.getQuestionId()).thenReturn(200L);
+        when(publicReflection.getAnswerText()).thenReturn("공개 회고");
+        when(publicReflection.getDate()).thenReturn(LocalDate.of(2026, 7, 5));
+
+        ReflectionEntity privateReflection = mock(ReflectionEntity.class);
+        when(privateReflection.getId()).thenReturn(2L);
+        when(privateReflection.getQuestionId()).thenReturn(200L);
+        when(privateReflection.getDate()).thenReturn(LocalDate.of(2026, 7, 6));
+
+        when(reflectionRepository.findAllByUserIdAndDateBetween(eq(targetUserId), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(publicReflection, privateReflection));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.getId()).thenReturn(200L);
+        when(question.toModel()).thenReturn(
+                new ReflectionQuestion(200L, 1L, ZtpiCategory.FUTURE, "질문", "admin", null, null));
+        when(reflectionQuestionRepository.findAllById(anyList())).thenReturn(List.of(question));
+
+        GroupMemberReflectionPrivateEntity privateEntity = mock(GroupMemberReflectionPrivateEntity.class);
+        when(privateEntity.getReflectionId()).thenReturn(2L);
+        when(groupMemberReflectionPrivateRepository.findAllByGroupIdAndReflectionIdIn(eq(groupId), anyList()))
+                .thenReturn(List.of(privateEntity));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            List<GroupMemberReflectionResponse> result = groupService.getMemberCalendar(groupId, targetUserId);
+
+            assertThat(result).hasSize(2);
+            GroupMemberReflectionResponse publicItem = result.stream().filter(r -> r.id().equals(1L)).findFirst().orElseThrow();
+            GroupMemberReflectionResponse privateItem = result.stream().filter(r -> r.id().equals(2L)).findFirst().orElseThrow();
+            assertThat(publicItem.isPublic()).isTrue();
+            assertThat(publicItem.content()).isEqualTo("공개 회고");
+            assertThat(privateItem.isPublic()).isFalse();
+            assertThat(privateItem.content()).isNull();
+        }
+    }
+
+    @Test
+    void getMemberCalendar_본인_캘린더면_비공개도_content_노출() {
+        Long userId = 2L;
+        Long groupId = 10L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId)).thenReturn(true);
+
+        GroupMemberEntity targetMember = mock(GroupMemberEntity.class);
+        when(targetMember.getCreatedAt()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0));
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, userId))
+                .thenReturn(Optional.of(targetMember));
+
+        ReflectionEntity privateReflection = mock(ReflectionEntity.class);
+        when(privateReflection.getId()).thenReturn(2L);
+        when(privateReflection.getQuestionId()).thenReturn(200L);
+        when(privateReflection.getAnswerText()).thenReturn("내 비공개 회고");
+        when(privateReflection.getDate()).thenReturn(LocalDate.of(2026, 7, 6));
+
+        when(reflectionRepository.findAllByUserIdAndDateBetween(eq(userId), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(privateReflection));
+
+        ReflectionQuestionEntity question = mock(ReflectionQuestionEntity.class);
+        when(question.getId()).thenReturn(200L);
+        when(question.toModel()).thenReturn(
+                new ReflectionQuestion(200L, 1L, ZtpiCategory.FUTURE, "질문", "admin", null, null));
+        when(reflectionQuestionRepository.findAllById(anyList())).thenReturn(List.of(question));
+
+        GroupMemberReflectionPrivateEntity privateEntity = mock(GroupMemberReflectionPrivateEntity.class);
+        when(privateEntity.getReflectionId()).thenReturn(2L);
+        when(groupMemberReflectionPrivateRepository.findAllByGroupIdAndReflectionIdIn(eq(groupId), anyList()))
+                .thenReturn(List.of(privateEntity));
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(userId);
+
+            List<GroupMemberReflectionResponse> result = groupService.getMemberCalendar(groupId, userId);
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).isPublic()).isFalse();
+            assertThat(result.get(0).content()).isEqualTo("내 비공개 회고");
+        }
+    }
+
+    @Test
+    void getMemberCalendar_대상_유저가_그룹_멤버가_아니면_404() {
+        Long viewerId = 1L;
+        Long targetUserId = 2L;
+        Long groupId = 10L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(true);
+        when(groupMemberRepository.findByGroupIdAndUserIdAndDeletedAtIsNull(groupId, targetUserId))
+                .thenReturn(Optional.empty());
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            assertThatThrownBy(() -> groupService.getMemberCalendar(groupId, targetUserId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_MEMBER_NOT_FOUND));
+        }
+    }
+
+    @Test
+    void getMemberCalendar_뷰어가_비멤버면_403() {
+        Long viewerId = 1L;
+        Long targetUserId = 2L;
+        Long groupId = 10L;
+
+        when(groupMemberRepository.existsByGroupIdAndUserIdAndDeletedAtIsNull(groupId, viewerId)).thenReturn(false);
+
+        try (MockedStatic<SecurityUtil> mocked = Mockito.mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(viewerId);
+
+            assertThatThrownBy(() -> groupService.getMemberCalendar(groupId, targetUserId))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(GroupErrorCode.GROUP_ACCESS_DENIED));
         }
     }
 }
